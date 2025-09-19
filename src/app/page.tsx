@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Truck } from 'lucide-react';
 import { auth } from '@/lib/firebase/config';
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
+import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, Auth } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -23,33 +23,42 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const [user, authLoading] = useAuthState(auth!);
+  const [isClient, setIsClient] = useState(false);
 
-  // Use a ref for the verifier instance that persists across re-renders
+  // useAuthState should only be used on the client
+  const [user, authLoading] = useAuthState(auth as Auth);
+
   const recaptchaVerifier = useRef<RecaptchaVerifier | null>(null);
   const recaptchaContainerRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    // This ensures code runs only on the client
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
-    // If user is already logged in, redirect them
-    if (user) {
+    if (!isClient) return;
+
+    if (!authLoading) {
+      if (user) {
         const userRole = localStorage.getItem('userRole');
         if (userRole) {
-            router.push('/dashboard');
+          router.push('/dashboard');
+        } else {
+          // If user is logged in but has no role, force them to choose.
+          setStep(3);
         }
+      }
     }
-  }, [user, router]);
-
+  }, [user, authLoading, router, isClient]);
 
   useEffect(() => {
-    if (!auth) return;
+    if (!isClient || !auth || recaptchaVerifier.current) return;
 
-    if (!recaptchaVerifier.current && recaptchaContainerRef.current) {
-        // Initialize RecaptchaVerifier only on the client side
+    if (recaptchaContainerRef.current) {
         recaptchaVerifier.current = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
             size: 'invisible',
-            callback: () => {
-              // reCAPTCHA solved, allow signInWithPhoneNumber.
-            },
+            callback: () => {},
         });
 
         recaptchaVerifier.current.render().catch((error) => {
@@ -61,7 +70,7 @@ export default function Home() {
             });
         });
     }
-  }, [toast, auth]);
+  }, [isClient, auth, toast]);
 
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
@@ -78,7 +87,6 @@ export default function Home() {
       return;
     }
     
-    // Firebase requires the phone number in E.164 format
     const formattedPhone = `+98${phone.slice(1)}`;
 
     try {
@@ -108,7 +116,7 @@ export default function Home() {
 
     try {
       await confirmationResult.confirm(otp);
-      // OTP is correct, now let user choose role
+      // User is now signed in. The useEffect will catch this and show step 3.
       setStep(3);
     } catch (error) {
       console.error('Error verifying OTP:', error);
@@ -128,7 +136,7 @@ export default function Home() {
     router.push('/dashboard');
   };
   
-  if (authLoading || user) {
+  if (!isClient || authLoading) {
     return (
         <div className="flex h-screen items-center justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -183,7 +191,7 @@ export default function Home() {
           </form>
         );
       case 3:
-         return null; // Will be handled by CardFooter
+         return null; // Handled by CardFooter
       default:
         return null;
     }
@@ -201,7 +209,6 @@ export default function Home() {
         return '';
     }
   }
-
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-8 overflow-hidden">
@@ -247,7 +254,7 @@ export default function Home() {
                   </div>
                 </CardFooter>
               )}
-               {(step === 2 || step === 3) && !loading && (
+               {(step === 2) && !loading && (
                  <CardFooter>
                     <Button variant="link" size="sm" onClick={() => { setStep(1); setOtp(''); }}>
                       تغییر شماره موبایل
@@ -261,5 +268,3 @@ export default function Home() {
     </main>
   );
 }
-
-    

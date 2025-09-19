@@ -34,28 +34,33 @@ export default function DashboardLayout({
   const router = useRouter();
   const isMobile = useIsMobile();
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
-  const [path, setPath] = useState('/dashboard');
+  const [path, setPath] = useState('');
   const [animationKey, setAnimationKey] = useState(0);
   const [user, loading, error] = useAuthState(auth!);
 
   useEffect(() => {
     setIsClient(true);
+    // This effect now correctly handles all auth and routing logic
+    if (loading) {
+      return; // Wait until auth state is loaded
+    }
+    
     const userRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
-
-    if (loading) return; // Wait until auth state is loaded
-
+    
     if (!user || !userRole) {
       router.push('/');
-    } else {
-      setRole(userRole);
+      return;
     }
-     // Set initial path from URL, and listen for changes
+    
+    setRole(userRole);
+
     const handlePathChange = () => {
         const currentPath = window.location.pathname;
         setPath(currentPath);
-        setAnimationKey(prevKey => prevKey + 1); // Change key to re-trigger animation
+        setAnimationKey(prevKey => prevKey + 1);
     };
-    handlePathChange();
+    handlePathChange(); // Set initial path
+    
     window.addEventListener('popstate', handlePathChange);
     return () => {
         window.removeEventListener('popstate', handlePathChange);
@@ -66,7 +71,7 @@ export default function DashboardLayout({
     if (newPath === path) return;
     window.history.pushState({}, '', newPath);
     setPath(newPath);
-    setAnimationKey(prevKey => prevKey + 1); // Change key to re-trigger animation
+    setAnimationKey(prevKey => prevKey + 1);
   };
   
   const renderContent = () => {
