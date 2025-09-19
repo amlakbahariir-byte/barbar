@@ -13,6 +13,7 @@ import { auth } from '@/lib/firebase/config';
 import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, Auth, onAuthStateChanged, User } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driver') => void }) {
   const [step, setStep] = useState(1);
@@ -22,35 +23,26 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const recaptchaVerifier = useRef<RecaptchaVerifier | null>(null);
+  const recaptchaContainerRef = useRef<HTMLDivElement>(null);
+  const [user, authLoading] = useAuthState(auth);
 
   useEffect(() => {
+    if (!auth || !recaptchaContainerRef.current) return;
+    
     if (!recaptchaVerifier.current) {
-      const recaptchaContainer = document.createElement('div');
-      recaptchaContainer.id = 'recaptcha-container';
-      document.body.appendChild(recaptchaContainer);
-      
-      const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        size: 'invisible',
-        callback: () => {},
-      });
-      recaptchaVerifier.current = verifier;
+        const verifier = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
+            size: 'invisible',
+            callback: () => {},
+        });
+        recaptchaVerifier.current = verifier;
     }
-  }, []);
+  }, [auth]);
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!auth || !recaptchaVerifier.current) return;
     setLoading(true);
 
-    if (!recaptchaVerifier.current) {
-      toast({
-        title: 'خطا',
-        description: 'reCAPTCHA مقداردهی نشده است. لطفا صفحه را رفرش کنید.',
-        variant: 'destructive',
-      });
-      setLoading(false);
-      return;
-    }
-    
     const formattedPhone = `+98${phone.slice(1)}`;
 
     try {
@@ -167,6 +159,16 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
         return '';
     }
   }
+  
+  if (authLoading) {
+      return (
+          <Card className="h-64">
+              <CardContent className="flex h-full items-center justify-center">
+                  <Loader2 className="h-12 w-12 animate-spin text-primary" />
+              </CardContent>
+          </Card>
+      );
+  }
 
   return (
     <>
@@ -201,38 +203,34 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
            </CardFooter>
           )}
       </Card>
+      <div ref={recaptchaContainerRef}></div>
     </>
   );
 }
 
-
 export default function Home() {
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setIsClient(true);
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
-    return () => unsubscribe();
   }, []);
-  
+
   const handleLoginSuccess = () => {
     router.push('/dashboard');
   };
 
-  useEffect(() => {
-    if(isClient && !loading && user){
-        const userRole = localStorage.getItem('userRole');
-        if (userRole) {
-            handleLoginSuccess();
-        }
-    }
-  }, [isClient, loading, user]);
+  if (!isClient) {
+    return (
+        <main className="flex min-h-screen flex-col items-center justify-center bg-background p-8 overflow-hidden">
+             <Card className="w-[450px]">
+                <CardContent className="flex h-64 items-center justify-center">
+                    <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                </CardContent>
+            </Card>
+        </main>
+    );
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-8 overflow-hidden">
@@ -254,15 +252,7 @@ export default function Home() {
             <TabsTrigger value="login">ورود یا ثبت‌نام</TabsTrigger>
           </TabsList>
           <TabsContent value="login">
-            {(isClient && !loading && !user) ? (
-                <AuthForm onLoginSuccess={handleLoginSuccess} />
-            ) : (
-                <Card className="h-64">
-                    <CardContent className="flex h-full items-center justify-center">
-                         <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                    </CardContent>
-                </Card>
-            )}
+            <AuthForm onLoginSuccess={handleLoginSuccess} />
           </TabsContent>
         </Tabs>
       </div>
