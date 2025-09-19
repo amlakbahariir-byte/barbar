@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import type { Shipment } from '@/lib/data';
 import { ArrowLeft, Box, Calendar, MapPin, Weight } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { format } from 'date-fns-jalali';
+import { faIR } from 'date-fns/locale';
 
 const statusMap: { [key in Shipment['status']]: { text: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' } } = {
   pending: { text: 'در انتظار پیشنهاد', variant: 'secondary' },
@@ -42,16 +44,16 @@ export function ShipmentCard({ shipment, role, navigate }: { shipment: Shipment;
         </div>
          <div className="flex items-center gap-2">
             <Weight className="h-4 w-4 text-muted-foreground" />
-            <span>وزن: {shipment.weight.toLocaleString()} کیلوگرم</span>
+            <span>وزن: {shipment.weight.toLocaleString('fa-IR')} کیلوگرم</span>
         </div>
          <div className="flex items-center gap-2">
             <Box className="h-4 w-4 text-muted-foreground" />
-            <span>حجم: {shipment.volume} متر مکعب</span>
+            <span>حجم: {shipment.volume.toLocaleString('fa-IR')} متر مکعب</span>
         </div>
         {role === 'driver' && (
              <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span>فاصله: {distance} کیلومتر</span>
+                <span>فاصله: {distance.toLocaleString('fa-IR')} کیلومتر</span>
             </div>
         )}
       </CardContent>

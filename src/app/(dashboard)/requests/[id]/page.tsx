@@ -102,8 +102,8 @@ export default function RequestDetailsPage() {
                  <Separator/>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                     <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-muted-foreground"/><span>تاریخ: {shipment.date}</span></div>
-                    <div className="flex items-center gap-2"><Weight className="h-4 w-4 text-muted-foreground"/><span>وزن: {shipment.weight.toLocaleString()} کیلوگرم</span></div>
-                    <div className="flex items-center gap-2"><Box className="h-4 w-4 text-muted-foreground"/><span>حجم: {shipment.volume} متر مکعب</span></div>
+                    <div className="flex items-center gap-2"><Weight className="h-4 w-4 text-muted-foreground"/><span>وزن: {shipment.weight.toLocaleString('fa-IR')} کیلوگرم</span></div>
+                    <div className="flex items-center gap-2"><Box className="h-4 w-4 text-muted-foreground"/><span>حجم: {shipment.volume.toLocaleString('fa-IR')} متر مکعب</span></div>
                 </div>
                 {shipment.description && <p className="text-sm text-muted-foreground bg-secondary/50 p-3 rounded-md">{shipment.description}</p>}
             </CardContent>
@@ -113,7 +113,7 @@ export default function RequestDetailsPage() {
         <div className="space-y-4">
             {isShipper && shipment.status === 'pending' && (
                 <Card>
-                    <CardHeader><CardTitle>پیشنهادهای رانندگان ({shipment.bids?.length || 0})</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>پیشنهادهای رانندگان ({shipment.bids?.length.toLocaleString('fa-IR') || '۰'})</CardTitle></CardHeader>
                     <CardContent className="space-y-3">
                         {shipment.bids && shipment.bids.length > 0 ? shipment.bids.map(bid => (
                             <div key={bid.id} className="border p-3 rounded-lg flex items-center justify-between">
@@ -121,11 +121,11 @@ export default function RequestDetailsPage() {
                                     <Image src={bid.driver.avatar} alt={bid.driver.name} width={40} height={40} className="rounded-full" />
                                     <div>
                                         <p className="font-semibold">{bid.driver.name}</p>
-                                        <p className="text-xs text-muted-foreground flex items-center"><Star className="w-3 h-3 ml-1 fill-amber-400 text-amber-500"/>{bid.driver.rating} ({bid.driver.vehicle})</p>
+                                        <p className="text-xs text-muted-foreground flex items-center"><Star className="w-3 h-3 ml-1 fill-amber-400 text-amber-500"/>{bid.driver.rating.toLocaleString('fa-IR')} ({bid.driver.vehicle})</p>
                                     </div>
                                 </div>
                                 <div className="text-left">
-                                    <p className="font-bold text-primary">{bid.amount.toLocaleString()} تومان</p>
+                                    <p className="font-bold text-primary">{bid.amount.toLocaleString('fa-IR')} تومان</p>
                                     <Button size="sm" className="mt-1" onClick={handleAcceptBid}><Check className="w-4 h-4 ml-1"/>پذیرفتن</Button>
                                 </div>
                             </div>
@@ -141,7 +141,7 @@ export default function RequestDetailsPage() {
                         <CardContent className="space-y-3">
                             <Label htmlFor="bid-amount">مبلغ پیشنهادی شما (تومان)</Label>
                             <div className="relative">
-                                <Input id="bid-amount" type="number" dir="ltr" className="pr-8" placeholder="1,200,000" required/>
+                                <Input id="bid-amount" type="number" dir="ltr" className="pr-8 text-lg font-bold tracking-wider" placeholder="1,200,000" required/>
                                 <CircleDollarSign className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground"/>
                             </div>
                         </CardContent>
