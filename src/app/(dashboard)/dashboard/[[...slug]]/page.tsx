@@ -104,17 +104,26 @@ export default function DashboardPage() {
   const router = useRouter();
   const path = usePathname();
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // Reading from localStorage should be done in useEffect to ensure it runs on the client.
+    // This effect runs only on the client, ensuring localStorage is available.
+    setIsClient(true);
     const storedRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
-    setRole(storedRole);
+    if (storedRole) {
+      setRole(storedRole);
+    }
   }, []);
 
   const navigate = (newPath: string) => {
     if (newPath === path) return;
     router.push(newPath);
   };
+  
+  if (!isClient) {
+    // Render a loading state or null on the server and initial client render
+    return <div>در حال بارگذاری...</div>;
+  }
   
   const slug = path.replace('/dashboard', '');
 
