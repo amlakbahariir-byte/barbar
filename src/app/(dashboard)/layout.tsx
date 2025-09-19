@@ -7,7 +7,6 @@ import { BottomNavbar } from '@/components/layout/bottom-navbar';
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useIsMobile } from '@/hooks/use-mobile';
-import DashboardPage from './dashboard/[[...slug]]/page';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase/config';
 import { AnimatedTruckLoader } from '@/components/ui/animated-truck-loader';
@@ -64,7 +63,13 @@ export default function DashboardLayout({
       <SidebarInset>
         <main className="flex-1 p-4 md:p-6 pb-24 md:pb-6 overflow-y-auto">
            <div key={pathname} className="animate-in fade-in duration-500">
-              <DashboardPage role={role} isClient={isClient} navigate={navigate} path={pathname} />
+              {React.Children.map(children, child => {
+                if (React.isValidElement(child)) {
+                  // @ts-ignore
+                  return React.cloneElement(child, { role, isClient, navigate, path: pathname });
+                }
+                return child;
+              })}
            </div>
         </main>
         {isMobile && <BottomNavbar navigate={navigate} />}

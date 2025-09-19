@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -23,7 +24,7 @@ function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
           <CardDescription>یک درخواست حمل بار جدید ایجاد کنید و بهترین پیشنهادها را از رانندگان معتبر دریافت کنید.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button size="lg" onClick={() => navigate('/requests/new')}>
+          <Button size="lg" onClick={() => navigate('/dashboard/requests/new')}>
             <PackagePlus className="ml-2 h-5 w-5" />
             ایجاد درخواست جدید
           </Button>
@@ -40,7 +41,7 @@ function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
           ))}
         </div>
          <div className="mt-4 text-center">
-            <Button variant="link" onClick={() => navigate('/requests/my')}>
+            <Button variant="link" onClick={() => navigate('/dashboard/requests/my')}>
                 مشاهده همه درخواست‌ها
                 <ArrowLeft className="mr-2 h-4 w-4" />
             </Button>
@@ -104,12 +105,14 @@ export default function DashboardPage({ role, isClient, navigate, path }: Dashbo
     return <div>در حال بارگذاری...</div>;
   }
 
-  if (path.startsWith('/requests/new')) {
+  const slug = path.replace('/dashboard', '');
+
+  if (slug.startsWith('/requests/new')) {
     const NewRequestPage = require('../../requests/new/page').default;
     return <NewRequestPage {...{ role, isClient, navigate, path }} />;
   }
 
-  if (path.startsWith('/requests/')) {
+  if (slug.startsWith('/requests/')) {
     const RequestDetailsPage = require('../../requests/[id]/page').default;
     return <RequestDetailsPage {...{ role, isClient, navigate, path }} />;
   }

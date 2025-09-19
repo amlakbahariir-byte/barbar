@@ -56,7 +56,7 @@ export function ShipmentCard({ shipment, role, navigate }: { shipment: Shipment;
         )}
       </CardContent>
       <CardFooter>
-        <Button variant="outline" className="w-full" onClick={() => navigate(`/requests/${shipment.id}`)}>
+        <Button variant="outline" className="w-full" onClick={() => navigate(`/dashboard/requests/${shipment.id}`)}>
             مشاهده جزئیات
         </Button>
       </CardFooter>

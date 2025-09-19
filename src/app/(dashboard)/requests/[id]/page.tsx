@@ -43,7 +43,7 @@ export default function RequestDetailsPage({ role, isClient, navigate, path }: D
       title: 'پیشنهاد پذیرفته شد',
       description: 'راننده انتخاب شد. منتظر تماس راننده برای هماهنگی باشید.',
     });
-    navigate('/dashboard');
+    if (navigate) navigate('/dashboard');
   }
 
   const handlePlaceBid = (e: React.FormEvent) => {
@@ -52,7 +52,7 @@ export default function RequestDetailsPage({ role, isClient, navigate, path }: D
       title: 'پیشنهاد شما ثبت شد',
       description: 'پیشنهاد قیمت شما برای این بار با موفقیت ثبت شد.',
     });
-    navigate('/dashboard');
+    if (navigate) navigate('/dashboard');
   }
 
   if (!isClient || !shipment || !role) {

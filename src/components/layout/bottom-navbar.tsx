@@ -5,20 +5,21 @@ import { Home, Package, Truck, User, LogOut, PackagePlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { auth } from '@/lib/firebase/config';
 
 
 const ShipperMenu = [
   { href: '/dashboard', label: 'داشبورد', icon: Home },
-  { href: '/requests/my', label: 'درخواست‌ها', icon: Package },
-  { href: '/requests/new', label: 'جدید', icon: PackagePlus },
-  { href: '/profile', label: 'پروفایل', icon: User },
+  { href: '/dashboard/requests/my', label: 'درخواست‌ها', icon: Package },
+  { href: '/dashboard/requests/new', label: 'جدید', icon: PackagePlus },
+  { href: '/dashboard/profile', label: 'پروفایل', icon: User },
 ];
 
 const DriverMenu = [
   { href: '/dashboard', label: 'داشبورد', icon: Home },
-  { href: '/requests/available', label: 'درخواست‌ها', icon: Package },
-  { href: '/requests/my-shipments', label: 'بارهای من', icon: Truck },
-  { href: '/profile', label: 'پروفایل', icon: User },
+  { href: '/dashboard/requests/available', label: 'درخواست‌ها', icon: Package },
+  { href: '/dashboard/requests/my-shipments', label: 'بارهای من', icon: Truck },
+  { href: '/dashboard/profile', label: 'پروفایل', icon: User },
 ];
 
 export function BottomNavbar({ navigate }: { navigate: (path: string) => void }) {
@@ -44,6 +45,7 @@ export function BottomNavbar({ navigate }: { navigate: (path: string) => void })
   const menu = role === 'shipper' ? ShipperMenu : DriverMenu;
 
   const handleLogout = async () => {
+    await auth.signOut();
     localStorage.removeItem('userRole');
     router.push('/');
   };
@@ -60,7 +62,7 @@ export function BottomNavbar({ navigate }: { navigate: (path: string) => void })
             onClick={() => navigate(item.href)}
             className={cn(
               'inline-flex flex-col items-center justify-center px-5 hover:bg-muted group',
-              currentPath === item.href ? 'text-primary' : 'text-muted-foreground'
+              (currentPath === item.href || (item.href !== '/dashboard' && currentPath.startsWith(item.href))) ? 'text-primary' : 'text-muted-foreground'
             )}
           >
             <item.icon className="w-6 h-6 mb-1" />

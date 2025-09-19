@@ -14,19 +14,20 @@ import {
 import { Truck, Home, Package, User, LogOut, PackagePlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { auth } from '@/lib/firebase/config';
 
 const ShipperMenu = [
   { href: '/dashboard', label: 'داشبورد', icon: Home },
-  { href: '/requests/my', label: 'درخواست‌های من', icon: Package },
-  { href: '/requests/new', label: 'درخواست جدید', icon: PackagePlus },
-  { href: '/profile', label: 'پروفایل', icon: User },
+  { href: '/dashboard/requests/my', label: 'درخواست‌های من', icon: Package },
+  { href: '/dashboard/requests/new', label: 'درخواست جدید', icon: PackagePlus },
+  { href: '/dashboard/profile', label: 'پروفایل', icon: User },
 ];
 
 const DriverMenu = [
   { href: '/dashboard', label: 'داشبورد', icon: Home },
-  { href: '/requests/available', label: 'درخواست‌های موجود', icon: Package },
-  { href: '/requests/my-shipments', label: 'بارهای من', icon: Truck },
-  { href: '/profile', label: 'پروفایل', icon: User },
+  { href: '/dashboard/requests/available', label: 'درخواست‌های موجود', icon: Package },
+  { href: '/dashboard/requests/my-shipments', label: 'بارهای من', icon: Truck },
+  { href: '/dashboard/profile', label: 'پروفایل', icon: User },
 ];
 
 export function AppSidebar({ navigate }: { navigate: (path: string) => void }) {
@@ -37,11 +38,12 @@ export function AppSidebar({ navigate }: { navigate: (path: string) => void }) {
   useEffect(() => {
     const storedRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
     setRole(storedRole);
-    setCurrentPath(window.location.pathname);
-
-     const handlePathChange = () => {
+    
+    const handlePathChange = () => {
         setCurrentPath(window.location.pathname);
     };
+
+    handlePathChange();
     window.addEventListener('popstate', handlePathChange);
     return () => {
         window.removeEventListener('popstate', handlePathChange);
@@ -52,6 +54,7 @@ export function AppSidebar({ navigate }: { navigate: (path: string) => void }) {
   const menu = role === 'shipper' ? ShipperMenu : DriverMenu;
 
   const handleLogout = async () => {
+    await auth.signOut();
     localStorage.removeItem('userRole');
     router.push('/');
   };
@@ -72,7 +75,7 @@ export function AppSidebar({ navigate }: { navigate: (path: string) => void }) {
               <SidebarMenuButton
                 asChild
                 onClick={() => navigate(item.href)}
-                isActive={currentPath === item.href}
+                isActive={currentPath === item.href || (item.href !== '/dashboard' && currentPath.startsWith(item.href))}
                 tooltip={item.label}
               >
                 <a>

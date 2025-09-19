@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import { getAuth, type Auth } from 'firebase/auth';
@@ -12,17 +13,7 @@ const firebaseConfig = {
 };
 
 
-let app: FirebaseApp;
-let auth: Auth;
-
-// This check prevents firebase from being initialized on the server side.
-if (typeof window !== 'undefined') {
-  if (!getApps().length) {
-    app = initializeApp(firebaseConfig);
-  } else {
-    app = getApp();
-  }
-  auth = getAuth(app);
-}
+const app: FirebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const auth: Auth = getAuth(app);
 
 export { app, auth };

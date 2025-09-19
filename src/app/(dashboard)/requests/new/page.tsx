@@ -26,7 +26,7 @@ export default function NewRequestPage({ navigate }: DashboardPageProps) {
       description: 'درخواست حمل بار شما با موفقیت ثبت شد و به رانندگان نمایش داده می‌شود.',
       variant: 'default',
     });
-    navigate('/dashboard');
+    if (navigate) navigate('/dashboard');
   };
 
   return (
