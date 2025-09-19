@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns-jalali';
-import { faIR } from 'date-fns/locale';
+import { faIR } from 'date-fns/locale/fa-IR';
 import { Calendar as CalendarIcon, PackagePlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
