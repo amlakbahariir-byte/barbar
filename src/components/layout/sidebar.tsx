@@ -50,7 +50,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" side="right">
+    <Sidebar collapsible="icon" side="right" className="hidden md:block">
       <SidebarHeader className="h-16 justify-between border-b p-2">
         <div className="flex items-center gap-2 p-2">
           <Truck className="size-8 text-primary" />

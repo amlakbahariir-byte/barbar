@@ -2,9 +2,10 @@
 
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/sidebar';
-import { SidebarTrigger } from '@/components/ui/sidebar';
+import { BottomNavbar } from '@/components/layout/bottom-navbar';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function DashboardLayout({
   children,
@@ -13,6 +14,7 @@ export default function DashboardLayout({
 }) {
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     setIsClient(true);
@@ -30,11 +32,8 @@ export default function DashboardLayout({
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-16 items-center justify-start border-b bg-background/80 p-4 backdrop-blur-sm md:hidden">
-          <SidebarTrigger />
-          <h2 className="mr-4 text-lg font-semibold">باربر ایرانی</h2>
-        </header>
-        <main className="flex-1 p-4 md:p-6">{children}</main>
+        <main className="flex-1 p-4 md:p-6 pb-24 md:pb-6">{children}</main>
+        {isMobile && <BottomNavbar />}
       </SidebarInset>
     </SidebarProvider>
   );
