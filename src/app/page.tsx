@@ -102,8 +102,7 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
         setLoading(false);
         setStep(2);
         toast({
-            title: 'در حال ارسال کد',
-            description: 'یک کد تایید برای شما شبیه‌سازی می‌شود.',
+            title: 'در حال ارسال کد...',
         });
     }, 1000);
   };
@@ -253,7 +252,7 @@ function HomePageContent() {
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-background p-8 overflow-hidden">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-background p-8 overflow-x-hidden">
        <div className="absolute inset-0 -z-10 h-full w-full bg-background bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem] opacity-20"></div>
        <div className="absolute size-96 -bottom-48 -right-48 bg-primary/20 rounded-full blur-3xl"></div>
        <div className="absolute size-96 -top-48 -left-48 bg-accent/20 rounded-full blur-3xl"></div>
