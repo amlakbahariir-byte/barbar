@@ -13,8 +13,7 @@ const statusMap: { [key in Shipment['status']]: { text: string; variant: 'defaul
   delivered: { text: 'تحویل شده', variant: 'secondary' },
 };
 
-export function ShipmentCard({ shipment, role }: { shipment: Shipment; role: 'shipper' | 'driver' }) {
-  const router = useRouter();
+export function ShipmentCard({ shipment, role, navigate }: { shipment: Shipment; role: 'shipper' | 'driver', navigate: (path: string) => void; }) {
   const [distance, setDistance] = useState(0);
 
   useEffect(() => {
@@ -56,7 +55,7 @@ export function ShipmentCard({ shipment, role }: { shipment: Shipment; role: 'sh
         )}
       </CardContent>
       <CardFooter>
-        <Button variant="outline" className="w-full" onClick={() => router.push(`/requests/${shipment.id}`)}>
+        <Button variant="outline" className="w-full" onClick={() => navigate(`/requests/${shipment.id}`)}>
             مشاهده جزئیات
         </Button>
       </CardFooter>

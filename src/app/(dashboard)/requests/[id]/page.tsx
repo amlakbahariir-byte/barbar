@@ -13,6 +13,8 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { ShipmentTracking } from '@/components/shipment-tracking';
 import Image from 'next/image';
+import type { DashboardPageProps } from '../../layout';
+
 
 const statusMap: { [key in Shipment['status']]: { text: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' } } = {
   pending: { text: 'در انتظار پیشنهاد', variant: 'secondary' },
@@ -21,24 +23,19 @@ const statusMap: { [key in Shipment['status']]: { text: string; variant: 'defaul
   delivered: { text: 'تحویل شده', variant: 'secondary' },
 };
 
-export default function RequestDetailsPage() {
-  const params = useParams();
-  const id = params.id as string;
-  const router = useRouter();
+export default function RequestDetailsPage({ role, isClient, navigate, path }: DashboardPageProps) {
+  const [shipment, setShipment] = useState<Shipment | null>(null);
   const { toast } = useToast();
   
-  const [shipment, setShipment] = useState<Shipment | null>(null);
-  const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
-  const [isClient, setIsClient] = useState(false);
+  const id = path.split('/').pop() || '';
 
   useEffect(() => {
-    setIsClient(true);
-    const data = getShipmentById(id);
-    if (data) {
-      setShipment(data as Shipment);
+    if (id) {
+      const data = getShipmentById(id);
+      if (data) {
+        setShipment(data as Shipment);
+      }
     }
-    const storedRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
-    setRole(storedRole);
   }, [id]);
 
   const handleAcceptBid = () => {
@@ -46,7 +43,7 @@ export default function RequestDetailsPage() {
       title: 'پیشنهاد پذیرفته شد',
       description: 'راننده انتخاب شد. منتظر تماس راننده برای هماهنگی باشید.',
     });
-    router.push('/dashboard');
+    navigate('/dashboard');
   }
 
   const handlePlaceBid = (e: React.FormEvent) => {
@@ -55,7 +52,7 @@ export default function RequestDetailsPage() {
       title: 'پیشنهاد شما ثبت شد',
       description: 'پیشنهاد قیمت شما برای این بار با موفقیت ثبت شد.',
     });
-    router.push('/dashboard');
+    navigate('/dashboard');
   }
 
   if (!isClient || !shipment || !role) {
@@ -67,7 +64,7 @@ export default function RequestDetailsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <button onClick={() => router.back()} className="p-2 rounded-md hover:bg-accent">
+        <button onClick={() => window.history.back()} className="p-2 rounded-md hover:bg-accent">
             <ArrowRight className="h-5 w-5" />
         </button>
         <h1 className="text-3xl font-bold">جزئیات درخواست: {shipment.id}</h1>

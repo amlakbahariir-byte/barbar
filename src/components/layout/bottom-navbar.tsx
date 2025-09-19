@@ -19,7 +19,7 @@ const DriverMenu = [
   { href: '/profile', label: 'پروفایل', icon: User },
 ];
 
-export function BottomNavbar() {
+export function BottomNavbar({ navigate }: { navigate: (path: string) => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
@@ -45,7 +45,7 @@ export function BottomNavbar() {
           <button
             key={item.href}
             type="button"
-            onClick={() => router.push(item.href)}
+            onClick={() => navigate(item.href)}
             className={cn(
               'inline-flex flex-col items-center justify-center px-5 hover:bg-muted group',
               pathname === item.href ? 'text-primary' : 'text-muted-foreground'

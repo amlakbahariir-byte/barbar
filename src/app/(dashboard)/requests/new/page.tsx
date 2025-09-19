@@ -13,10 +13,10 @@ import { format } from 'date-fns-jalali';
 import { Calendar as CalendarIcon, PackagePlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import type { DashboardPageProps } from '../../layout';
 
-export default function NewRequestPage() {
+export default function NewRequestPage({ navigate }: DashboardPageProps) {
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const router = useRouter();
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -26,7 +26,7 @@ export default function NewRequestPage() {
       description: 'درخواست حمل بار شما با موفقیت ثبت شد و به رانندگان نمایش داده می‌شود.',
       variant: 'default',
     });
-    router.push('/dashboard');
+    navigate('/dashboard');
   };
 
   return (

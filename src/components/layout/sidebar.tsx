@@ -28,7 +28,7 @@ const DriverMenu = [
   { href: '/profile', label: 'پروفایل', icon: User },
 ];
 
-export function AppSidebar() {
+export function AppSidebar({ navigate }: { navigate: (path: string) => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
@@ -64,7 +64,7 @@ export function AppSidebar() {
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
                 asChild
-                onClick={() => router.push(item.href)}
+                onClick={() => navigate(item.href)}
                 isActive={pathname === item.href}
                 tooltip={item.label}
               >
@@ -76,7 +76,7 @@ export function AppSidebar() {
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
-      </SidebarContent>
+      </SidebarFooter>
       <SidebarFooter className="p-2 border-t border-sidebar-border">
         <SidebarMenu>
           <SidebarMenuItem>
