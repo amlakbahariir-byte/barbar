@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Truck } from 'lucide-react';
 import { auth } from '@/lib/firebase/config';
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, Auth, User } from 'firebase/auth';
+import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, type Auth, type User } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -21,45 +21,47 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
   const [otp, setOtp] = useState('');
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isRecaptchaVerified, setIsRecaptchaVerified] = useState(false);
   const { toast } = useToast();
-  const recaptchaVerifier = useRef<RecaptchaVerifier | null>(null);
   const recaptchaContainerRef = useRef<HTMLDivElement>(null);
-  
+  const recaptchaVerifier = useRef<RecaptchaVerifier | null>(null);
+
   useEffect(() => {
     if (!auth || !recaptchaContainerRef.current) return;
-    
-    // Only initialize once
+
+    // To prevent re-rendering issues, only initialize once
     if (recaptchaVerifier.current) return;
 
-    try {
-        const verifier = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
-            size: 'invisible',
-            callback: () => {
-                // reCAPTCHA solved, allow signInWithPhoneNumber.
-            },
-            'expired-callback': () => {
-              // Reset verifier if it expires
-              if (recaptchaVerifier.current) {
-                recaptchaVerifier.current.render().then(widgetId => {
-                  if ((window as any).grecaptcha) {
-                    (window as any).grecaptcha.reset(widgetId);
-                  }
-                });
-              }
-            }
+    const verifier = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
+      'size': 'normal',
+      'callback': (response) => {
+        // reCAPTCHA solved, allow signInWithPhoneNumber.
+        setIsRecaptchaVerified(true);
+      },
+      'expired-callback': () => {
+        // Response expired. Ask user to solve reCAPTCHA again.
+        setIsRecaptchaVerified(false);
+        toast({
+            title: 'کپچا منقضی شد',
+            description: 'لطفا دوباره تیک "من ربات نیستم" را بزنید.',
+            variant: 'destructive',
         });
-        recaptchaVerifier.current = verifier;
-    } catch(e) {
-        console.error("Error initializing RecaptchaVerifier", e)
-    }
-  }, [auth]);
+      }
+    });
+
+    recaptchaVerifier.current = verifier;
+    // Render the reCAPTCHA
+    verifier.render();
+
+  }, [auth, toast]);
+
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth || !recaptchaVerifier.current) {
+    if (!isRecaptchaVerified || !recaptchaVerifier.current) {
         toast({
-            title: 'خطا',
-            description: 'سرویس احراز هویت هنوز آماده نیست. لطفا لحظه‌ای دیگر تلاش کنید.',
+            title: 'تأیید هویت لازم است',
+            description: 'لطفاً ابتدا تیک "من ربات نیستم" را بزنید.',
             variant: 'destructive',
         });
         return;
@@ -83,14 +85,11 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
         description: 'مشکلی در ارسال کد به وجود آمده است. لطفا شماره را بررسی کرده و دوباره تلاش کنید.',
         variant: 'destructive',
       });
-       // Reset reCAPTCHA to allow retrying
-      if (recaptchaVerifier.current && (window as any).grecaptcha) {
-        recaptchaVerifier.current.render().then((widgetId) => {
-          if ((window as any).grecaptcha) {
-            (window as any).grecaptcha.reset(widgetId);
-          }
-        });
-      }
+      // Reset reCAPTCHA for retry
+       if (recaptchaVerifier.current && (window as any).grecaptcha) {
+         (window as any).grecaptcha.reset();
+         setIsRecaptchaVerified(false);
+       }
     } finally {
       setLoading(false);
     }
@@ -104,7 +103,8 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
     try {
       const result = await confirmationResult.confirm(otp);
       if (result.user) {
-        setStep(3);
+        toast({ title: 'ورود موفقیت‌آمیز بود', description: 'نقش خود را انتخاب کنید.' });
+        setStep(3); // Move to role selection step
       }
     } catch (error) {
       console.error('Error verifying OTP:', error);
@@ -119,7 +119,7 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
   };
 
 
-  const handleLogin = (role: 'shipper' | 'driver') => {
+  const handleRoleSelect = (role: 'shipper' | 'driver') => {
     localStorage.setItem('userRole', role);
     onLoginSuccess(role);
   };
@@ -129,7 +129,7 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
     switch(step) {
       case 1:
         return (
-          <form onSubmit={handlePhoneSubmit} className="space-y-4">
+          <form onSubmit={handlePhoneSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="phone">شماره موبایل</Label>
               <Input
@@ -143,8 +143,9 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
                 disabled={loading}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? <Loader2 className="animate-spin" /> : 'دریافت کد تایید'}
+            <div ref={recaptchaContainerRef} className="flex justify-center"></div>
+            <Button type="submit" className="w-full" disabled={loading || !isRecaptchaVerified}>
+              {loading ? <Loader2 className="animate-spin" /> : 'ارسال کد تایید'}
             </Button>
           </form>
         );
@@ -167,12 +168,24 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
               />
             </div>
              <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? <Loader2 className="animate-spin" /> : 'تایید کد'}
+              {loading ? <Loader2 className="animate-spin" /> : 'تایید و ورود'}
             </Button>
           </form>
         );
-      case 3:
-         return null; // Handled by CardFooter
+       case 3:
+         return (
+            <div className="space-y-4 animate-in fade-in-0 duration-500">
+                 <p className="text-sm text-center text-muted-foreground">برای تکمیل ثبت‌نام، نقش خود را مشخص کنید:</p>
+                <div className="grid grid-cols-2 gap-4 w-full">
+                  <Button onClick={() => handleRoleSelect('shipper')} className="w-full" variant="secondary">
+                    فرستنده بار
+                  </Button>
+                  <Button onClick={() => handleRoleSelect('driver')} className="w-full">
+                    راننده
+                  </Button>
+                </div>
+            </div>
+         );
       default:
         return null;
     }
@@ -181,53 +194,38 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
   const getCardDescription = () => {
      switch(step) {
       case 1:
-        return 'برای ورود یا ثبت‌نام، شماره موبایل خود را وارد کنید.';
+        return 'برای ورود یا ثبت‌نام، شماره موبایل خود را وارد کرده و تیک "من ربات نیستم" را بزنید.';
       case 2:
-        return 'کد تایید ۶ رقمی ارسال شده به شماره خود را وارد کنید.';
+        return `کد تایید ۶ رقمی ارسال شده به شماره ${phone} را وارد کنید.`;
       case 3:
-        return 'نقش خود را برای ورود به برنامه انتخاب کنید.';
+        return 'ثبت‌نام شما تقریباً تمام است!';
        default:
         return '';
     }
   }
 
   return (
-    <>
-      <Card>
+      <Card className="w-full">
         <CardHeader>
-          <CardTitle>ورود به حساب کاربری</CardTitle>
+          <CardTitle>ورود یا ثبت‌نام در باربر ایرانی</CardTitle>
           <CardDescription>
             {getCardDescription()}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           {renderStepContent()}
         </CardContent>
-        {step === 3 && (
-          <CardFooter className="flex flex-col gap-4 animate-in fade-in-0 duration-500">
-             <p className="text-sm text-muted-foreground">ورود به عنوان:</p>
-            <div className="grid grid-cols-2 gap-4 w-full">
-              <Button onClick={() => handleLogin('shipper')} className="w-full" variant="secondary">
-                فرستنده
-              </Button>
-              <Button onClick={() => handleLogin('driver')} className="w-full">
-                راننده
-              </Button>
-            </div>
-          </CardFooter>
-        )}
          {(step === 2) && !loading && (
            <CardFooter>
-              <Button variant="link" size="sm" onClick={() => { setStep(1); setOtp(''); }}>
-                تغییر شماره موبایل
+              <Button variant="link" size="sm" onClick={() => { setStep(1); setOtp(''); setIsRecaptchaVerified(false); }}>
+                تغییر شماره یا تلاش مجدد
               </Button>
            </CardFooter>
           )}
       </Card>
-      <div ref={recaptchaContainerRef} />
-    </>
   );
 }
+
 
 function HomePageContent() {
   const router = useRouter();
@@ -253,8 +251,9 @@ function HomePageContent() {
     );
   }
   
+  // If user is already logged in, redirect them. Don't show login form.
   if (user) {
-    return null; // Will be redirected
+    return null;
   }
 
   return (
@@ -267,14 +266,9 @@ function HomePageContent() {
         سریع‌ترین و مطمئن‌ترین راه برای ارسال و دریافت بار در سراسر ایران. به ما بپیوندید و تحولی در حمل و نقل را تجربه کنید.
       </p>
 
-      <Tabs defaultValue="login" className="w-[450px] animate-in fade-in-0 slide-in-from-top-16 duration-700 delay-400">
-        <TabsList className="grid w-full grid-cols-1">
-          <TabsTrigger value="login">ورود یا ثبت‌نام</TabsTrigger>
-        </TabsList>
-        <TabsContent value="login">
-          <AuthForm onLoginSuccess={handleLoginSuccess} />
-        </TabsContent>
-      </Tabs>
+      <div className="w-full max-w-md animate-in fade-in-0 slide-in-from-top-16 duration-700 delay-400">
+         <AuthForm onLoginSuccess={handleLoginSuccess} />
+      </div>
     </div>
   );
 }
@@ -302,5 +296,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
