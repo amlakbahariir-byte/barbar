@@ -26,10 +26,9 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
   const recaptchaContainerRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
-    if (!auth) return;
+    if (!auth || recaptchaVerifier.current) return;
     
-    // Ensure this runs only once
-    if (!recaptchaVerifier.current && recaptchaContainerRef.current) {
+    if (recaptchaContainerRef.current) {
         const verifier = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
             size: 'invisible',
             callback: () => {
@@ -70,10 +69,10 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
         variant: 'destructive',
       });
        // Reset reCAPTCHA to allow retrying
-      if (recaptchaVerifier.current) {
+      if (recaptchaVerifier.current && (window as any).grecaptcha) {
         recaptchaVerifier.current.render().then((widgetId) => {
-          if (window.grecaptcha) {
-            window.grecaptcha.reset(widgetId);
+          if ((window as any).grecaptcha) {
+            (window as any).grecaptcha.reset(widgetId);
           }
         });
       }
@@ -209,8 +208,8 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
               </Button>
            </CardFooter>
           )}
-      </Card>>
-      <div ref={recaptchaContainerRef} className="fixed bottom-0"></div>
+      </Card>
+      <div ref={recaptchaContainerRef} />
     </>
   );
 }
