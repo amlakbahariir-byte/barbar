@@ -30,18 +30,20 @@ export default function DashboardLayout({
   
   useEffect(() => {
     // This effect handles authentication state changes.
-    if (!loading) { // Wait until the loading is finished
+    // It waits until firebase auth state is resolved.
+    if (!loading) {
       const storedRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
       
-      // If no user is authenticated OR no role is stored, redirect to login page.
+      // If no user is authenticated via Firebase OR no role is stored in localStorage,
+      // then the user is not properly logged in. Redirect to the login page.
       if (!user || !storedRole) {
-        // Sign out to clear any partial state before redirecting
-        auth.signOut().finally(() => {
-            localStorage.removeItem('userRole');
-            router.replace('/');
-        });
+          // Clear any potentially lingering state before redirecting.
+          auth.signOut().finally(() => {
+              localStorage.removeItem('userRole');
+              router.replace('/');
+          });
       } else {
-        // If user is authenticated and role exists, set the role in state.
+        // If a user session exists and a role is stored, set the role in the component's state.
         setRole(storedRole);
       }
     }
@@ -53,11 +55,13 @@ export default function DashboardLayout({
     router.push(newPath);
   };
   
-  // Show a loader while authentication is in progress or role is not yet set.
-  if (loading || !user || !role) {
+  // While auth state is loading OR if the user is valid but the role hasn't been set in state yet,
+  // show a loader. This prevents a flash of the dashboard before a potential redirect.
+  if (loading || !role) {
     return <AnimatedTruckLoader />;
   }
   
+  // If we've passed the loading stage and have a role, render the dashboard.
   return (
     <SidebarProvider>
       <AppSidebar navigate={navigate} />

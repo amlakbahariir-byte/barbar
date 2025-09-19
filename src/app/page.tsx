@@ -23,28 +23,31 @@ declare global {
 function AuthChecker({ children }: { children: React.ReactNode }) {
   const [user, loading] = useAuthState(auth);
   const router = useRouter();
-  const [sessionChecked, setSessionChecked] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    // This effect runs only once on the client after hydration
+    // This effect runs on the client after hydration and when auth state is resolved.
     if (!loading) {
       const userRole = localStorage.getItem('userRole');
-      // If a user session exists in Firebase and a role is set in localStorage
+      
+      // If a Firebase user session exists AND a role is set in localStorage,
+      // it means the user is fully logged in. Redirect them to the dashboard.
       if (user && userRole) {
         router.replace('/dashboard');
       } else {
         // If there's no user or no role, it's safe to show the login page.
-        setSessionChecked(true);
+        // We mark auth as checked to unmount the loader.
+        setAuthChecked(true);
       }
     }
   }, [user, loading, router]);
 
-  // While checking the session, show a loader
-  if (loading || !sessionChecked) {
+  // While checking auth state, show a full-screen loader.
+  if (!authChecked) {
     return <AnimatedTruckLoader />;
   }
 
-  // If session is checked and user is not logged in, show the login page
+  // If auth state is checked and the user isn't logged in, render the children (the login page).
   return <>{children}</>;
 }
 
@@ -73,15 +76,20 @@ function HomePageContent() {
 
   // Setup reCAPTCHA
   useEffect(() => {
-    // We only need the container for the demo, not the verifier itself.
-    if (step === 1 && !document.getElementById('recaptcha-container')?.hasChildNodes()) {
-       window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        size: 'invisible',
+    // This check is to prevent re-initializing the verifier on every render.
+    if (step === 1 && !window.recaptchaVerifier) {
+      // The container is necessary for the verifier to work.
+      // It's invisible, but it must be in the DOM.
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        'size': 'invisible',
+        'callback': (response: any) => {
+          // reCAPTCHA solved, allow signInWithPhoneNumber.
+        }
       });
     }
   }, [step]);
   
-  // Auto-fill OTP for demo
+  // Auto-fill OTP for demo purposes
   useEffect(() => {
     if (step === 2) {
       setTimeout(() => {
@@ -91,7 +99,7 @@ function HomePageContent() {
     }
   }, [step]);
   
-  // Auto-submit OTP for demo
+  // Auto-submit OTP for demo when it's fully entered
   useEffect(() => {
     if (otp.length === 6) {
       handleOtpSubmit();
@@ -104,40 +112,47 @@ function HomePageContent() {
     setIsSubmitting(true);
     toast({ title: 'در حال ارسال کد تایید...' });
 
-    // Simulate sending request
-    setTimeout(() => {
+    const appVerifier = window.recaptchaVerifier!;
+    
+    // We use a test phone number and fake confirmation for demo.
+    try {
+        const confirmationResult = await signInWithPhoneNumber(auth, '+11111111111', appVerifier);
+        window.confirmationResult = confirmationResult;
         setIsSubmitting(false);
-        setStep(2); // Move to OTP step
-        toast({ title: 'کد تایید ارسال شد', description: 'لطفا کد ۶ رقمی ارسال شده را وارد کنید.' });
-    }, 1000);
+        setStep(2);
+        toast({ title: 'کد تایید ارسال شد', description: 'کد تایید ۱۲۳۴۵۶ است' });
+    } catch (error) {
+        console.error("Error during phone sign-in:", error);
+        toast({ title: 'خطا در ارسال کد', description: 'لطفا دوباره تلاش کنید.', variant: 'destructive' });
+        setIsSubmitting(false);
+        // In a real app, you might need to reset reCAPTCHA here.
+    }
   };
   
   const handleOtpSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (isSubmitting) return; // Prevent double submission
+    if (isSubmitting || otp.length < 6) return;
     setIsSubmitting(true);
     toast({ title: 'در حال تایید کد...' });
 
-    // In a real app, you would confirm the OTP with Firebase here.
-    // For this demo, we'll just simulate a successful login and move to role selection.
-    
-    // This is a "fake" sign-in for demo purposes so that useAuthState reports a user.
     try {
-        await signInWithPhoneNumber(auth, '+11234567890', window.recaptchaVerifier!);
+      // For the demo, we use the fake OTP to confirm.
+      // `window.confirmationResult` is set in the `handlePhoneSubmit` function.
+      await window.confirmationResult?.confirm(otp);
+      // The `onAuthStateChanged` in `AuthChecker` and `DashboardLayout` will now have a valid user.
+      
+      setIsSubmitting(false);
+      setStep(3); // Move to role selection on successful confirmation
+      toast({ title: 'ورود موفقیت‌آمیز بود', description: 'لطفا نقش خود را انتخاب کنید.' });
     } catch (error) {
-       // This will fail because it's a fake number, but it's enough to create a temporary user for the demo.
-       // We can ignore the error.
+      console.error("Error during OTP confirmation:", error);
+      toast({ title: 'کد تایید نامعتبر است', variant: 'destructive' });
+      setIsSubmitting(false);
     }
-
-
-    setTimeout(() => {
-        setIsSubmitting(false);
-        setStep(3); // Move to role selection
-        toast({ title: 'ورود موفقیت‌آمیز بود', description: 'لطفا نقش خود را انتخاب کنید.' });
-    }, 1000);
   };
 
   const handleRoleSelect = (role: 'shipper' | 'driver') => {
+    // This is the final step. We save the role and redirect.
     localStorage.setItem('userRole', role);
     toast({
       title: 'نقش شما انتخاب شد',
@@ -167,7 +182,7 @@ function HomePageContent() {
 
 
   return (
-      <div className="w-full max-w-md space-y-8 text-center animate-in fade-in-0 slide-in-from-bottom-10 duration-700">
+      <div className="w-full max-w-md space-y-8 animate-in fade-in-0 slide-in-from-bottom-10 duration-700 text-center">
         <div>
           <Truck className="mx-auto h-12 w-auto text-primary" />
           <h2 className="mt-6 text-3xl font-bold tracking-tight text-foreground">

@@ -106,6 +106,7 @@ export default function DashboardPage() {
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
 
   useEffect(() => {
+    // Reading from localStorage should be done in useEffect to ensure it runs on the client.
     const storedRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
     setRole(storedRole);
   }, []);
@@ -161,6 +162,11 @@ export default function DashboardPage() {
     const RequestDetailsPage = require('../../requests/[id]/page').default;
     return <RequestDetailsPage />;
   }
+  
+  // This check ensures we don't render a dashboard for a role that hasn't been determined yet.
+  if (!role) {
+    return <div>در حال بارگذاری نقش کاربری...</div>;
+  }
 
   if (role === 'shipper') {
       return <ShipperDashboard navigate={navigate} />;
@@ -170,5 +176,6 @@ export default function DashboardPage() {
       return <DriverDashboard navigate={navigate} />;
   }
 
+  // Fallback, though should ideally not be reached if role is one of the two.
   return <div>در حال بارگذاری...</div>;
 }
