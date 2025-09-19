@@ -7,6 +7,8 @@ import { BottomNavbar } from '@/components/layout/bottom-navbar';
 import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '@/lib/firebase/config';
 import { AnimatedTruckLoader } from '@/components/ui/animated-truck-loader';
 
 export type DashboardPageProps = {
@@ -23,16 +25,19 @@ export default function DashboardLayout({
   const router = useRouter();
   const pathname = usePathname();
   const isMobile = useIsMobile();
+  const [user, loading, error] = useAuthState(auth);
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace('/');
+    }
+  }, [user, loading, router]);
 
   useEffect(() => {
-    // Hardcoded role for development
-    const devRole = 'shipper';
-    localStorage.setItem('userRole', devRole);
-    setRole(devRole);
-    setIsLoading(false);
-  }, []);
+    const storedRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
+    setRole(storedRole);
+  }, [pathname]);
 
 
   const navigate = (newPath: string) => {
@@ -40,7 +45,7 @@ export default function DashboardLayout({
     router.push(newPath);
   };
   
-  if (isLoading) {
+  if (loading || !user) {
     return <AnimatedTruckLoader />;
   }
   
