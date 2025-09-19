@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Truck } from 'lucide-react';
 import { auth } from '@/lib/firebase/config';
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, Auth, onAuthStateChanged, User } from 'firebase/auth';
+import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, Auth, User } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -24,15 +24,17 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
   const { toast } = useToast();
   const recaptchaVerifier = useRef<RecaptchaVerifier | null>(null);
   const recaptchaContainerRef = useRef<HTMLDivElement>(null);
-  const [user, authLoading] = useAuthState(auth);
-
+  
   useEffect(() => {
-    if (!auth || !recaptchaContainerRef.current) return;
+    if (!auth) return;
     
-    if (!recaptchaVerifier.current) {
+    // Ensure this runs only once
+    if (!recaptchaVerifier.current && recaptchaContainerRef.current) {
         const verifier = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
             size: 'invisible',
-            callback: () => {},
+            callback: () => {
+                // reCAPTCHA solved, allow signInWithPhoneNumber.
+            },
         });
         recaptchaVerifier.current = verifier;
     }
@@ -40,7 +42,14 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth || !recaptchaVerifier.current) return;
+    if (!auth || !recaptchaVerifier.current) {
+        toast({
+            title: 'خطا',
+            description: 'سرویس احراز هویت هنوز آماده نیست. لطفا لحظه‌ای دیگر تلاش کنید.',
+            variant: 'destructive',
+        });
+        return;
+    }
     setLoading(true);
 
     const formattedPhone = `+98${phone.slice(1)}`;
@@ -57,9 +66,17 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
       console.error('Error sending OTP:', error);
       toast({
         title: 'خطا در ارسال کد',
-        description: 'مشکلی در ارسال کد به وجود آمده است. لطفا دوباره تلاش کنید.',
+        description: 'مشکلی در ارسال کد به وجود آمده است. لطفا شماره را بررسی کرده و دوباره تلاش کنید.',
         variant: 'destructive',
       });
+       // Reset reCAPTCHA to allow retrying
+      if (recaptchaVerifier.current) {
+        recaptchaVerifier.current.render().then((widgetId) => {
+          if (window.grecaptcha) {
+            window.grecaptcha.reset(widgetId);
+          }
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -159,16 +176,6 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
         return '';
     }
   }
-  
-  if (authLoading) {
-      return (
-          <Card className="h-64">
-              <CardContent className="flex h-full items-center justify-center">
-                  <Loader2 className="h-12 w-12 animate-spin text-primary" />
-              </CardContent>
-          </Card>
-      );
-  }
 
   return (
     <>
@@ -202,35 +209,68 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
               </Button>
            </CardFooter>
           )}
-      </Card>
-      <div ref={recaptchaContainerRef}></div>
+      </Card>>
+      <div ref={recaptchaContainerRef} className="fixed bottom-0"></div>
     </>
   );
 }
 
-export default function Home() {
+function HomePageContent() {
   const router = useRouter();
+  const [user, loading] = useAuthState(auth as Auth);
+
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
+  
+  const handleLoginSuccess = () => {
+    router.push('/dashboard');
+  };
+
+  if (loading) {
+    return (
+        <Card className="w-[450px]">
+            <CardContent className="flex h-64 items-center justify-center">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            </CardContent>
+        </Card>
+    );
+  }
+  
+  if (user) {
+    return null; // Will be redirected
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center text-center">
+      <div className="mb-8 flex items-center gap-4 animate-in fade-in-0 slide-in-from-top-12 duration-700">
+        <Truck className="h-16 w-16 text-primary" />
+        <h1 className="text-5xl font-headline font-bold text-foreground">باربر ایرانی</h1>
+      </div>
+      <p className="mb-10 max-w-2xl text-lg text-muted-foreground animate-in fade-in-0 slide-in-from-top-12 duration-700 delay-200">
+        سریع‌ترین و مطمئن‌ترین راه برای ارسال و دریافت بار در سراسر ایران. به ما بپیوندید و تحولی در حمل و نقل را تجربه کنید.
+      </p>
+
+      <Tabs defaultValue="login" className="w-[450px] animate-in fade-in-0 slide-in-from-top-16 duration-700 delay-400">
+        <TabsList className="grid w-full grid-cols-1">
+          <TabsTrigger value="login">ورود یا ثبت‌نام</TabsTrigger>
+        </TabsList>
+        <TabsContent value="login">
+          <AuthForm onLoginSuccess={handleLoginSuccess} />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+export default function Home() {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
-
-  const handleLoginSuccess = () => {
-    router.push('/dashboard');
-  };
-
-  if (!isClient) {
-    return (
-        <main className="flex min-h-screen flex-col items-center justify-center bg-background p-8 overflow-hidden">
-             <Card className="w-[450px]">
-                <CardContent className="flex h-64 items-center justify-center">
-                    <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                </CardContent>
-            </Card>
-        </main>
-    );
-  }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-8 overflow-hidden">
@@ -238,24 +278,13 @@ export default function Home() {
        <div className="absolute size-96 -bottom-48 -right-48 bg-primary/20 rounded-full blur-3xl"></div>
        <div className="absolute size-96 -top-48 -left-48 bg-accent/20 rounded-full blur-3xl"></div>
 
-      <div className="flex flex-col items-center justify-center text-center">
-        <div className="mb-8 flex items-center gap-4 animate-in fade-in-0 slide-in-from-top-12 duration-700">
-          <Truck className="h-16 w-16 text-primary" />
-          <h1 className="text-5xl font-headline font-bold text-foreground">باربر ایرانی</h1>
-        </div>
-        <p className="mb-10 max-w-2xl text-lg text-muted-foreground animate-in fade-in-0 slide-in-from-top-12 duration-700 delay-200">
-          سریع‌ترین و مطمئن‌ترین راه برای ارسال و دریافت بار در سراسر ایران. به ما بپیوندید و تحولی در حمل و نقل را تجربه کنید.
-        </p>
-
-        <Tabs defaultValue="login" className="w-[450px] animate-in fade-in-0 slide-in-from-top-16 duration-700 delay-400">
-          <TabsList className="grid w-full grid-cols-1">
-            <TabsTrigger value="login">ورود یا ثبت‌نام</TabsTrigger>
-          </TabsList>
-          <TabsContent value="login">
-            <AuthForm onLoginSuccess={handleLoginSuccess} />
-          </TabsContent>
-        </Tabs>
-      </div>
+      {isClient ? <HomePageContent /> : (
+        <Card className="w-[450px]">
+          <CardContent className="flex h-64 items-center justify-center">
+              <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          </CardContent>
+        </Card>
+      )}
     </main>
   );
 }
