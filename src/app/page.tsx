@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,9 +14,6 @@ import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'fi
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
-// Define RecaptchaVerifier in a broader scope
-let recaptchaVerifier: RecaptchaVerifier | null = null;
-
 export default function Home() {
   const [step, setStep] = useState(1);
   const [phone, setPhone] = useState('');
@@ -25,23 +22,35 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const recaptchaVerifier = useRef<RecaptchaVerifier | null>(null);
+  const recaptchaContainerRef = useRef<HTMLDivElement>(null);
+
 
   useEffect(() => {
-    // Initialize reCAPTCHA
-    if (auth && !recaptchaVerifier) {
-      recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        size: 'invisible',
-        callback: () => {
-          // reCAPTCHA solved, allow signInWithPhoneNumber.
-        },
-      });
+    if (auth && recaptchaContainerRef.current && !recaptchaVerifier.current) {
+        recaptchaVerifier.current = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
+            size: 'invisible',
+            callback: () => {
+              // reCAPTCHA solved
+            },
+        });
+        recaptchaVerifier.current.render().catch((error) => {
+            console.error("reCAPTCHA render error:", error);
+            toast({
+                title: 'خطا',
+                description: 'reCAPTCHA به درستی بارگذاری نشد. لطفا صفحه را رفرش کنید.',
+                variant: 'destructive',
+            });
+        });
     }
-  }, []);
+  }, [toast]);
+
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    if (!recaptchaVerifier) {
+
+    if (!recaptchaVerifier.current) {
       toast({
         title: 'خطا',
         description: 'reCAPTCHA مقداردهی نشده است. لطفا صفحه را رفرش کنید.',
@@ -55,7 +64,7 @@ export default function Home() {
     const formattedPhone = `+98${phone.slice(1)}`;
 
     try {
-      const result = await signInWithPhoneNumber(auth, formattedPhone, recaptchaVerifier);
+      const result = await signInWithPhoneNumber(auth, formattedPhone, recaptchaVerifier.current);
       setConfirmationResult(result);
       setStep(2);
       toast({
@@ -69,6 +78,10 @@ export default function Home() {
         description: 'مشکلی در ارسال کد به وجود آمده است. لطفا دوباره تلاش کنید.',
         variant: 'destructive',
       });
+       // Reset reCAPTCHA
+      if (recaptchaVerifier.current) {
+        recaptchaVerifier.current.render().catch(console.error);
+      }
     } finally {
       setLoading(false);
     }
@@ -170,7 +183,7 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-8 overflow-hidden">
-       <div id="recaptcha-container"></div>
+       <div ref={recaptchaContainerRef} id="recaptcha-container"></div>
        <div className="absolute inset-0 -z-10 h-full w-full bg-background bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem] opacity-20"></div>
        <div className="absolute size-96 -bottom-48 -right-48 bg-primary/20 rounded-full blur-3xl"></div>
        <div className="absolute size-96 -top-48 -left-48 bg-accent/20 rounded-full blur-3xl"></div>
