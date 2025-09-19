@@ -7,10 +7,50 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Truck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '@/lib/firebase/config';
+import { RecaptchaVerifier, signInWithPhoneNumber, onAuthStateChanged, signOut, type ConfirmationResult } from 'firebase/auth';
+import { AnimatedTruckLoader } from '@/components/ui/animated-truck-loader';
+
+declare global {
+    interface Window {
+        recaptchaVerifier?: RecaptchaVerifier;
+        confirmationResult?: ConfirmationResult;
+    }
+}
+
+function AuthChecker({ children }: { children: React.ReactNode }) {
+    const router = useRouter();
+    const [user, loading] = useAuthState(auth);
+    const [sessionChecked, setSessionChecked] = useState(false);
+
+    useEffect(() => {
+        const checkSession = async () => {
+            if (!loading) {
+                const userRole = localStorage.getItem('userRole');
+                if (user && userRole) {
+                    router.push('/dashboard');
+                } else {
+                    setSessionChecked(true);
+                }
+            }
+        };
+
+        checkSession();
+
+    }, [user, loading, router]);
+
+
+    if (loading || !sessionChecked) {
+       return <AnimatedTruckLoader />;
+    }
+
+    return <>{children}</>;
+}
+
 
 function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driver') => void }) {
   const [step, setStep] = useState(1);
@@ -18,35 +58,62 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  
+  const setupRecaptcha = () => {
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        'size': 'invisible',
+        'callback': (response: any) => {
+          // reCAPTCHA solved, allow signInWithPhoneNumber.
+        }
+      });
+    }
+    return window.recaptchaVerifier;
+  }
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate sending OTP
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setLoading(false);
-    setStep(2);
-    toast({
-      title: 'کد ارسال شد',
-      description: 'کد تایید به شماره شما ارسال شد. (شبیه‌سازی)',
-    });
+    const appVerifier = setupRecaptcha();
+    const formattedPhone = `+98${phone.slice(1)}`;
+
+    try {
+      const confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
+      window.confirmationResult = confirmationResult;
+      setStep(2);
+      toast({
+        title: 'کد ارسال شد',
+        description: 'کد تایید به شماره شما ارسال شد.',
+      });
+    } catch (error: any) {
+      console.error("Error during sign in: ", error);
+      toast({
+        title: 'خطا در ارسال کد',
+        description: `مشکلی پیش آمده است: ${error.message}`,
+        variant: 'destructive',
+      });
+    } finally {
+        setLoading(false);
+    }
   };
 
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate verifying OTP
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setLoading(false);
-    if (otp.length === 6) {
-        toast({ title: 'ورود موفقیت‌آمیز بود', description: 'نقش خود را انتخاب کنید.' });
-        setStep(3); // Move to role selection step
-    } else {
-        toast({
-            title: 'کد نامعتبر',
-            description: 'کد وارد شده صحیح نیست.',
-            variant: 'destructive',
-        });
+    if (window.confirmationResult) {
+        try {
+            await window.confirmationResult.confirm(otp);
+            toast({ title: 'ورود موفقیت‌آمیز بود', description: 'نقش خود را انتخاب کنید.' });
+            setStep(3);
+        } catch (error) {
+             toast({
+                title: 'کد نامعتبر',
+                description: 'کد وارد شده صحیح نیست.',
+                variant: 'destructive',
+            });
+        } finally {
+            setLoading(false);
+        }
     }
   };
 
@@ -158,30 +225,10 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
 
 function HomePageContent() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const userRole = localStorage.getItem('userRole');
-    if (userRole) {
-      router.push('/dashboard');
-    } else {
-      setLoading(false);
-    }
-  }, [router]);
   
   const handleLoginSuccess = () => {
     router.push('/dashboard');
   };
-
-  if (loading) {
-    return (
-        <Card className="w-[450px]">
-            <CardContent className="flex h-64 items-center justify-center">
-                <Loader2 className="h-12 w-12 animate-spin text-primary" />
-            </CardContent>
-        </Card>
-    );
-  }
   
   return (
     <div className="flex flex-col items-center justify-center text-center">
@@ -196,30 +243,20 @@ function HomePageContent() {
       <div className="w-full max-w-md animate-in fade-in-0 slide-in-from-top-16 duration-700 delay-400">
          <AuthForm onLoginSuccess={handleLoginSuccess} />
       </div>
+       <div id="recaptcha-container"></div>
     </div>
   );
 }
 
 export default function Home() {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-8 overflow-hidden">
        <div className="absolute inset-0 -z-10 h-full w-full bg-background bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem] opacity-20"></div>
        <div className="absolute size-96 -bottom-48 -right-48 bg-primary/20 rounded-full blur-3xl"></div>
        <div className="absolute size-96 -top-48 -left-48 bg-accent/20 rounded-full blur-3xl"></div>
-
-      {isClient ? <HomePageContent /> : (
-        <Card className="w-[450px]">
-          <CardContent className="flex h-64 items-center justify-center">
-              <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          </CardContent>
-        </Card>
-      )}
+        <AuthChecker>
+          <HomePageContent />
+        </AuthChecker>
     </main>
   );
 }

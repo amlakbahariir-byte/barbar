@@ -5,12 +5,12 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/sidebar';
 import { BottomNavbar } from '@/components/layout/bottom-navbar';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useIsMobile } from '@/hooks/use-mobile';
-import DashboardPage from './dashboard/page';
-import NewRequestPage from './requests/new/page';
-import RequestDetailsPage from './requests/[id]/page';
-import { Loader2 } from 'lucide-react';
+import DashboardPage from './dashboard/[[...slug]]/page';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '@/lib/firebase/config';
+import { AnimatedTruckLoader } from '@/components/ui/animated-truck-loader';
 
 export type DashboardPageProps = {
   role: 'shipper' | 'driver' | null;
@@ -19,86 +19,52 @@ export type DashboardPageProps = {
   path: string;
 };
 
-function MyRequestsPage() {
-    return <div>درخواست های من</div>
-}
-
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const isMobile = useIsMobile();
+
+  const [user, loading, error] = useAuthState(auth);
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
-  const [path, setPath] = useState('');
-  const [animationKey, setAnimationKey] = useState(0);
-  const [loading, setLoading] = useState(true);
-
+  const [isClient, setIsClient] = useState(false);
+  
   useEffect(() => {
-    const userRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
-    if (!userRole) {
-      router.push('/');
-    } else {
-      setRole(userRole);
-      setLoading(false);
+    setIsClient(true);
+    if (!loading) {
+      if (!user) {
+        router.push('/');
+      } else {
+        const userRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
+        if (!userRole) {
+           router.push('/');
+        } else {
+          setRole(userRole);
+        }
+      }
     }
-    
-    const handlePathChange = () => {
-        const currentPath = window.location.pathname;
-        setPath(currentPath);
-        setAnimationKey(prevKey => prevKey + 1);
-    };
-    handlePathChange();
-    
-    const onLocationChange = () => handlePathChange();
-    window.addEventListener('locationchange', onLocationChange);
-    window.addEventListener('popstate', handlePathChange);
-
-    return () => {
-        window.removeEventListener('locationchange', onLocationChange);
-        window.removeEventListener('popstate', handlePathChange);
-    };
-  }, [router]);
+  }, [user, loading, router]);
 
 
   const navigate = (newPath: string) => {
-    if (newPath === window.location.pathname) return;
-    window.history.pushState({}, '', newPath);
-    window.dispatchEvent(new Event('locationchange'));
+    if (newPath === pathname) return;
+    router.push(newPath);
   };
   
-  const renderContent = () => {
-    const pageProps: DashboardPageProps = { role, isClient: true, navigate, path };
-    
-    if (path.startsWith('/requests/new')) {
-      return <NewRequestPage {...pageProps} />;
-    }
-    if (path.startsWith('/requests/my')) {
-        return <MyRequestsPage />;
-    }
-    if (path.startsWith('/requests/')) {
-      return <RequestDetailsPage {...pageProps} />;
-    }
-    return <DashboardPage {...pageProps} />;
-  };
-
-
-  if (loading) {
-    return (
-        <div className="flex h-screen items-center justify-center">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        </div>
-    );
+  if (loading || !isClient || !role) {
+    return <AnimatedTruckLoader />;
   }
-
+  
   return (
     <SidebarProvider>
       <AppSidebar navigate={navigate} />
       <SidebarInset>
-        <main className="flex-1 p-4 md:p-6 pb-24 md:pb-6 overflow-hidden">
-           <div key={animationKey} className="animate-in fade-in duration-500">
-             {renderContent()}
+        <main className="flex-1 p-4 md:p-6 pb-24 md:pb-6 overflow-y-auto">
+           <div key={pathname} className="animate-in fade-in duration-500">
+              <DashboardPage role={role} isClient={isClient} navigate={navigate} path={pathname} />
            </div>
         </main>
         {isMobile && <BottomNavbar navigate={navigate} />}

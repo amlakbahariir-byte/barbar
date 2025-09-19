@@ -10,7 +10,7 @@ import Image from 'next/image';
 import { ShipmentCard } from '@/components/shipment-card';
 import { shipments } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import type { DashboardPageProps } from './layout';
+import type { DashboardPageProps } from '../../layout';
 
 function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
   const myShipments = shipments.slice(0, 2);
@@ -99,9 +99,19 @@ function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
   );
 }
 
-export default function DashboardPage({ role, isClient, navigate }: DashboardPageProps) {
+export default function DashboardPage({ role, isClient, navigate, path }: DashboardPageProps) {
   if (!isClient) {
     return <div>در حال بارگذاری...</div>;
+  }
+
+  if (path.startsWith('/requests/new')) {
+    const NewRequestPage = require('../../requests/new/page').default;
+    return <NewRequestPage {...{ role, isClient, navigate, path }} />;
+  }
+
+  if (path.startsWith('/requests/')) {
+    const RequestDetailsPage = require('../../requests/[id]/page').default;
+    return <RequestDetailsPage {...{ role, isClient, navigate, path }} />;
   }
 
   if (role === 'shipper') {
@@ -114,3 +124,4 @@ export default function DashboardPage({ role, isClient, navigate }: DashboardPag
 
   return <div>نقش کاربری مشخص نشده است. لطفا دوباره وارد شوید.</div>;
 }
+
