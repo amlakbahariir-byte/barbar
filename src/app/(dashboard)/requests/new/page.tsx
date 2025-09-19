@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns-jalali';
+import { faIR } from 'date-fns/locale';
 import { Calendar as CalendarIcon, PackagePlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -78,11 +79,12 @@ export default function NewRequestPage() {
                       )}
                     >
                       <CalendarIcon className="ml-2 h-4 w-4" />
-                      {date ? format(date, 'PPP') : <span>یک تاریخ انتخاب کنید</span>}
+                      {date ? format(date, 'PPP', { locale: faIR }) : <span>یک تاریخ انتخاب کنید</span>}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
                     <Calendar
+                      locale={faIR}
                       mode="single"
                       selected={date}
                       onSelect={setDate}
