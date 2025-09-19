@@ -10,10 +10,9 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Truck } from 'lucide-react';
 import { auth } from '@/lib/firebase/config';
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, Auth } from 'firebase/auth';
+import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, Auth, onAuthStateChanged } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { useAuthState } from 'react-firebase-hooks/auth';
 
 function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driver') => void }) {
   const [step, setStep] = useState(1);
@@ -21,38 +20,44 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
   const [otp, setOtp] = useState('');
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
-  
-  // useAuthState should only be used on the client
-  const [user, authLoading] = useAuthState(auth as Auth);
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
+  const { toast } = useToast();
   const recaptchaVerifier = useRef<RecaptchaVerifier | null>(null);
-  
+
   useEffect(() => {
     if (!auth) return;
-    if (recaptchaVerifier.current) return; // Already initialized
-
-    // The container is now created dynamically and passed to the verifier
-    const recaptchaContainer = document.createElement('div');
-    document.body.appendChild(recaptchaContainer);
-
-    recaptchaVerifier.current = new RecaptchaVerifier(auth, recaptchaContainer, {
-        size: 'invisible',
-        callback: () => {},
+    const unsubscribe = onAuthStateChanged(auth as Auth, (currentUser) => {
+        setUser(currentUser as any);
+        setAuthLoading(false);
     });
+    return () => unsubscribe();
+  }, []);
 
-    recaptchaVerifier.current.render().catch((error) => {
-        console.error("reCAPTCHA render error:", error);
-        toast({
-            title: 'خطا',
-            description: 'reCAPTCHA به درستی بارگذاری نشد. لطفا صفحه را رفرش کنید.',
-            variant: 'destructive',
+  useEffect(() => {
+    if (auth && !recaptchaVerifier.current) {
+        const recaptchaContainer = document.createElement('div');
+        document.body.appendChild(recaptchaContainer);
+        recaptchaVerifier.current = new RecaptchaVerifier(auth, recaptchaContainer, {
+            size: 'invisible',
+            callback: () => {},
         });
-    });
 
-    return () => {
-        // Cleanup the container when the component unmounts
-        document.body.removeChild(recaptchaContainer);
+        recaptchaVerifier.current.render().catch((error) => {
+            console.error("reCAPTCHA render error:", error);
+            toast({
+                title: 'خطا',
+                description: 'reCAPTCHA به درستی بارگذاری نشد. لطفا صفحه را رفرش کنید.',
+                variant: 'destructive',
+            });
+        });
+        
+        return () => {
+             if (recaptchaContainer && recaptchaContainer.parentNode) {
+                document.body.removeChild(recaptchaContainer);
+            }
+        }
     }
   }, [auth, toast]);
 
@@ -274,7 +279,7 @@ export default function Home() {
             <TabsTrigger value="login">ورود یا ثبت‌نام</TabsTrigger>
           </TabsList>
           <TabsContent value="login">
-            {isClient ? (
+            {isClient && auth ? (
                 <AuthForm onLoginSuccess={handleLoginSuccess} />
             ) : (
                 <Card className="h-64">

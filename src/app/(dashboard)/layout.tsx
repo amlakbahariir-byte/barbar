@@ -37,8 +37,6 @@ export default function DashboardLayout({
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
   const [path, setPath] = useState('');
   const [animationKey, setAnimationKey] = useState(0);
-
-  // useAuthState should only be called on the client
   const [user, loading, error] = useAuthState(auth as Auth);
 
   useEffect(() => {
@@ -49,7 +47,7 @@ export default function DashboardLayout({
     if (!isClient) return;
 
     if (loading) {
-      return; // Wait until auth state is loaded
+      return;
     }
     
     const userRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
@@ -66,12 +64,10 @@ export default function DashboardLayout({
         setPath(currentPath);
         setAnimationKey(prevKey => prevKey + 1);
     };
-    handlePathChange(); // Set initial path
+    handlePathChange();
     
-    // We use a custom event listener since popstate doesn't always fire consistently with Next.js App Router
     const onLocationChange = () => handlePathChange();
     window.addEventListener('locationchange', onLocationChange);
-    // Also listen to popstate for browser back/forward buttons
     window.addEventListener('popstate', handlePathChange);
 
     return () => {
@@ -83,7 +79,6 @@ export default function DashboardLayout({
   const navigate = (newPath: string) => {
     if (newPath === window.location.pathname) return;
     window.history.pushState({}, '', newPath);
-    // Dispatch a custom event that we can listen for
     window.dispatchEvent(new Event('locationchange'));
   };
   
@@ -103,7 +98,7 @@ export default function DashboardLayout({
   };
 
 
-  if (loading || !isClient || !user || !role) {
+  if (loading || !isClient || !auth || !user || !role) {
     return (
         <div className="flex h-screen items-center justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />

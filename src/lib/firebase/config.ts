@@ -1,6 +1,5 @@
-
 // @ts-nocheck
-import { initializeApp, getApps, getApp } from 'firebase/app';
+import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import { getAuth, type Auth } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -12,8 +11,12 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const auth = typeof window !== 'undefined' ? getAuth(app) : null;
+let app: FirebaseApp;
+let auth: Auth | null = null;
 
-export { auth };
+if (typeof window !== 'undefined') {
+  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  auth = getAuth(app);
+}
+
+export { app, auth };
