@@ -50,8 +50,8 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" side="right" className="hidden md:block">
-      <SidebarHeader className="h-16 justify-between border-b p-2">
+    <Sidebar collapsible="icon" side="right" className="hidden md:block bg-sidebar text-sidebar-foreground">
+      <SidebarHeader className="h-16 justify-between border-b border-sidebar-border p-2">
         <div className="flex items-center gap-2 p-2">
           <Truck className="size-8 text-primary" />
           <span className="text-lg font-bold">باربر ایرانی</span>
@@ -77,7 +77,7 @@ export function AppSidebar() {
           ))}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter className="p-2">
+      <SidebarFooter className="p-2 border-t border-sidebar-border">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton onClick={handleLogout} tooltip="خروج">

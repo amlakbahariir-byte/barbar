@@ -97,15 +97,25 @@ function DriverDashboard() {
 
 export default function DashboardPage() {
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     const storedRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
     setRole(storedRole);
+    setIsClient(true);
   }, []);
 
-  if (!role) {
+  if (!isClient) {
     return <div>در حال بارگذاری...</div>;
   }
 
-  return role === 'shipper' ? <ShipperDashboard /> : <DriverDashboard />;
+  if (role === 'shipper') {
+      return <ShipperDashboard />;
+  }
+  
+  if (role === 'driver') {
+      return <DriverDashboard />;
+  }
+
+  return <div>نقش کاربری مشخص نشده است. لطفا دوباره وارد شوید.</div>;
 }
