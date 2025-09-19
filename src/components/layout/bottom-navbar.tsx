@@ -1,9 +1,13 @@
+
 'use client';
 
 import { Home, Package, Truck, User, LogOut, PackagePlus } from 'lucide-react';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { auth } from '@/lib/firebase/config';
+import { signOut } from 'firebase/auth';
+
 
 const ShipperMenu = [
   { href: '/dashboard', label: 'داشبورد', icon: Home },
@@ -20,18 +24,29 @@ const DriverMenu = [
 ];
 
 export function BottomNavbar({ navigate }: { navigate: (path: string) => void }) {
-  const pathname = usePathname();
   const router = useRouter();
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
+  const [currentPath, setCurrentPath] = useState('');
 
   useEffect(() => {
     const storedRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
     setRole(storedRole);
+    
+    const handlePathChange = () => {
+        setCurrentPath(window.location.pathname);
+    };
+    handlePathChange();
+    window.addEventListener('popstate', handlePathChange);
+    return () => {
+        window.removeEventListener('popstate', handlePathChange);
+    };
+
   }, []);
 
   const menu = role === 'shipper' ? ShipperMenu : DriverMenu;
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await signOut(auth);
     localStorage.removeItem('userRole');
     router.push('/');
   };
@@ -48,7 +63,7 @@ export function BottomNavbar({ navigate }: { navigate: (path: string) => void })
             onClick={() => navigate(item.href)}
             className={cn(
               'inline-flex flex-col items-center justify-center px-5 hover:bg-muted group',
-              pathname === item.href ? 'text-primary' : 'text-muted-foreground'
+              currentPath === item.href ? 'text-primary' : 'text-muted-foreground'
             )}
           >
             <item.icon className="w-6 h-6 mb-1" />

@@ -5,11 +5,14 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/sidebar';
 import { BottomNavbar } from '@/components/layout/bottom-navbar';
 import { useEffect, useState } from 'react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import DashboardPage from './dashboard/page';
 import NewRequestPage from './requests/new/page';
 import RequestDetailsPage from './requests/[id]/page';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '@/lib/firebase/config';
+import { Loader2 } from 'lucide-react';
 
 export type DashboardPageProps = {
   role: 'shipper' | 'driver' | null;
@@ -33,11 +36,15 @@ export default function DashboardLayout({
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
   const [path, setPath] = useState('/dashboard');
   const [animationKey, setAnimationKey] = useState(0);
+  const [user, loading, error] = useAuthState(auth);
 
   useEffect(() => {
     setIsClient(true);
     const userRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
-    if (!userRole) {
+
+    if (loading) return; // Wait until auth state is loaded
+
+    if (!user || !userRole) {
       router.push('/');
     } else {
       setRole(userRole);
@@ -53,7 +60,7 @@ export default function DashboardLayout({
     return () => {
         window.removeEventListener('popstate', handlePathChange);
     };
-  }, [router]);
+  }, [router, user, loading]);
 
   const navigate = (newPath: string) => {
     if (newPath === path) return;
@@ -78,8 +85,12 @@ export default function DashboardLayout({
   };
 
 
-  if (!isClient) {
-    return null; // Or a loading spinner
+  if (loading || !isClient || !user || !role) {
+    return (
+        <div className="flex h-screen items-center justify-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    );
   }
 
   return (

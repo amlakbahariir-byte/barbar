@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,29 +9,171 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Truck } from 'lucide-react';
+import { auth } from '@/lib/firebase/config';
+import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
+
+// Define RecaptchaVerifier in a broader scope
+let recaptchaVerifier: RecaptchaVerifier | null = null;
 
 export default function Home() {
   const [step, setStep] = useState(1);
   const [phone, setPhone] = useState('');
+  const [otp, setOtp] = useState('');
+  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
 
-  const handlePhoneSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    // Initialize reCAPTCHA
+    if (auth && !recaptchaVerifier) {
+      recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible',
+        callback: () => {
+          // reCAPTCHA solved, allow signInWithPhoneNumber.
+        },
+      });
+    }
+  }, []);
+
+  const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStep(2);
+    setLoading(true);
+    if (!recaptchaVerifier) {
+      toast({
+        title: 'خطا',
+        description: 'reCAPTCHA مقداردهی نشده است. لطفا صفحه را رفرش کنید.',
+        variant: 'destructive',
+      });
+      setLoading(false);
+      return;
+    }
+    
+    // Firebase requires the phone number in E.164 format
+    const formattedPhone = `+98${phone.slice(1)}`;
+
+    try {
+      const result = await signInWithPhoneNumber(auth, formattedPhone, recaptchaVerifier);
+      setConfirmationResult(result);
+      setStep(2);
+      toast({
+        title: 'کد ارسال شد',
+        description: 'کد تایید به شماره شما ارسال شد.',
+      });
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      toast({
+        title: 'خطا در ارسال کد',
+        description: 'مشکلی در ارسال کد به وجود آمده است. لطفا دوباره تلاش کنید.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const handleOtpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!confirmationResult) return;
+    setLoading(true);
+
+    try {
+      await confirmationResult.confirm(otp);
+      // OTP is correct, now let user choose role
+      setStep(3);
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+      toast({
+        title: 'کد نامعتبر',
+        description: 'کد وارد شده صحیح نیست. لطفا دوباره تلاش کنید.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   const handleLogin = (role: 'shipper' | 'driver') => {
-    // In a real app, you would verify the OTP here.
-    // We'll simulate a successful login.
     localStorage.setItem('userRole', role);
     router.push('/dashboard');
   };
+  
+  const renderStepContent = () => {
+    switch(step) {
+      case 1:
+        return (
+          <form onSubmit={handlePhoneSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="phone">شماره موبایل</Label>
+              <Input
+                id="phone"
+                type="tel"
+                dir="ltr"
+                placeholder="09123456789"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                required
+                disabled={loading}
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? <Loader2 className="animate-spin" /> : 'دریافت کد تایید'}
+            </Button>
+          </form>
+        );
+      case 2:
+        return (
+          <form onSubmit={handleOtpSubmit} className="space-y-4 animate-in fade-in-0 duration-500">
+            <div className="space-y-2">
+              <Label htmlFor="otp">کد تایید</Label>
+              <Input 
+                id="otp" 
+                type="text" 
+                placeholder="_ _ _ _ _ _" 
+                maxLength={6} 
+                dir="ltr" 
+                className="tracking-[0.5rem] text-center" 
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                required
+                disabled={loading}
+              />
+            </div>
+             <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? <Loader2 className="animate-spin" /> : 'تایید کد'}
+            </Button>
+          </form>
+        );
+      case 3:
+         return null; // Will be handled by CardFooter
+      default:
+        return null;
+    }
+  }
+
+  const getCardDescription = () => {
+     switch(step) {
+      case 1:
+        return 'برای ورود یا ثبت‌نام، شماره موبایل خود را وارد کنید.';
+      case 2:
+        return 'کد تایید ۶ رقمی ارسال شده به شماره خود را وارد کنید.';
+      case 3:
+        return 'نقش خود را برای ورود به برنامه انتخاب کنید.';
+       default:
+        return '';
+    }
+  }
+
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-8 overflow-hidden">
-      <div className="absolute inset-0 -z-10 h-full w-full bg-background bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem] opacity-20"></div>
-       <div className="absolute size-96 -bottom-48 -right-48 bg-primary/20 rounded-full blur-3xl animate-in zoom-in-50 duration-1000"></div>
-       <div className="absolute size-96 -top-48 -left-48 bg-accent/20 rounded-full blur-3xl animate-in zoom-in-50 duration-1000 delay-500"></div>
+       <div id="recaptcha-container"></div>
+       <div className="absolute inset-0 -z-10 h-full w-full bg-background bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem] opacity-20"></div>
+       <div className="absolute size-96 -bottom-48 -right-48 bg-primary/20 rounded-full blur-3xl"></div>
+       <div className="absolute size-96 -top-48 -left-48 bg-accent/20 rounded-full blur-3xl"></div>
 
       <div className="flex flex-col items-center justify-center text-center">
         <div className="mb-8 flex items-center gap-4 animate-in fade-in-0 slide-in-from-top-12 duration-700">
@@ -51,44 +193,13 @@ export default function Home() {
               <CardHeader>
                 <CardTitle>ورود به حساب کاربری</CardTitle>
                 <CardDescription>
-                  {step === 1
-                    ? 'برای ورود یا ثبت‌نام، شماره موبایل خود را وارد کنید.'
-                    : 'کد تایید ارسال شده به شماره خود را وارد کنید.'}
+                  {getCardDescription()}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {step === 1 && (
-                  <form onSubmit={handlePhoneSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">شماره موبایل</Label>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        dir="ltr"
-                        placeholder="09123456789"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <Button type="submit" className="w-full">
-                      دریافت کد تایید
-                    </Button>
-                  </form>
-                )}
-                {step === 2 && (
-                  <div className="space-y-4 animate-in fade-in-0 duration-500">
-                    <div className="space-y-2">
-                      <Label htmlFor="otp">کد تایید</Label>
-                      <Input id="otp" type="text" placeholder="_ _ _ _" maxLength={4} dir="ltr" className="tracking-[1rem] text-center" />
-                      <p className="text-xs text-muted-foreground pt-2 text-center">
-                        کد تایید: 1234 (شبیه‌سازی شده)
-                      </p>
-                    </div>
-                  </div>
-                )}
+                {renderStepContent()}
               </CardContent>
-              {step === 2 && (
+              {step === 3 && (
                 <CardFooter className="flex flex-col gap-4 animate-in fade-in-0 duration-500">
                    <p className="text-sm text-muted-foreground">ورود به عنوان:</p>
                   <div className="grid grid-cols-2 gap-4 w-full">
@@ -99,11 +210,15 @@ export default function Home() {
                       راننده
                     </Button>
                   </div>
-                   <Button variant="link" size="sm" onClick={() => setStep(1)}>
-                    تغییر شماره موبایل
-                  </Button>
                 </CardFooter>
               )}
+               {(step === 2 || step === 3) && !loading && (
+                 <CardFooter>
+                    <Button variant="link" size="sm" onClick={() => { setStep(1); setOtp(''); }}>
+                      تغییر شماره موبایل
+                    </Button>
+                 </CardFooter>
+                )}
             </Card>
           </TabsContent>
         </Tabs>
