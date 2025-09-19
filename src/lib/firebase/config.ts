@@ -12,10 +12,13 @@ const firebaseConfig = {
 };
 
 let app: FirebaseApp;
-let auth: Auth | null = null;
+let auth: Auth;
 
-if (typeof window !== 'undefined') {
-  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+if (typeof window !== 'undefined' && !getApps().length) {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+} else if (typeof window !== 'undefined') {
+  app = getApp();
   auth = getAuth(app);
 }
 

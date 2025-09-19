@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Truck } from 'lucide-react';
 import { auth } from '@/lib/firebase/config';
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, Auth, onAuthStateChanged } from 'firebase/auth';
+import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, Auth, onAuthStateChanged, User } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
@@ -20,64 +20,28 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
   const [otp, setOtp] = useState('');
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
-
   const { toast } = useToast();
   const recaptchaVerifier = useRef<RecaptchaVerifier | null>(null);
 
   useEffect(() => {
-    if (!auth) return;
-    const unsubscribe = onAuthStateChanged(auth as Auth, (currentUser) => {
-        setUser(currentUser as any);
-        setAuthLoading(false);
-    });
-    return () => unsubscribe();
+    if (!recaptchaVerifier.current) {
+      const recaptchaContainer = document.createElement('div');
+      recaptchaContainer.id = 'recaptcha-container';
+      document.body.appendChild(recaptchaContainer);
+      
+      const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible',
+        callback: () => {},
+      });
+      recaptchaVerifier.current = verifier;
+    }
   }, []);
-
-  useEffect(() => {
-    if (auth && !recaptchaVerifier.current) {
-        const recaptchaContainer = document.createElement('div');
-        document.body.appendChild(recaptchaContainer);
-        recaptchaVerifier.current = new RecaptchaVerifier(auth, recaptchaContainer, {
-            size: 'invisible',
-            callback: () => {},
-        });
-
-        recaptchaVerifier.current.render().catch((error) => {
-            console.error("reCAPTCHA render error:", error);
-            toast({
-                title: 'خطا',
-                description: 'reCAPTCHA به درستی بارگذاری نشد. لطفا صفحه را رفرش کنید.',
-                variant: 'destructive',
-            });
-        });
-        
-        return () => {
-             if (recaptchaContainer && recaptchaContainer.parentNode) {
-                document.body.removeChild(recaptchaContainer);
-            }
-        }
-    }
-  }, [auth, toast]);
-
-  useEffect(() => {
-    if (!authLoading && user) {
-        const userRole = localStorage.getItem('userRole');
-        if (userRole) {
-            onLoginSuccess(userRole as 'shipper' | 'driver');
-        } else {
-            setStep(3);
-        }
-    }
-  }, [user, authLoading, onLoginSuccess]);
-
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    if (!recaptchaVerifier.current || !auth) {
+    if (!recaptchaVerifier.current) {
       toast({
         title: 'خطا',
         description: 'reCAPTCHA مقداردهی نشده است. لطفا صفحه را رفرش کنید.',
@@ -115,8 +79,10 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
     setLoading(true);
 
     try {
-      await confirmationResult.confirm(otp);
-      setStep(3);
+      const result = await confirmationResult.confirm(otp);
+      if (result.user) {
+        setStep(3);
+      }
     } catch (error) {
       console.error('Error verifying OTP:', error);
       toast({
@@ -135,13 +101,6 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
     onLoginSuccess(role);
   };
   
-  if (authLoading) {
-    return (
-        <div className="flex h-48 items-center justify-center">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        </div>
-    );
-  }
 
   const renderStepContent = () => {
     switch(step) {
@@ -250,14 +209,30 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
 export default function Home() {
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setIsClient(true);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
+    return () => unsubscribe();
   }, []);
   
   const handleLoginSuccess = () => {
     router.push('/dashboard');
   };
+
+  useEffect(() => {
+    if(isClient && !loading && user){
+        const userRole = localStorage.getItem('userRole');
+        if (userRole) {
+            handleLoginSuccess();
+        }
+    }
+  }, [isClient, loading, user]);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-8 overflow-hidden">
@@ -279,7 +254,7 @@ export default function Home() {
             <TabsTrigger value="login">ورود یا ثبت‌نام</TabsTrigger>
           </TabsList>
           <TabsContent value="login">
-            {isClient && auth ? (
+            {(isClient && !loading && !user) ? (
                 <AuthForm onLoginSuccess={handleLoginSuccess} />
             ) : (
                 <Card className="h-64">
