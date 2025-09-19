@@ -7,9 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Truck, ChevronRight, User, Building, LogIn } from 'lucide-react';
-import { RecaptchaVerifier, signInWithPhoneNumber, onAuthStateChanged, type ConfirmationResult } from 'firebase/auth';
+import { RecaptchaVerifier, type ConfirmationResult } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
-import { useAuthState } from 'react-firebase-hooks/auth';
 import { AnimatedTruckLoader } from '@/components/ui/animated-truck-loader';
 
 // Extend window type to include our custom properties
@@ -21,26 +20,23 @@ declare global {
 }
 
 function AuthChecker({ children }: { children: React.ReactNode }) {
-  const [user, loading] = useAuthState(auth);
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    // This effect runs on the client after hydration and when auth state is resolved.
-    if (!loading) {
-      const userRole = localStorage.getItem('userRole');
-      
-      // If a Firebase user session exists AND a role is set in localStorage,
-      // it means the user is fully logged in. Redirect them to the dashboard.
-      if (user && userRole) {
-        router.replace('/dashboard');
-      } else {
-        // If there's no user or no role, it's safe to show the login page.
-        // We mark auth as checked to unmount the loader.
-        setAuthChecked(true);
-      }
+    // This effect runs on the client after hydration.
+    const userRole = localStorage.getItem('userRole');
+    
+    // If a role is set in localStorage, it means the user is fully logged in. 
+    // Redirect them to the dashboard.
+    if (userRole) {
+      router.replace('/dashboard');
+    } else {
+      // If there's no role, it's safe to show the login page.
+      // We mark auth as checked to unmount the loader.
+      setAuthChecked(true);
     }
-  }, [user, loading, router]);
+  }, [router]);
 
   // While checking auth state, show a full-screen loader.
   if (!authChecked) {
@@ -119,14 +115,6 @@ function HomePageContent() {
       window.confirmationResult = {
         confirm: async (code: string) => { 
           // In a real app, this would verify the code. Here we just pretend it's successful.
-          // We'll create a fake user object for the auth state.
-          onAuthStateChanged(auth, (user) => {
-            if (!user) {
-              // This is a hack for demo purposes to fake a login.
-              // It signs in with a test user to make `useAuthState` work.
-              signInWithPhoneNumber(auth, '+11234567890', window.recaptchaVerifier!).catch(() => {});
-            }
-          });
           return Promise.resolve({} as any); // Return a fake user credential
         }
       } as ConfirmationResult;
@@ -146,9 +134,6 @@ function HomePageContent() {
     try {
       // We use our fake confirmation object from the previous step.
       await window.confirmationResult?.confirm(otp);
-      
-      // The `onAuthStateChanged` inside the fake confirm() will trigger,
-      // creating a fake user session that `useAuthState` will pick up.
       
       setIsSubmitting(false);
       setStep(3); // Move to role selection on successful confirmation
