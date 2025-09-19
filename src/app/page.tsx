@@ -28,19 +28,14 @@ function AuthChecker({ children }: { children: React.ReactNode }) {
     const [sessionChecked, setSessionChecked] = useState(false);
 
     useEffect(() => {
-        const checkSession = async () => {
-            if (!loading) {
-                const userRole = localStorage.getItem('userRole');
-                if (user && userRole) {
-                    router.push('/dashboard');
-                } else {
-                    setSessionChecked(true);
-                }
+        if (!loading) {
+            const userRole = localStorage.getItem('userRole');
+            if (user && userRole) {
+                router.push('/dashboard');
+            } else {
+                setSessionChecked(true);
             }
-        };
-
-        checkSession();
-
+        }
     }, [user, loading, router]);
 
 

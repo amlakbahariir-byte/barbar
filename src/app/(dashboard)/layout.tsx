@@ -4,7 +4,7 @@
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/sidebar';
 import { BottomNavbar } from '@/components/layout/bottom-navbar';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -34,15 +34,11 @@ export default function DashboardLayout({
   useEffect(() => {
     setIsClient(true);
     if (!loading) {
-      if (!user) {
+      const userRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
+      if (!user || !userRole) {
         router.push('/');
       } else {
-        const userRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
-        if (!userRole) {
-           router.push('/');
-        } else {
-          setRole(userRole);
-        }
+        setRole(userRole);
       }
     }
   }, [user, loading, router]);
