@@ -23,28 +23,36 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   
+  // useAuthState should only be used on the client
   const [user, authLoading] = useAuthState(auth as Auth);
 
   const recaptchaVerifier = useRef<RecaptchaVerifier | null>(null);
-  const recaptchaContainerRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
-    if (!auth || recaptchaVerifier.current) return;
+    if (!auth) return;
+    if (recaptchaVerifier.current) return; // Already initialized
 
-    if (recaptchaContainerRef.current) {
-        recaptchaVerifier.current = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
-            size: 'invisible',
-            callback: () => {},
-        });
+    // The container is now created dynamically and passed to the verifier
+    const recaptchaContainer = document.createElement('div');
+    document.body.appendChild(recaptchaContainer);
 
-        recaptchaVerifier.current.render().catch((error) => {
-            console.error("reCAPTCHA render error:", error);
-            toast({
-                title: 'خطا',
-                description: 'reCAPTCHA به درستی بارگذاری نشد. لطفا صفحه را رفرش کنید.',
-                variant: 'destructive',
-            });
+    recaptchaVerifier.current = new RecaptchaVerifier(auth, recaptchaContainer, {
+        size: 'invisible',
+        callback: () => {},
+    });
+
+    recaptchaVerifier.current.render().catch((error) => {
+        console.error("reCAPTCHA render error:", error);
+        toast({
+            title: 'خطا',
+            description: 'reCAPTCHA به درستی بارگذاری نشد. لطفا صفحه را رفرش کنید.',
+            variant: 'destructive',
         });
+    });
+
+    return () => {
+        // Cleanup the container when the component unmounts
+        document.body.removeChild(recaptchaContainer);
     }
   }, [auth, toast]);
 
@@ -198,7 +206,6 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
 
   return (
     <>
-      <div ref={recaptchaContainerRef}></div>
       <Card>
         <CardHeader>
           <CardTitle>ورود به حساب کاربری</CardTitle>
