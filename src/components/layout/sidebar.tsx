@@ -76,7 +76,7 @@ export function AppSidebar({ navigate }: { navigate: (path: string) => void }) {
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
-      </SidebarFooter>
+      </SidebarContent>
       <SidebarFooter className="p-2 border-t border-sidebar-border">
         <SidebarMenu>
           <SidebarMenuItem>
