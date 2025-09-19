@@ -31,11 +31,13 @@ function AuthChecker({ children }: { children: React.ReactNode }) {
       if (user && userRole) {
         router.replace('/dashboard');
       } else {
+        // If there's no user or no role, it's safe to show the login page.
         setSessionChecked(true);
       }
     }
   }, [user, loading, router]);
 
+  // While checking the session, show a loader
   if (loading || !sessionChecked) {
     return <AnimatedTruckLoader />;
   }
@@ -109,10 +111,20 @@ function HomePageContent() {
   
   const handleOtpSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
+    if (isSubmitting) return; // Prevent double submission
     setIsSubmitting(true);
     toast({ title: 'در حال تایید کد...' });
 
-    // Simulate OTP verification
+    // Simulate OTP verification by creating a fake user session for the demo
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+             // This is a bit of a hack for demo purposes to fake a login.
+             // In a real app, the confirmationResult.confirm(otp) would handle this.
+             signInWithPhoneNumber(auth, '+11234567890', window.recaptchaVerifier!).catch(() => {});
+        }
+    });
+
+
     setTimeout(() => {
         setIsSubmitting(false);
         setStep(3); // Move to role selection
@@ -143,7 +155,7 @@ function HomePageContent() {
   };
   
    const handleOtpKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+    if (e.key === 'Backspace' && !otp[i] && index > 0) {
       otpInputs.current[index - 1]?.focus();
     }
   };

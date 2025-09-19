@@ -29,15 +29,24 @@ export default function DashboardLayout({
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
   
   useEffect(() => {
-    if (!loading && !user) {
-      router.replace('/');
+    // Wait until the loading is finished
+    if (!loading) {
+      // If no user is authenticated, redirect to login page
+      if (!user) {
+        router.replace('/');
+      } else {
+        // If user is authenticated, check for role
+        const storedRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
+        if (storedRole) {
+          setRole(storedRole);
+        } else {
+          // If role is not set, maybe redirect to a role selection page or handle it
+           auth.signOut(); // Sign out if role is missing
+           router.replace('/');
+        }
+      }
     }
   }, [user, loading, router]);
-
-  useEffect(() => {
-    const storedRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
-    setRole(storedRole);
-  }, [pathname]);
 
 
   const navigate = (newPath: string) => {
@@ -45,7 +54,7 @@ export default function DashboardLayout({
     router.push(newPath);
   };
   
-  if (loading || !user) {
+  if (loading || !user || !role) {
     return <AnimatedTruckLoader />;
   }
   
