@@ -13,6 +13,7 @@ import { auth } from '@/lib/firebase/config';
 import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 export default function Home() {
   const [step, setStep] = useState(1);
@@ -22,18 +23,35 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const [user, authLoading] = useAuthState(auth);
+
+  // Use a ref for the verifier instance that persists across re-renders
   const recaptchaVerifier = useRef<RecaptchaVerifier | null>(null);
   const recaptchaContainerRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    // If user is already logged in, redirect them
+    if (user) {
+        const userRole = localStorage.getItem('userRole');
+        if (userRole) {
+            router.push('/dashboard');
+        }
+    }
+  }, [user, router]);
+
 
   useEffect(() => {
-    if (auth && recaptchaContainerRef.current && !recaptchaVerifier.current) {
+    if (authLoading) return; // Wait until auth state is loaded
+
+    if (!recaptchaVerifier.current && recaptchaContainerRef.current) {
+        // Initialize RecaptchaVerifier only on the client side
         recaptchaVerifier.current = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
             size: 'invisible',
             callback: () => {
-              // reCAPTCHA solved
+              // reCAPTCHA solved, allow signInWithPhoneNumber.
             },
         });
+
         recaptchaVerifier.current.render().catch((error) => {
             console.error("reCAPTCHA render error:", error);
             toast({
@@ -43,7 +61,7 @@ export default function Home() {
             });
         });
     }
-  }, [toast]);
+  }, [toast, authLoading]);
 
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
@@ -78,10 +96,6 @@ export default function Home() {
         description: 'مشکلی در ارسال کد به وجود آمده است. لطفا دوباره تلاش کنید.',
         variant: 'destructive',
       });
-       // Reset reCAPTCHA
-      if (recaptchaVerifier.current) {
-        recaptchaVerifier.current.render().catch(console.error);
-      }
     } finally {
       setLoading(false);
     }
@@ -114,6 +128,14 @@ export default function Home() {
     router.push('/dashboard');
   };
   
+  if (authLoading || user) {
+    return (
+        <div className="flex h-screen items-center justify-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    );
+  }
+
   const renderStepContent = () => {
     switch(step) {
       case 1:
@@ -183,7 +205,7 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-8 overflow-hidden">
-       <div ref={recaptchaContainerRef} id="recaptcha-container"></div>
+       <div ref={recaptchaContainerRef}></div>
        <div className="absolute inset-0 -z-10 h-full w-full bg-background bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem] opacity-20"></div>
        <div className="absolute size-96 -bottom-48 -right-48 bg-primary/20 rounded-full blur-3xl"></div>
        <div className="absolute size-96 -top-48 -left-48 bg-accent/20 rounded-full blur-3xl"></div>
@@ -239,3 +261,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
