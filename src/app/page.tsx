@@ -26,16 +26,31 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
   const recaptchaContainerRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
-    if (!auth || recaptchaVerifier.current) return;
+    if (!auth || !recaptchaContainerRef.current) return;
     
-    if (recaptchaContainerRef.current) {
+    // Only initialize once
+    if (recaptchaVerifier.current) return;
+
+    try {
         const verifier = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
             size: 'invisible',
             callback: () => {
                 // reCAPTCHA solved, allow signInWithPhoneNumber.
             },
+            'expired-callback': () => {
+              // Reset verifier if it expires
+              if (recaptchaVerifier.current) {
+                recaptchaVerifier.current.render().then(widgetId => {
+                  if ((window as any).grecaptcha) {
+                    (window as any).grecaptcha.reset(widgetId);
+                  }
+                });
+              }
+            }
         });
         recaptchaVerifier.current = verifier;
+    } catch(e) {
+        console.error("Error initializing RecaptchaVerifier", e)
     }
   }, [auth]);
 
@@ -287,3 +302,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
