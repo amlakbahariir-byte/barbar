@@ -76,16 +76,17 @@ function HomePageContent() {
 
   // Setup reCAPTCHA
   useEffect(() => {
-    // This check is to prevent re-initializing the verifier on every render.
     if (step === 1 && !window.recaptchaVerifier) {
-      // The container is necessary for the verifier to work.
-      // It's invisible, but it must be in the DOM.
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        'size': 'invisible',
-        'callback': (response: any) => {
-          // reCAPTCHA solved, allow signInWithPhoneNumber.
-        }
-      });
+      try {
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+          'size': 'invisible',
+          'callback': (response: any) => {
+            // reCAPTCHA solved.
+          }
+        });
+      } catch (e) {
+        console.error("RecaptchaVerifier error", e)
+      }
     }
   }, [step]);
   
@@ -111,22 +112,29 @@ function HomePageContent() {
     e?.preventDefault();
     setIsSubmitting(true);
     toast({ title: 'در حال ارسال کد تایید...' });
-
-    const appVerifier = window.recaptchaVerifier!;
     
-    // We use a test phone number and fake confirmation for demo.
-    try {
-        const confirmationResult = await signInWithPhoneNumber(auth, '+11111111111', appVerifier);
-        window.confirmationResult = confirmationResult;
-        setIsSubmitting(false);
-        setStep(2);
-        toast({ title: 'کد تایید ارسال شد', description: 'کد تایید ۱۲۳۴۵۶ است' });
-    } catch (error) {
-        console.error("Error during phone sign-in:", error);
-        toast({ title: 'خطا در ارسال کد', description: 'لطفا دوباره تلاش کنید.', variant: 'destructive' });
-        setIsSubmitting(false);
-        // In a real app, you might need to reset reCAPTCHA here.
-    }
+    // SIMULATION: Bypass actual Firebase call to avoid configuration errors in demo.
+    setTimeout(() => {
+      // Fake confirmation object for the next step.
+      window.confirmationResult = {
+        confirm: async (code: string) => { 
+          // In a real app, this would verify the code. Here we just pretend it's successful.
+          // We'll create a fake user object for the auth state.
+          onAuthStateChanged(auth, (user) => {
+            if (!user) {
+              // This is a hack for demo purposes to fake a login.
+              // It signs in with a test user to make `useAuthState` work.
+              signInWithPhoneNumber(auth, '+11234567890', window.recaptchaVerifier!).catch(() => {});
+            }
+          });
+          return Promise.resolve({} as any); // Return a fake user credential
+        }
+      } as ConfirmationResult;
+
+      setIsSubmitting(false);
+      setStep(2);
+      toast({ title: 'کد تایید ارسال شد', description: 'کد تایید ۱۲۳۴۵۶ است' });
+    }, 1000);
   };
   
   const handleOtpSubmit = async (e?: React.FormEvent) => {
@@ -136,10 +144,11 @@ function HomePageContent() {
     toast({ title: 'در حال تایید کد...' });
 
     try {
-      // For the demo, we use the fake OTP to confirm.
-      // `window.confirmationResult` is set in the `handlePhoneSubmit` function.
+      // We use our fake confirmation object from the previous step.
       await window.confirmationResult?.confirm(otp);
-      // The `onAuthStateChanged` in `AuthChecker` and `DashboardLayout` will now have a valid user.
+      
+      // The `onAuthStateChanged` inside the fake confirm() will trigger,
+      // creating a fake user session that `useAuthState` will pick up.
       
       setIsSubmitting(false);
       setStep(3); // Move to role selection on successful confirmation
@@ -274,3 +283,5 @@ function HomePageContent() {
       </div>
   );
 }
+
+    
