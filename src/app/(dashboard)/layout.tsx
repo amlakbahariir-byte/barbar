@@ -10,10 +10,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import DashboardPage from './dashboard/page';
 import NewRequestPage from './requests/new/page';
 import RequestDetailsPage from './requests/[id]/page';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '@/lib/firebase/config';
 import { Loader2 } from 'lucide-react';
-import type { Auth, User } from 'firebase/auth';
 
 export type DashboardPageProps = {
   role: 'shipper' | 'driver' | null;
@@ -36,25 +33,15 @@ export default function DashboardLayout({
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
   const [path, setPath] = useState('');
   const [animationKey, setAnimationKey] = useState(0);
-
-  const [user, loading, error] = useAuthState(auth as Auth);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // If not loading and no user is authenticated, redirect to home.
-    if (!loading && !user) {
+    const userRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
+    if (!userRole) {
       router.push('/');
-      return;
-    }
-
-    // If user is authenticated, get their role from localStorage.
-    if (user) {
-      const userRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
-      if (!userRole) {
-        // If role is missing, something is wrong, redirect to home to re-auth.
-        router.push('/');
-        return;
-      }
+    } else {
       setRole(userRole);
+      setLoading(false);
     }
     
     const handlePathChange = () => {
@@ -64,24 +51,20 @@ export default function DashboardLayout({
     };
     handlePathChange();
     
-    // Listen for custom location change event
     const onLocationChange = () => handlePathChange();
     window.addEventListener('locationchange', onLocationChange);
-
-    // Listen for browser back/forward navigation
     window.addEventListener('popstate', handlePathChange);
 
     return () => {
         window.removeEventListener('locationchange', onLocationChange);
         window.removeEventListener('popstate', handlePathChange);
     };
-  }, [user, loading, router]);
+  }, [router]);
 
 
   const navigate = (newPath: string) => {
     if (newPath === window.location.pathname) return;
     window.history.pushState({}, '', newPath);
-    // Dispatch a custom event to notify the layout of the path change
     window.dispatchEvent(new Event('locationchange'));
   };
   
@@ -101,7 +84,7 @@ export default function DashboardLayout({
   };
 
 
-  if (loading || !user || !role) {
+  if (loading) {
     return (
         <div className="flex h-screen items-center justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />

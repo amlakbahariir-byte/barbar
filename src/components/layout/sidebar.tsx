@@ -14,8 +14,6 @@ import {
 import { Truck, Home, Package, User, LogOut, PackagePlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { auth } from '@/lib/firebase/config';
-import { signOut } from 'firebase/auth';
 
 const ShipperMenu = [
   { href: '/dashboard', label: 'داشبورد', icon: Home },
@@ -54,8 +52,6 @@ export function AppSidebar({ navigate }: { navigate: (path: string) => void }) {
   const menu = role === 'shipper' ? ShipperMenu : DriverMenu;
 
   const handleLogout = async () => {
-    if (!auth) return;
-    await signOut(auth);
     localStorage.removeItem('userRole');
     router.push('/');
   };

@@ -9,122 +9,52 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Truck } from 'lucide-react';
-import { auth } from '@/lib/firebase/config';
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, type Auth, type User } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { useAuthState } from 'react-firebase-hooks/auth';
 
 function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driver') => void }) {
   const [step, setStep] = useState(1);
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
-  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const [isRecaptchaVerified, setIsRecaptchaVerified] = useState(false);
   const { toast } = useToast();
-  const recaptchaContainerRef = useRef<HTMLDivElement>(null);
-  const recaptchaVerifier = useRef<RecaptchaVerifier | null>(null);
-
-  useEffect(() => {
-    if (!auth || !recaptchaContainerRef.current) return;
-
-    // To prevent re-rendering issues, only initialize once
-    if (recaptchaVerifier.current) return;
-
-    const verifier = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
-      'size': 'normal',
-      'callback': (response) => {
-        // reCAPTCHA solved, allow signInWithPhoneNumber.
-        setIsRecaptchaVerified(true);
-      },
-      'expired-callback': () => {
-        // Response expired. Ask user to solve reCAPTCHA again.
-        setIsRecaptchaVerified(false);
-        toast({
-            title: 'کپچا منقضی شد',
-            description: 'لطفا دوباره تیک "من ربات نیستم" را بزنید.',
-            variant: 'destructive',
-        });
-      }
-    });
-
-    recaptchaVerifier.current = verifier;
-    // Render the reCAPTCHA
-    verifier.render();
-
-  }, [auth, toast]);
-
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isRecaptchaVerified || !recaptchaVerifier.current) {
-        toast({
-            title: 'تأیید هویت لازم است',
-            description: 'لطفاً ابتدا تیک "من ربات نیستم" را بزنید.',
-            variant: 'destructive',
-        });
-        return;
-    }
     setLoading(true);
-
-    const formattedPhone = `+98${phone.slice(1)}`;
-
-    try {
-      const result = await signInWithPhoneNumber(auth, formattedPhone, recaptchaVerifier.current);
-      setConfirmationResult(result);
-      setStep(2);
-      toast({
-        title: 'کد ارسال شد',
-        description: 'کد تایید به شماره شما ارسال شد.',
-      });
-    } catch (error) {
-      console.error('Error sending OTP:', error);
-      toast({
-        title: 'خطا در ارسال کد',
-        description: 'مشکلی در ارسال کد به وجود آمده است. لطفا شماره را بررسی کرده و دوباره تلاش کنید.',
-        variant: 'destructive',
-      });
-      // Reset reCAPTCHA for retry
-       if (recaptchaVerifier.current && (window as any).grecaptcha) {
-         (window as any).grecaptcha.reset();
-         setIsRecaptchaVerified(false);
-       }
-    } finally {
-      setLoading(false);
-    }
+    // Simulate sending OTP
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setLoading(false);
+    setStep(2);
+    toast({
+      title: 'کد ارسال شد',
+      description: 'کد تایید به شماره شما ارسال شد. (شبیه‌سازی)',
+    });
   };
 
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!confirmationResult) return;
     setLoading(true);
-
-    try {
-      const result = await confirmationResult.confirm(otp);
-      if (result.user) {
+    // Simulate verifying OTP
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setLoading(false);
+    if (otp.length === 6) {
         toast({ title: 'ورود موفقیت‌آمیز بود', description: 'نقش خود را انتخاب کنید.' });
         setStep(3); // Move to role selection step
-      }
-    } catch (error) {
-      console.error('Error verifying OTP:', error);
-      toast({
-        title: 'کد نامعتبر',
-        description: 'کد وارد شده صحیح نیست. لطفا دوباره تلاش کنید.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
+    } else {
+        toast({
+            title: 'کد نامعتبر',
+            description: 'کد وارد شده صحیح نیست.',
+            variant: 'destructive',
+        });
     }
   };
-
 
   const handleRoleSelect = (role: 'shipper' | 'driver') => {
     localStorage.setItem('userRole', role);
     onLoginSuccess(role);
   };
   
-
   const renderStepContent = () => {
     switch(step) {
       case 1:
@@ -143,8 +73,7 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
                 disabled={loading}
               />
             </div>
-            <div ref={recaptchaContainerRef} className="flex justify-center"></div>
-            <Button type="submit" className="w-full" disabled={loading || !isRecaptchaVerified}>
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? <Loader2 className="animate-spin" /> : 'ارسال کد تایید'}
             </Button>
           </form>
@@ -194,7 +123,7 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
   const getCardDescription = () => {
      switch(step) {
       case 1:
-        return 'برای ورود یا ثبت‌نام، شماره موبایل خود را وارد کرده و تیک "من ربات نیستم" را بزنید.';
+        return 'برای ورود یا ثبت‌نام، شماره موبایل خود را وارد کنید.';
       case 2:
         return `کد تایید ۶ رقمی ارسال شده به شماره ${phone} را وارد کنید.`;
       case 3:
@@ -217,7 +146,7 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
         </CardContent>
          {(step === 2) && !loading && (
            <CardFooter>
-              <Button variant="link" size="sm" onClick={() => { setStep(1); setOtp(''); setIsRecaptchaVerified(false); }}>
+              <Button variant="link" size="sm" onClick={() => { setStep(1); setOtp(''); }}>
                 تغییر شماره یا تلاش مجدد
               </Button>
            </CardFooter>
@@ -229,13 +158,16 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
 
 function HomePageContent() {
   const router = useRouter();
-  const [user, loading] = useAuthState(auth as Auth);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
+    const userRole = localStorage.getItem('userRole');
+    if (userRole) {
       router.push('/dashboard');
+    } else {
+      setLoading(false);
     }
-  }, [user, router]);
+  }, [router]);
   
   const handleLoginSuccess = () => {
     router.push('/dashboard');
@@ -251,11 +183,6 @@ function HomePageContent() {
     );
   }
   
-  // If user is already logged in, redirect them. Don't show login form.
-  if (user) {
-    return null;
-  }
-
   return (
     <div className="flex flex-col items-center justify-center text-center">
       <div className="mb-8 flex items-center gap-4 animate-in fade-in-0 slide-in-from-top-12 duration-700">
