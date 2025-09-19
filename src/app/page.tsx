@@ -68,7 +68,6 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
         setOtp('123456'); // Auto-fill OTP
          toast({
             title: 'کد تایید دریافت شد',
-            description: 'کد شبیه‌سازی شده: 123456',
         });
       }, 2000); // Simulate 2-second delay
 
