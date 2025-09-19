@@ -29,21 +29,20 @@ export default function DashboardLayout({
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
   
   useEffect(() => {
-    // Wait until the loading is finished
-    if (!loading) {
-      // If no user is authenticated, redirect to login page
-      if (!user) {
-        router.replace('/');
+    // This effect handles authentication state changes.
+    if (!loading) { // Wait until the loading is finished
+      const storedRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
+      
+      // If no user is authenticated OR no role is stored, redirect to login page.
+      if (!user || !storedRole) {
+        // Sign out to clear any partial state before redirecting
+        auth.signOut().finally(() => {
+            localStorage.removeItem('userRole');
+            router.replace('/');
+        });
       } else {
-        // If user is authenticated, check for role
-        const storedRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
-        if (storedRole) {
-          setRole(storedRole);
-        } else {
-          // If role is not set, maybe redirect to a role selection page or handle it
-           auth.signOut(); // Sign out if role is missing
-           router.replace('/');
-        }
+        // If user is authenticated and role exists, set the role in state.
+        setRole(storedRole);
       }
     }
   }, [user, loading, router]);
@@ -54,6 +53,7 @@ export default function DashboardLayout({
     router.push(newPath);
   };
   
+  // Show a loader while authentication is in progress or role is not yet set.
   if (loading || !user || !role) {
     return <AnimatedTruckLoader />;
   }

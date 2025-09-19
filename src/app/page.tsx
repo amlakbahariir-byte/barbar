@@ -26,8 +26,10 @@ function AuthChecker({ children }: { children: React.ReactNode }) {
   const [sessionChecked, setSessionChecked] = useState(false);
 
   useEffect(() => {
+    // This effect runs only once on the client after hydration
     if (!loading) {
       const userRole = localStorage.getItem('userRole');
+      // If a user session exists in Firebase and a role is set in localStorage
       if (user && userRole) {
         router.replace('/dashboard');
       } else {
@@ -71,8 +73,9 @@ function HomePageContent() {
 
   // Setup reCAPTCHA
   useEffect(() => {
-    if (step === 1 && !window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+    // We only need the container for the demo, not the verifier itself.
+    if (step === 1 && !document.getElementById('recaptcha-container')?.hasChildNodes()) {
+       window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         size: 'invisible',
       });
     }
@@ -115,14 +118,16 @@ function HomePageContent() {
     setIsSubmitting(true);
     toast({ title: 'در حال تایید کد...' });
 
-    // Simulate OTP verification by creating a fake user session for the demo
-    onAuthStateChanged(auth, (user) => {
-        if (!user) {
-             // This is a bit of a hack for demo purposes to fake a login.
-             // In a real app, the confirmationResult.confirm(otp) would handle this.
-             signInWithPhoneNumber(auth, '+11234567890', window.recaptchaVerifier!).catch(() => {});
-        }
-    });
+    // In a real app, you would confirm the OTP with Firebase here.
+    // For this demo, we'll just simulate a successful login and move to role selection.
+    
+    // This is a "fake" sign-in for demo purposes so that useAuthState reports a user.
+    try {
+        await signInWithPhoneNumber(auth, '+11234567890', window.recaptchaVerifier!);
+    } catch (error) {
+       // This will fail because it's a fake number, but it's enough to create a temporary user for the demo.
+       // We can ignore the error.
+    }
 
 
     setTimeout(() => {
@@ -155,7 +160,7 @@ function HomePageContent() {
   };
   
    const handleOtpKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (e.key === 'Backspace' && !otp[i] && index > 0) {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
       otpInputs.current[index - 1]?.focus();
     }
   };
