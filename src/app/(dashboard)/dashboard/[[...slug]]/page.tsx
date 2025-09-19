@@ -18,13 +18,13 @@ function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-primary/10 border-primary animate-in fade-in-0 slide-in-from-top-4 duration-500">
+      <Card className="bg-primary text-primary-foreground border-primary/20 animate-in fade-in-0 slide-in-from-top-4 duration-500 shadow-lg">
         <CardHeader>
           <CardTitle>سفر بار خود را شروع کنید</CardTitle>
-          <CardDescription>یک درخواست حمل بار جدید ایجاد کنید و بهترین پیشنهادها را از رانندگان معتبر دریافت کنید.</CardDescription>
+          <CardDescription className="text-primary-foreground/80">یک درخواست حمل بار جدید ایجاد کنید و بهترین پیشنهادها را از رانندگان معتبر دریافت کنید.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button size="lg" onClick={() => navigate('/dashboard/requests/new')}>
+          <Button size="lg" variant="secondary" onClick={() => navigate('/dashboard/requests/new')}>
             <PackagePlus className="ml-2 h-5 w-5" />
             ایجاد درخواست جدید
           </Button>

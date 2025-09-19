@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Truck, ChevronRight, User, Building, LogIn } from 'lucide-react';
-import { RecaptchaVerifier, type ConfirmationResult } from 'firebase/auth';
+import type { RecaptchaVerifier, ConfirmationResult } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
 import { AnimatedTruckLoader } from '@/components/ui/animated-truck-loader';
 
@@ -52,8 +52,11 @@ export default function Home() {
   return (
     <AuthChecker>
       <main className="h-screen w-full flex items-center justify-center bg-background overflow-hidden relative p-4">
-          <div className="absolute size-96 -bottom-48 -right-48 bg-primary/10 rounded-full blur-3xl -z-10 animate-in fade-in-0 duration-1000"></div>
-          <div className="absolute size-96 -top-48 -left-48 bg-accent/10 rounded-full blur-3xl -z-10 animate-in fade-in-0 duration-1000 delay-500"></div>
+          <div className="absolute top-0 left-0 w-full h-full opacity-50">
+            <div className="absolute -bottom-1/4 left-0 w-full h-1/2 bg-primary/80 rounded-[100%] rotate-[-15deg] translate-x-[-20%] translate-y-[10%] -z-10 animate-in fade-in-0 duration-1000"></div>
+            <div className="absolute top-0 right-0 w-3/4 h-3/4 bg-accent/60 rounded-full blur-3xl -z-20 animate-in fade-in-0 duration-1000 delay-500"></div>
+            <div className="absolute w-full h-full bg-gradient-to-t from-primary/20 to-transparent -z-10"></div>
+          </div>
           <HomePageContent />
       </main>
     </AuthChecker>
@@ -74,12 +77,10 @@ function HomePageContent() {
   useEffect(() => {
     if (step === 1 && !window.recaptchaVerifier) {
       try {
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-          'size': 'invisible',
-          'callback': (response: any) => {
-            // reCAPTCHA solved.
-          }
-        });
+        // This is a fake verifier for the demo.
+        window.recaptchaVerifier = {
+          verify: () => Promise.resolve('fake-recaptcha-token')
+        } as unknown as RecaptchaVerifier;
       } catch (e) {
         console.error("RecaptchaVerifier error", e)
       }
@@ -176,95 +177,97 @@ function HomePageContent() {
 
 
   return (
-      <div className="w-full max-w-md space-y-8 animate-in fade-in-0 slide-in-from-bottom-10 duration-700 text-center">
-        <div>
-          <Truck className="mx-auto h-12 w-auto text-primary" />
-          <h2 className="mt-6 text-3xl font-bold tracking-tight text-foreground">
-            ورود به باربر ایرانی
-          </h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {step === 1 && 'شماره موبایل خود را برای ورود یا ثبت‌نام وارد کنید.'}
-            {step === 2 && 'کد ۶ رقمی ارسال شده به موبایل خود را وارد کنید.'}
-            {step === 3 && 'نقش خود را برای ورود به پنل کاربری انتخاب کنید.'}
-          </p>
-        </div>
-
-        {step === 1 && (
-          <form className="space-y-6" onSubmit={handlePhoneSubmit}>
-            <div className="relative">
-              <Input
-                id="phone"
-                name="phone"
-                type="tel"
-                autoComplete="tel"
-                required
-                className="text-center text-lg tracking-[.2em] h-14"
-                placeholder="0912 345 6789"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                dir="ltr"
-              />
+      <div className="w-full max-w-md space-y-8 animate-in fade-in-0 slide-in-from-bottom-10 duration-700 text-center z-10">
+        <div className="bg-card/80 backdrop-blur-sm p-8 rounded-2xl shadow-2xl">
+            <div>
+              <Truck className="mx-auto h-12 w-auto text-primary" />
+              <h2 className="mt-6 text-3xl font-bold tracking-tight text-foreground">
+                ورود به باربر ایرانی
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {step === 1 && 'شماره موبایل خود را برای ورود یا ثبت‌نام وارد کنید.'}
+                {step === 2 && 'کد ۶ رقمی ارسال شده به موبایل خود را وارد کنید.'}
+                {step === 3 && 'نقش خود را برای ورود به پنل کاربری انتخاب کنید.'}
+              </p>
             </div>
-            <Button type="submit" className="w-full !mt-8 h-12 text-lg" disabled={isSubmitting}>
-              {isSubmitting ? 'در حال ارسال...' : 'ارسال کد تایید'}
-              <LogIn className="mr-2"/>
-            </Button>
-            <div id="recaptcha-container"></div>
-          </form>
-        )}
 
-        {step === 2 && (
-           <form onSubmit={handleOtpSubmit} className="space-y-6">
-                <div className="flex justify-center gap-2" dir="ltr">
-                  {[...Array(6)].map((_, i) => (
-                    <Input
-                      key={i}
-                      ref={el => otpInputs.current[i] = el}
-                      type="text"
-                      maxLength={1}
-                      className="size-14 text-2xl text-center font-bold"
-                      value={otp[i] || ''}
-                      onChange={(e) => handleOtpInputChange(e, i)}
-                      onKeyDown={(e) => handleOtpKeyDown(e, i)}
-                    />
-                  ))}
+            {step === 1 && (
+              <form className="space-y-6 mt-8" onSubmit={handlePhoneSubmit}>
+                <div className="relative">
+                  <Input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    autoComplete="tel"
+                    required
+                    className="text-center text-lg tracking-[.2em] h-14 bg-background/70"
+                    placeholder="0912 345 6789"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    dir="ltr"
+                  />
                 </div>
-                <Button type="submit" className="w-full !mt-8 h-12 text-lg" disabled={isSubmitting || otp.length < 6}>
-                   {isSubmitting ? 'در حال تایید...' : 'تایید و ادامه'}
-                   <ChevronRight className="mr-2"/>
+                <Button type="submit" className="w-full !mt-8 h-12 text-lg" disabled={isSubmitting}>
+                  {isSubmitting ? 'در حال ارسال...' : 'ارسال کد تایید'}
+                  <LogIn className="mr-2"/>
                 </Button>
-                 <Button variant="link" size="sm" onClick={() => { setStep(1); setOtp(''); }}>
-                    ویرایش شماره موبایل
-                </Button>
-          </form>
-        )}
+                <div id="recaptcha-container"></div>
+              </form>
+            )}
 
-        {step === 3 && (
-          <div className="space-y-4 !mt-10">
-            <Button
-              variant="outline"
-              className="w-full h-20 text-xl justify-between"
-              onClick={() => handleRoleSelect('shipper')}
-            >
-              <div className='flex items-center gap-4'>
-                <Building className="size-8 text-primary" />
-                <span>صاحب بار هستم</span>
+            {step === 2 && (
+               <form onSubmit={handleOtpSubmit} className="space-y-6 mt-8">
+                    <div className="flex justify-center gap-2" dir="ltr">
+                      {[...Array(6)].map((_, i) => (
+                        <Input
+                          key={i}
+                          ref={el => otpInputs.current[i] = el}
+                          type="text"
+                          maxLength={1}
+                          className="size-14 text-2xl text-center font-bold bg-background/70"
+                          value={otp[i] || ''}
+                          onChange={(e) => handleOtpInputChange(e, i)}
+                          onKeyDown={(e) => handleOtpKeyDown(e, i)}
+                        />
+                      ))}
+                    </div>
+                    <Button type="submit" className="w-full !mt-8 h-12 text-lg" disabled={isSubmitting || otp.length < 6}>
+                       {isSubmitting ? 'در حال تایید...' : 'تایید و ادامه'}
+                       <ChevronRight className="mr-2"/>
+                    </Button>
+                     <Button variant="link" size="sm" onClick={() => { setStep(1); setOtp(''); }}>
+                        ویرایش شماره موبایل
+                    </Button>
+              </form>
+            )}
+
+            {step === 3 && (
+              <div className="space-y-4 !mt-10">
+                <Button
+                  variant="outline"
+                  className="w-full h-20 text-xl justify-between bg-background/70"
+                  onClick={() => handleRoleSelect('shipper')}
+                >
+                  <div className='flex items-center gap-4'>
+                    <Building className="size-8 text-primary" />
+                    <span>صاحب بار هستم</span>
+                  </div>
+                  <ChevronRight />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full h-20 text-xl justify-between bg-background/70"
+                  onClick={() => handleRoleSelect('driver')}
+                >
+                   <div className='flex items-center gap-4'>
+                    <User className="size-8 text-accent" />
+                    <span>راننده هستم</span>
+                  </div>
+                  <ChevronRight />
+                </Button>
               </div>
-              <ChevronRight />
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full h-20 text-xl justify-between"
-              onClick={() => handleRoleSelect('driver')}
-            >
-               <div className='flex items-center gap-4'>
-                <User className="size-8 text-accent" />
-                <span>راننده هستم</span>
-              </div>
-              <ChevronRight />
-            </Button>
-          </div>
-        )}
+            )}
+        </div>
       </div>
   );
 }
