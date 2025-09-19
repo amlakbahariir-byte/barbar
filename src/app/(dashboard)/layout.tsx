@@ -36,7 +36,7 @@ export default function DashboardLayout({
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
   const [path, setPath] = useState('/dashboard');
   const [animationKey, setAnimationKey] = useState(0);
-  const [user, loading, error] = useAuthState(auth);
+  const [user, loading, error] = useAuthState(auth!);
 
   useEffect(() => {
     setIsClient(true);

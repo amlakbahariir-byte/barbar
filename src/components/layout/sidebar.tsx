@@ -54,6 +54,7 @@ export function AppSidebar({ navigate }: { navigate: (path: string) => void }) {
   const menu = role === 'shipper' ? ShipperMenu : DriverMenu;
 
   const handleLogout = async () => {
+    if (!auth) return;
     await signOut(auth);
     localStorage.removeItem('userRole');
     router.push('/');

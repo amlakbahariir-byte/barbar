@@ -23,7 +23,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const [user, authLoading] = useAuthState(auth);
+  const [user, authLoading] = useAuthState(auth!);
 
   // Use a ref for the verifier instance that persists across re-renders
   const recaptchaVerifier = useRef<RecaptchaVerifier | null>(null);
@@ -41,7 +41,7 @@ export default function Home() {
 
 
   useEffect(() => {
-    if (authLoading) return; // Wait until auth state is loaded
+    if (!auth) return;
 
     if (!recaptchaVerifier.current && recaptchaContainerRef.current) {
         // Initialize RecaptchaVerifier only on the client side
@@ -61,14 +61,14 @@ export default function Home() {
             });
         });
     }
-  }, [toast, authLoading]);
+  }, [toast, auth]);
 
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    if (!recaptchaVerifier.current) {
+    if (!recaptchaVerifier.current || !auth) {
       toast({
         title: 'خطا',
         description: 'reCAPTCHA مقداردهی نشده است. لطفا صفحه را رفرش کنید.',
