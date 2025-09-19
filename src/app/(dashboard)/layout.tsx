@@ -50,13 +50,7 @@ export default function DashboardLayout({
       <SidebarInset>
         <main className="flex-1 p-4 md:p-6 pb-24 md:pb-6 overflow-y-auto">
            <div key={pathname} className="animate-in fade-in duration-500">
-              {React.Children.map(children, child => {
-                if (React.isValidElement(child)) {
-                  // @ts-ignore
-                  return React.cloneElement(child, { role, navigate, path: pathname });
-                }
-                return child;
-              })}
+              {children}
            </div>
         </main>
         {isMobile && <BottomNavbar navigate={navigate} />}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { getShipmentById, Shipment } from '@/lib/data';
 import { ArrowRight, Box, Calendar, Check, CircleDollarSign, MapPin, Star, Weight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,8 +13,6 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { ShipmentTracking } from '@/components/shipment-tracking';
 import Image from 'next/image';
-import type { DashboardPageProps } from '../../layout';
-
 
 const statusMap: { [key in Shipment['status']]: { text: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' } } = {
   pending: { text: 'در انتظار پیشنهاد', variant: 'secondary' },
@@ -23,8 +21,11 @@ const statusMap: { [key in Shipment['status']]: { text: string; variant: 'defaul
   delivered: { text: 'تحویل شده', variant: 'secondary' },
 };
 
-export default function RequestDetailsPage({ role, navigate, path }: DashboardPageProps) {
+export default function RequestDetailsPage() {
+  const router = useRouter();
+  const path = usePathname();
   const [shipment, setShipment] = useState<Shipment | null>(null);
+  const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
   const { toast } = useToast();
   
   const id = path.split('/').pop() || '';
@@ -36,14 +37,20 @@ export default function RequestDetailsPage({ role, navigate, path }: DashboardPa
         setShipment(data as Shipment);
       }
     }
+    const storedRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
+    setRole(storedRole);
   }, [id]);
+
+  const navigate = (newPath: string) => {
+    router.push(newPath);
+  };
 
   const handleAcceptBid = () => {
     toast({
       title: 'پیشنهاد پذیرفته شد',
       description: 'راننده انتخاب شد. منتظر تماس راننده برای هماهنگی باشید.',
     });
-    if (navigate) navigate('/dashboard');
+    navigate('/dashboard');
   }
 
   const handlePlaceBid = (e: React.FormEvent) => {
@@ -52,7 +59,7 @@ export default function RequestDetailsPage({ role, navigate, path }: DashboardPa
       title: 'پیشنهاد شما ثبت شد',
       description: 'پیشنهاد قیمت شما برای این بار با موفقیت ثبت شد.',
     });
-    if (navigate) navigate('/dashboard');
+    navigate('/dashboard');
   }
 
   if (!shipment || !role) {
@@ -64,7 +71,7 @@ export default function RequestDetailsPage({ role, navigate, path }: DashboardPa
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <button onClick={() => window.history.back()} className="p-2 rounded-md hover:bg-accent">
+        <button onClick={() => router.back()} className="p-2 rounded-md hover:bg-accent">
             <ArrowRight className="h-5 w-5" />
         </button>
         <h1 className="text-3xl font-bold">جزئیات درخواست: {shipment.id}</h1>

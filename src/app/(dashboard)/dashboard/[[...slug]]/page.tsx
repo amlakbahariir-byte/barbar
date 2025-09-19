@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -101,17 +101,31 @@ function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
   );
 }
 
-export default function DashboardPage({ role, navigate, path }: DashboardPageProps) {
+export default function DashboardPage() {
+  const router = useRouter();
+  const path = usePathname();
+  const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
+
+  useEffect(() => {
+    const storedRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
+    setRole(storedRole);
+  }, []);
+
+  const navigate = (newPath: string) => {
+    if (newPath === path) return;
+    router.push(newPath);
+  };
+  
   const slug = path.replace('/dashboard', '');
 
   if (slug.startsWith('/requests/new')) {
     const NewRequestPage = require('../../requests/new/page').default;
-    return <NewRequestPage {...{ role, navigate, path }} />;
+    return <NewRequestPage navigate={navigate} />;
   }
 
   if (slug.startsWith('/requests/')) {
     const RequestDetailsPage = require('../../requests/[id]/page').default;
-    return <RequestDetailsPage {...{ role, navigate, path }} />;
+    return <RequestDetailsPage role={role} navigate={navigate} path={path} />;
   }
 
   if (role === 'shipper') {
