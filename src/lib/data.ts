@@ -111,9 +111,23 @@ export const getShipmentById = (id: string) => {
     return shipments.find(s => s.id === id);
 }
 
-export const getMyShipments = (role: 'shipper' | 'driver') => {
+export const getMyShipments = (role: 'shipper' | 'driver', type: 'all' | 'available' | 'accepted') => {
     if (role === 'shipper') {
-        return shipments.filter(s => ['pending', 'accepted', 'in_transit', 'delivered'].includes(s.status));
+        // Shippers see all their own shipments regardless of status
+        return shipments;
     }
-    return shipments.filter(s => s.acceptedDriver?.id === 'd1' || s.id === 'shp1002');
+    
+    // For drivers
+    if (type === 'available') {
+        // Drivers see pending shipments they haven't bid on yet. For this demo, we show all pending.
+        return shipments.filter(s => s.status === 'pending');
+    }
+
+    if (type === 'accepted') {
+        // Drivers see shipments they have accepted (or are in transit/delivered for them).
+        // Hardcoded to driver d1 for demo
+        return shipments.filter(s => s.acceptedDriver?.id === 'd1' || s.id === 'shp1003' || s.id === 'shp1006');
+    }
+    
+    return [];
 }

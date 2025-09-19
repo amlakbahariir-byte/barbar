@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useRouter, usePathname } from 'next/navigation';
@@ -9,10 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PackagePlus, List, Map as MapIcon, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import { ShipmentCard } from '@/components/shipment-card';
-import { shipments } from '@/lib/data';
+import { getMyShipments, shipments } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import type { DashboardPageProps } from '../../layout';
 import { useEffect, useState } from 'react';
+import { ShipmentListPage } from '@/components/shipment-list-page';
 
 function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
   const myShipments = shipments.slice(0, 2);
@@ -120,12 +119,47 @@ export default function DashboardPage() {
 
   if (slug.startsWith('/requests/new')) {
     const NewRequestPage = require('../../requests/new/page').default;
-    return <NewRequestPage navigate={navigate} />;
+    return <NewRequestPage />;
+  }
+  
+  if (slug.startsWith('/requests/my') && role === 'shipper') {
+     return <ShipmentListPage 
+        title="درخواست‌های من" 
+        description="در این صفحه تمام درخواست‌های حمل بار خود را مشاهده و مدیریت کنید." 
+        shipments={getMyShipments('shipper', 'all')} 
+        role={role} 
+        navigate={navigate} 
+      />;
   }
 
-  if (slug.startsWith('/requests/')) {
+  if (slug.startsWith('/requests/available') && role === 'driver') {
+     return <ShipmentListPage 
+        title="درخواست‌های بار موجود" 
+        description="در این صفحه بارهای موجود در سراسر کشور را مشاهده کرده و پیشنهاد خود را ثبت کنید." 
+        shipments={getMyShipments('driver', 'available')} 
+        role={role} 
+        navigate={navigate} 
+      />;
+  }
+  
+  if (slug.startsWith('/requests/my-shipments') && role === 'driver') {
+     return <ShipmentListPage 
+        title="بارهای من" 
+        description="در این صفحه بارهایی که پذیرفته‌اید و در حال حمل آن‌ها هستید را مشاهده کنید." 
+        shipments={getMyShipments('driver', 'accepted')} 
+        role={role} 
+        navigate={navigate} 
+      />;
+  }
+
+  // Handle /requests/[id] - check if the last part of the slug is not a known page
+  const slugParts = slug.split('/');
+  const lastPart = slugParts[slugParts.length - 1];
+  const isDetailsPage = slug.startsWith('/requests/') && !['new', 'my', 'available', 'my-shipments'].includes(lastPart);
+
+  if (isDetailsPage) {
     const RequestDetailsPage = require('../../requests/[id]/page').default;
-    return <RequestDetailsPage role={role} navigate={navigate} path={path} />;
+    return <RequestDetailsPage />;
   }
 
   if (role === 'shipper') {
