@@ -58,13 +58,41 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const otpFormRef = useRef<HTMLFormElement>(null);
   
+  // Simulate receiving and entering OTP
+  useEffect(() => {
+    if (step === 2) {
+      setLoading(true);
+      const timer = setTimeout(() => {
+        setOtp('123456'); // Auto-fill OTP
+         toast({
+            title: 'کد تایید دریافت شد',
+            description: 'کد شبیه‌سازی شده: 123456',
+        });
+      }, 2000); // Simulate 2-second delay
+
+      return () => clearTimeout(timer);
+    }
+  }, [step, toast]);
+  
+  // Automatically submit OTP form when OTP is filled
+  useEffect(() => {
+    if (otp.length === 6 && otpFormRef.current) {
+        // We use a short timeout to allow the user to see the OTP has been filled
+        setTimeout(() => {
+             otpFormRef.current?.requestSubmit();
+        }, 500);
+    }
+  }, [otp]);
+
   const setupRecaptcha = () => {
+    if (typeof window === 'undefined') return;
     if (!window.recaptchaVerifier) {
       window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         'size': 'invisible',
         'callback': (response: any) => {
-          // reCAPTCHA solved, allow signInWithPhoneNumber.
+          // reCAPTCHA solved
         }
       });
     }
@@ -74,47 +102,28 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const appVerifier = setupRecaptcha();
-    const formattedPhone = `+98${phone.slice(1)}`;
 
-    try {
-      const confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
-      window.confirmationResult = confirmationResult;
-      setStep(2);
-      toast({
-        title: 'کد ارسال شد',
-        description: 'کد تایید به شماره شما ارسال شد.',
-      });
-    } catch (error: any) {
-      console.error("Error during sign in: ", error);
-      toast({
-        title: 'خطا در ارسال کد',
-        description: `مشکلی پیش آمده است: ${error.message}`,
-        variant: 'destructive',
-      });
-    } finally {
+    // Simulate API call delay
+    setTimeout(() => {
         setLoading(false);
-    }
+        setStep(2);
+        toast({
+            title: 'در حال ارسال کد',
+            description: 'یک کد تایید برای شما شبیه‌سازی می‌شود.',
+        });
+    }, 1000);
   };
 
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    if (window.confirmationResult) {
-        try {
-            await window.confirmationResult.confirm(otp);
-            toast({ title: 'ورود موفقیت‌آمیز بود', description: 'نقش خود را انتخاب کنید.' });
-            setStep(3);
-        } catch (error) {
-             toast({
-                title: 'کد نامعتبر',
-                description: 'کد وارد شده صحیح نیست.',
-                variant: 'destructive',
-            });
-        } finally {
-            setLoading(false);
-        }
-    }
+    
+    // Simulate OTP verification delay
+    setTimeout(() => {
+        setLoading(false);
+        toast({ title: 'ورود موفقیت‌آمیز بود', description: 'نقش خود را انتخاب کنید.' });
+        setStep(3);
+    }, 1000);
   };
 
   const handleRoleSelect = (role: 'shipper' | 'driver') => {
@@ -147,7 +156,7 @@ function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driv
         );
       case 2:
         return (
-          <form onSubmit={handleOtpSubmit} className="space-y-4 animate-in fade-in-0 duration-500">
+          <form ref={otpFormRef} onSubmit={handleOtpSubmit} className="space-y-4 animate-in fade-in-0 duration-500">
             <div className="space-y-2">
               <Label htmlFor="otp">کد تایید</Label>
               <Input 
