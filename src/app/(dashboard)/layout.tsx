@@ -1,3 +1,4 @@
+
 'use client';
 
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
@@ -31,6 +32,7 @@ export default function DashboardLayout({
   const isMobile = useIsMobile();
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
   const [path, setPath] = useState('/dashboard');
+  const [animationKey, setAnimationKey] = useState(0);
 
   useEffect(() => {
     setIsClient(true);
@@ -44,6 +46,7 @@ export default function DashboardLayout({
     const handlePathChange = () => {
         const currentPath = window.location.pathname;
         setPath(currentPath);
+        setAnimationKey(prevKey => prevKey + 1); // Change key to re-trigger animation
     };
     handlePathChange();
     window.addEventListener('popstate', handlePathChange);
@@ -53,8 +56,10 @@ export default function DashboardLayout({
   }, [router]);
 
   const navigate = (newPath: string) => {
+    if (newPath === path) return;
     window.history.pushState({}, '', newPath);
     setPath(newPath);
+    setAnimationKey(prevKey => prevKey + 1); // Change key to re-trigger animation
   };
   
   const renderContent = () => {
@@ -81,7 +86,11 @@ export default function DashboardLayout({
     <SidebarProvider>
       <AppSidebar navigate={navigate} />
       <SidebarInset>
-        <main className="flex-1 p-4 md:p-6 pb-24 md:pb-6">{renderContent()}</main>
+        <main className="flex-1 p-4 md:p-6 pb-24 md:pb-6 overflow-hidden">
+           <div key={animationKey} className="animate-in fade-in duration-500">
+             {renderContent()}
+           </div>
+        </main>
         {isMobile && <BottomNavbar navigate={navigate} />}
       </SidebarInset>
     </SidebarProvider>

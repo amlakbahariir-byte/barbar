@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -16,7 +17,7 @@ function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-primary/10 border-primary">
+      <Card className="bg-primary/10 border-primary animate-in fade-in-0 slide-in-from-top-4 duration-500">
         <CardHeader>
           <CardTitle>سفر بار خود را شروع کنید</CardTitle>
           <CardDescription>یک درخواست حمل بار جدید ایجاد کنید و بهترین پیشنهادها را از رانندگان معتبر دریافت کنید.</CardDescription>
@@ -29,11 +30,13 @@ function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
         </CardContent>
       </Card>
       
-      <div>
+      <div className="animate-in fade-in-0 slide-in-from-top-8 duration-500 delay-200">
         <h2 className="text-2xl font-bold mb-4">درخواست‌های اخیر شما</h2>
         <div className="grid gap-6 md:grid-cols-2">
-          {myShipments.map((shipment) => (
-            <ShipmentCard key={shipment.id} shipment={shipment} role="shipper" navigate={navigate} />
+          {myShipments.map((shipment, index) => (
+             <div key={shipment.id} className="animate-in fade-in-0 slide-in-from-top-12 duration-500" style={{ animationDelay: `${index * 150 + 300}ms`, animationFillMode: 'backwards' }}>
+                <ShipmentCard shipment={shipment} role="shipper" navigate={navigate} />
+            </div>
           ))}
         </div>
          <div className="mt-4 text-center">
@@ -52,8 +55,8 @@ function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
 
   return (
     <div className="space-y-6">
-        <h1 className="text-3xl font-bold">درخواست‌های بار نزدیک شما</h1>
-        <Tabs defaultValue="list-view">
+        <h1 className="text-3xl font-bold animate-in fade-in-0 slide-in-from-top-4 duration-500">درخواست‌های بار نزدیک شما</h1>
+        <Tabs defaultValue="list-view" className="animate-in fade-in-0 slide-in-from-top-8 duration-500 delay-100">
             <div className="flex justify-between items-center">
                 <TabsList>
                     <TabsTrigger value="list-view"><List className="ml-2 h-4 w-4" />نمای لیست</TabsTrigger>
@@ -63,13 +66,15 @@ function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
             </div>
             <TabsContent value="list-view" className="mt-6">
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {shipments.filter(s => s.status === 'pending').map((shipment) => (
-                        <ShipmentCard key={shipment.id} shipment={shipment} role="driver" navigate={navigate} />
+                    {shipments.filter(s => s.status === 'pending').map((shipment, index) => (
+                         <div key={shipment.id} className="animate-in fade-in-0 slide-in-from-top-12 duration-500" style={{ animationDelay: `${index * 100 + 200}ms`, animationFillMode: 'backwards' }}>
+                            <ShipmentCard shipment={shipment} role="driver" navigate={navigate} />
+                        </div>
                     ))}
                 </div>
             </TabsContent>
             <TabsContent value="map-view" className="mt-6">
-                <Card>
+                <Card className="animate-in fade-in duration-300">
                     <CardContent className="p-2">
                         {mapImage && (
                              <Image

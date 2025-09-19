@@ -1,3 +1,4 @@
+
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +23,7 @@ export function ShipmentCard({ shipment, role, navigate }: { shipment: Shipment;
   }, []);
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className="hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
       <CardHeader>
         <div className="flex justify-between items-start">
             <div>
