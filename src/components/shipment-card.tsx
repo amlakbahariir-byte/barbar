@@ -1,9 +1,10 @@
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { Shipment } from '@/lib/data';
 import { ArrowLeft, Box, Calendar, MapPin, Weight } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const statusMap: { [key in Shipment['status']]: { text: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' } } = {
   pending: { text: 'در انتظار پیشنهاد', variant: 'secondary' },
@@ -13,6 +14,14 @@ const statusMap: { [key in Shipment['status']]: { text: string; variant: 'defaul
 };
 
 export function ShipmentCard({ shipment, role }: { shipment: Shipment; role: 'shipper' | 'driver' }) {
+  const router = useRouter();
+  const [distance, setDistance] = useState(0);
+
+  useEffect(() => {
+    // This should run only on the client
+    setDistance(Math.floor(Math.random() * 200) + 10);
+  }, []);
+
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader>
@@ -42,16 +51,14 @@ export function ShipmentCard({ shipment, role }: { shipment: Shipment; role: 'sh
         {role === 'driver' && (
              <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span>فاصله: {Math.floor(Math.random() * 200) + 10} کیلومتر</span>
+                <span>فاصله: {distance} کیلومتر</span>
             </div>
         )}
       </CardContent>
       <CardFooter>
-        <Link href={`/requests/${shipment.id}`} className="w-full">
-            <Button variant="outline" className="w-full">
-                مشاهده جزئیات
-            </Button>
-        </Link>
+        <Button variant="outline" className="w-full" onClick={() => router.push(`/requests/${shipment.id}`)}>
+            مشاهده جزئیات
+        </Button>
       </CardFooter>
     </Card>
   );

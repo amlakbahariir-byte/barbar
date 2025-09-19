@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getShipmentById, Shipment } from '@/lib/data';
-import { ArrowRight, Box, Calendar, Check, CircleDollarSign, MapPin, Star, User, Weight } from 'lucide-react';
+import { ArrowRight, Box, Calendar, Check, CircleDollarSign, MapPin, Star, Weight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,8 +29,10 @@ export default function RequestDetailsPage() {
   
   const [shipment, setShipment] = useState<Shipment | null>(null);
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
     const data = getShipmentById(id);
     if (data) {
       setShipment(data as Shipment);
@@ -56,7 +58,7 @@ export default function RequestDetailsPage() {
     router.push('/dashboard');
   }
 
-  if (!shipment || !role) {
+  if (!isClient || !shipment || !role) {
     return <div>در حال بارگذاری جزئیات...</div>;
   }
 
