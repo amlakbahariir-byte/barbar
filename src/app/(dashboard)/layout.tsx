@@ -11,7 +11,6 @@ import { AnimatedTruckLoader } from '@/components/ui/animated-truck-loader';
 
 export type DashboardPageProps = {
   role: 'shipper' | 'driver' | null;
-  isClient: boolean;
   navigate: (path: string) => void;
   path: string;
 };
@@ -24,16 +23,16 @@ export default function DashboardLayout({
   const router = useRouter();
   const pathname = usePathname();
   const isMobile = useIsMobile();
+  const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Hardcoded role for development
-  const role = 'shipper'; 
-  const [isClient, setIsClient] = useState(false);
-  
   useEffect(() => {
-    setIsClient(true);
-    // Set a default role in localStorage for components that might use it
-    localStorage.setItem('userRole', role);
-  }, [role]);
+    // Hardcoded role for development
+    const devRole = 'shipper';
+    localStorage.setItem('userRole', devRole);
+    setRole(devRole);
+    setIsLoading(false);
+  }, []);
 
 
   const navigate = (newPath: string) => {
@@ -41,7 +40,7 @@ export default function DashboardLayout({
     router.push(newPath);
   };
   
-  if (!isClient) {
+  if (isLoading) {
     return <AnimatedTruckLoader />;
   }
   
@@ -54,7 +53,7 @@ export default function DashboardLayout({
               {React.Children.map(children, child => {
                 if (React.isValidElement(child)) {
                   // @ts-ignore
-                  return React.cloneElement(child, { role, isClient, navigate, path: pathname });
+                  return React.cloneElement(child, { role, navigate, path: pathname });
                 }
                 return child;
               })}

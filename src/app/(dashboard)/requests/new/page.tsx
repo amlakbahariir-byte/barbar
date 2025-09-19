@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import type { DashboardPageProps } from '../../layout';
 
-export default function NewRequestPage({ navigate }: DashboardPageProps) {
+export default function NewRequestPage({ navigate }: Omit<DashboardPageProps, 'role' | 'path'>) {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const { toast } = useToast();
 

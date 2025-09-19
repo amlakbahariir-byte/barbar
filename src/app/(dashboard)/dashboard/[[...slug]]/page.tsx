@@ -12,6 +12,7 @@ import { ShipmentCard } from '@/components/shipment-card';
 import { shipments } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import type { DashboardPageProps } from '../../layout';
+import { useEffect, useState } from 'react';
 
 function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
   const myShipments = shipments.slice(0, 2);
@@ -100,21 +101,17 @@ function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
   );
 }
 
-export default function DashboardPage({ role, isClient, navigate, path }: DashboardPageProps) {
-  if (!isClient) {
-    return <div>در حال بارگذاری...</div>;
-  }
-
+export default function DashboardPage({ role, navigate, path }: DashboardPageProps) {
   const slug = path.replace('/dashboard', '');
 
   if (slug.startsWith('/requests/new')) {
     const NewRequestPage = require('../../requests/new/page').default;
-    return <NewRequestPage {...{ role, isClient, navigate, path }} />;
+    return <NewRequestPage {...{ role, navigate, path }} />;
   }
 
   if (slug.startsWith('/requests/')) {
     const RequestDetailsPage = require('../../requests/[id]/page').default;
-    return <RequestDetailsPage {...{ role, isClient, navigate, path }} />;
+    return <RequestDetailsPage {...{ role, navigate, path }} />;
   }
 
   if (role === 'shipper') {
@@ -125,6 +122,5 @@ export default function DashboardPage({ role, isClient, navigate, path }: Dashbo
       return <DriverDashboard navigate={navigate} />;
   }
 
-  return <div>نقش کاربری مشخص نشده است. لطفا دوباره وارد شوید.</div>;
+  return <div>در حال بارگذاری...</div>;
 }
-

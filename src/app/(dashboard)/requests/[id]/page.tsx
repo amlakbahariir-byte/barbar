@@ -23,7 +23,7 @@ const statusMap: { [key in Shipment['status']]: { text: string; variant: 'defaul
   delivered: { text: 'تحویل شده', variant: 'secondary' },
 };
 
-export default function RequestDetailsPage({ role, isClient, navigate, path }: DashboardPageProps) {
+export default function RequestDetailsPage({ role, navigate, path }: DashboardPageProps) {
   const [shipment, setShipment] = useState<Shipment | null>(null);
   const { toast } = useToast();
   
@@ -55,7 +55,7 @@ export default function RequestDetailsPage({ role, isClient, navigate, path }: D
     if (navigate) navigate('/dashboard');
   }
 
-  if (!isClient || !shipment || !role) {
+  if (!shipment || !role) {
     return <div>در حال بارگذاری جزئیات...</div>;
   }
 
