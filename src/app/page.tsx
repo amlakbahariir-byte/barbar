@@ -15,45 +15,21 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 
-export default function Home() {
+function AuthForm({ onLoginSuccess }: { onLoginSuccess: (role: 'shipper' | 'driver') => void }) {
   const [step, setStep] = useState(1);
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
   const { toast } = useToast();
-  const [isClient, setIsClient] = useState(false);
-
-  // useAuthState should only be used on the client
+  
   const [user, authLoading] = useAuthState(auth as Auth);
 
   const recaptchaVerifier = useRef<RecaptchaVerifier | null>(null);
   const recaptchaContainerRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
-    // This ensures code runs only on the client
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isClient) return;
-
-    if (!authLoading) {
-      if (user) {
-        const userRole = localStorage.getItem('userRole');
-        if (userRole) {
-          router.push('/dashboard');
-        } else {
-          // If user is logged in but has no role, force them to choose.
-          setStep(3);
-        }
-      }
-    }
-  }, [user, authLoading, router, isClient]);
-
-  useEffect(() => {
-    if (!isClient || !auth || recaptchaVerifier.current) return;
+    if (!auth || recaptchaVerifier.current) return;
 
     if (recaptchaContainerRef.current) {
         recaptchaVerifier.current = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
@@ -70,7 +46,18 @@ export default function Home() {
             });
         });
     }
-  }, [isClient, auth, toast]);
+  }, [auth, toast]);
+
+  useEffect(() => {
+    if (!authLoading && user) {
+        const userRole = localStorage.getItem('userRole');
+        if (userRole) {
+            onLoginSuccess(userRole as 'shipper' | 'driver');
+        } else {
+            setStep(3);
+        }
+    }
+  }, [user, authLoading, onLoginSuccess]);
 
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
@@ -116,7 +103,6 @@ export default function Home() {
 
     try {
       await confirmationResult.confirm(otp);
-      // User is now signed in. The useEffect will catch this and show step 3.
       setStep(3);
     } catch (error) {
       console.error('Error verifying OTP:', error);
@@ -133,12 +119,12 @@ export default function Home() {
 
   const handleLogin = (role: 'shipper' | 'driver') => {
     localStorage.setItem('userRole', role);
-    router.push('/dashboard');
+    onLoginSuccess(role);
   };
   
-  if (!isClient || authLoading) {
+  if (authLoading) {
     return (
-        <div className="flex h-screen items-center justify-center">
+        <div className="flex h-48 items-center justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </div>
     );
@@ -211,8 +197,58 @@ export default function Home() {
   }
 
   return (
+    <>
+      <div ref={recaptchaContainerRef}></div>
+      <Card>
+        <CardHeader>
+          <CardTitle>ورود به حساب کاربری</CardTitle>
+          <CardDescription>
+            {getCardDescription()}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {renderStepContent()}
+        </CardContent>
+        {step === 3 && (
+          <CardFooter className="flex flex-col gap-4 animate-in fade-in-0 duration-500">
+             <p className="text-sm text-muted-foreground">ورود به عنوان:</p>
+            <div className="grid grid-cols-2 gap-4 w-full">
+              <Button onClick={() => handleLogin('shipper')} className="w-full" variant="secondary">
+                فرستنده
+              </Button>
+              <Button onClick={() => handleLogin('driver')} className="w-full">
+                راننده
+              </Button>
+            </div>
+          </CardFooter>
+        )}
+         {(step === 2) && !loading && (
+           <CardFooter>
+              <Button variant="link" size="sm" onClick={() => { setStep(1); setOtp(''); }}>
+                تغییر شماره موبایل
+              </Button>
+           </CardFooter>
+          )}
+      </Card>
+    </>
+  );
+}
+
+
+export default function Home() {
+  const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  
+  const handleLoginSuccess = () => {
+    router.push('/dashboard');
+  };
+
+  return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-8 overflow-hidden">
-       <div ref={recaptchaContainerRef}></div>
        <div className="absolute inset-0 -z-10 h-full w-full bg-background bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem] opacity-20"></div>
        <div className="absolute size-96 -bottom-48 -right-48 bg-primary/20 rounded-full blur-3xl"></div>
        <div className="absolute size-96 -top-48 -left-48 bg-accent/20 rounded-full blur-3xl"></div>
@@ -231,37 +267,15 @@ export default function Home() {
             <TabsTrigger value="login">ورود یا ثبت‌نام</TabsTrigger>
           </TabsList>
           <TabsContent value="login">
-            <Card>
-              <CardHeader>
-                <CardTitle>ورود به حساب کاربری</CardTitle>
-                <CardDescription>
-                  {getCardDescription()}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {renderStepContent()}
-              </CardContent>
-              {step === 3 && (
-                <CardFooter className="flex flex-col gap-4 animate-in fade-in-0 duration-500">
-                   <p className="text-sm text-muted-foreground">ورود به عنوان:</p>
-                  <div className="grid grid-cols-2 gap-4 w-full">
-                    <Button onClick={() => handleLogin('shipper')} className="w-full" variant="secondary">
-                      فرستنده
-                    </Button>
-                    <Button onClick={() => handleLogin('driver')} className="w-full">
-                      راننده
-                    </Button>
-                  </div>
-                </CardFooter>
-              )}
-               {(step === 2) && !loading && (
-                 <CardFooter>
-                    <Button variant="link" size="sm" onClick={() => { setStep(1); setOtp(''); }}>
-                      تغییر شماره موبایل
-                    </Button>
-                 </CardFooter>
-                )}
-            </Card>
+            {isClient ? (
+                <AuthForm onLoginSuccess={handleLoginSuccess} />
+            ) : (
+                <Card className="h-64">
+                    <CardContent className="flex h-full items-center justify-center">
+                         <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                    </CardContent>
+                </Card>
+            )}
           </TabsContent>
         </Tabs>
       </div>
