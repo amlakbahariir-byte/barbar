@@ -11,6 +11,7 @@ import type { RecaptchaVerifier, ConfirmationResult } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
 import { LoaderWithSlogan } from '@/components/ui/loader-with-slogan';
 import { cn } from '@/lib/utils';
+import { AnimatedTruckLoader } from '@/components/ui/animated-truck-loader';
 
 // Extend window type to include our custom properties
 declare global {
@@ -207,12 +208,7 @@ function HomePageContent() {
       <div className="w-full max-w-md flex flex-col justify-between h-full py-12 z-10">
         
         <div className="text-center text-primary-foreground animate-in fade-in-0 slide-in-from-top-10 duration-700">
-           <h1 className="text-5xl font-bold tracking-tight" style={{textShadow: '0 2px 10px rgba(0,0,0,0.2)'}}>
-              باربر ایرانی
-           </h1>
-           <p className="mt-2 text-lg text-primary-foreground/80">
-              سریع، امن، مطمئن
-           </p>
+           <AnimatedTruckLoader />
         </div>
         
         <div className={cn("transition-opacity duration-500 mb-[30px]", isSubmitting && "opacity-50 pointer-events-none")}>
@@ -240,7 +236,7 @@ function HomePageContent() {
                         autoComplete="tel"
                         required
                         className="text-center text-lg tracking-[.2em] h-14 bg-input"
-                        placeholder="0912 345 6789"
+                        placeholder="09100910995"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         dir="ltr"
