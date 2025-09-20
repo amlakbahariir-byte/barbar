@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 // Converts a Gregorian date to a Jalali date
 function toJalali(gy: number, gm: number, gd: number) {
   const g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
-  const jy = (gy <= 1600) ? 0 : 979;
+  let jy = (gy <= 1600) ? 0 : 979;
   gy -= (gy <= 1600) ? 621 : 1600;
   const gy2 = (gm > 2) ? (gy + 1) : gy;
   let days = 365 * gy + Math.floor((gy2 + 3) / 4) - Math.floor((gy2 + 99) / 100) + Math.floor((gy2 + 399) / 400) - 80 + gd + g_d_m[gm - 1];
@@ -42,7 +42,8 @@ function toGregorian(jy: number, jm: number, jd: number) {
   days %= 1461;
   gy += Math.floor((days - 1) / 365);
   if (days > 365) days = (days - 1) % 365;
-  const gd = days + 1;
+  
+  let gd = days + 1;
   const sal_a = [0, 31, ((gy % 4 === 0 && gy % 100 !== 0) || (gy % 400 === 0)) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
   let gm;
   for (gm = 0; gm < 13 && gd > sal_a[gm]; gm++) gd -= sal_a[gm];
@@ -78,7 +79,7 @@ export function PersianCalendar({ selectedDate, onDateChange }: PersianCalendarP
   const jalaliDisplay = toJalali(displayDate.getFullYear(), displayDate.getMonth() + 1, displayDate.getDate());
   const jalaliSelected = selectedDate ? toJalali(selectedDate.getFullYear(), selectedDate.getMonth() + 1, selectedDate.getDate()) : null;
   const today = new Date();
-  const jalaliToday = toJalali(today.getFullYear(), today.getMonth() + 1, today.getDate());
+  const jalaliToday = toJali(today.getFullYear(), today.getMonth() + 1, today.getDate());
 
   const { jy, jm } = jalaliDisplay;
 
@@ -97,23 +98,24 @@ export function PersianCalendar({ selectedDate, onDateChange }: PersianCalendarP
   };
 
   const changeMonth = (amount: number) => {
+    // A bit of a simplification, might not be perfect with month lengths
     const newDisplayDate = new Date(displayDate);
-    const newJalaliMonth = jm + amount;
+    const currentJalali = toJalali(newDisplayDate.getFullYear(), newDisplayDate.getMonth() + 1, newDisplayDate.getDate());
+    
+    let newJalaliMonth = currentJalali.jm + amount;
+    let newJalaliYear = currentJalali.jy;
 
-    let nextJm, nextJy;
     if (newJalaliMonth > 12) {
-      nextJm = 1;
-      nextJy = jy + 1;
+      newJalaliMonth = 1;
+      newJalaliYear++;
     } else if (newJalaliMonth < 1) {
-      nextJm = 12;
-      nextJy = jy - 1;
-    } else {
-      nextJm = newJalaliMonth;
-      nextJy = jy;
+      newJalaliMonth = 12;
+      newJalaliYear--;
     }
     
-    const gregorian = toGregorian(nextJy, nextJm, 1);
-    setDisplayDate(new Date(gregorian.gy, gregorian.gm - 1, gregorian.gd));
+    // Go to the first of that month to avoid issues with unequal month lengths
+    const newGregorian = toGregorian(newJalaliYear, newJalaliMonth, 1);
+    setDisplayDate(new Date(newGregorian.gy, newGregorian.gm - 1, newGregorian.gd));
   };
   
   const toPersianNumber = (n: number | string) => {
@@ -124,13 +126,13 @@ export function PersianCalendar({ selectedDate, onDateChange }: PersianCalendarP
   return (
     <div className="p-3" dir="rtl">
       <div className="flex items-center justify-between mb-4">
-        <Button variant="outline" size="icon" onClick={() => changeMonth(1)}>
+        <Button variant="outline" size="icon" onClick={() => changeMonth(-1)}>
           <ChevronRight className="h-4 w-4" />
         </Button>
         <div className="text-lg font-semibold">
           {JALALI_MONTHS[jm - 1]} {toPersianNumber(jy)}
         </div>
-        <Button variant="outline" size="icon" onClick={() => changeMonth(-1)}>
+        <Button variant="outline" size="icon" onClick={() => changeMonth(1)}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
       </div>
