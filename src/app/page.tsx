@@ -215,7 +215,7 @@ function HomePageContent() {
            </p>
         </div>
         
-        <div className={cn("transition-opacity duration-500", isSubmitting && "opacity-50 pointer-events-none")}>
+        <div className={cn("transition-opacity duration-500 mb-[30px]", isSubmitting && "opacity-50 pointer-events-none")}>
             <div className="bg-card p-6 rounded-3xl shadow-2xl space-y-6 animate-in fade-in-0 slide-in-from-bottom-10 duration-700">
                 <div className='text-center'>
                   <h2 className="text-2xl font-bold tracking-tight text-foreground">
