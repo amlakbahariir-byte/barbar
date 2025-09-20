@@ -8,41 +8,62 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { Package, MapPin, ArrowLeft, ArrowRight, CalendarIcon, Clock } from 'lucide-react';
+import { Package, MapPin, ArrowLeft, CalendarIcon, Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { Progress } from '@/components/ui/progress';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { PersianCalendar } from '@/components/persian-calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { addShipment } from '@/lib/data';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
-const steps = [
-  { id: 1, title: 'مسیر', icon: MapPin },
-  { id: 2, title: 'مشخصات بار', icon: Package },
-  { id: 3, title: 'تاریخ و زمان', icon: CalendarIcon },
-];
+const toPersianNumber = (n: number | string) => {
+    const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
+    return String(n).replace(/\d/g, (d: any) => persianDigits[d]);
+}
+
+// Validation Schema
+const formSchema = z.object({
+  origin: z.string({ required_error: "مبدا الزامی است." }).min(1, { message: "مبدا نمی‌تواند خالی باشد." }),
+  destination: z.string({ required_error: "مقصد الزامی است." }).min(1, { message: "مقصد نمی‌تواند خالی باشد." }),
+  weight: z.string().min(1, { message: "وزن نمی‌تواند خالی باشد." }),
+  cargoType: z.string().min(1, { message: "نوع بار نمی‌تواند خالی باشد." }),
+  date: z.date({ required_error: "انتخاب تاریخ الزامی است." }).refine((date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to compare only dates
+    return date >= today;
+  }, {
+    message: "تاریخ بارگیری نمی‌تواند در گذشته باشد."
+  }),
+  hour: z.string(),
+  minute: z.string(),
+  description: z.string().optional(),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 export default function NewRequestPage() {
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(1);
   const { toast } = useToast();
 
-  // States for form fields
-  const [origin, setOrigin] = useState('');
-  const [destination, setDestination] = useState('');
-  const [weight, setWeight] = useState('');
-  const [cargoType, setCargoType] = useState('');
-  const [description, setDescription] = useState('');
-  const [date, setDate] = useState<Date>(new Date());
-  const [hour, setHour] = useState<string>('09');
-  const [minute, setMinute] = useState<string>('00');
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      origin: '',
+      destination: '',
+      weight: '',
+      cargoType: '',
+      date: new Date(),
+      hour: '09',
+      minute: '00',
+      description: '',
+    },
+  });
 
-  const navigate = (path: string) => {
-    router.push(path);
-  };
-  
-  const toPersianDate = (date: Date) => {
+  const toPersianDate = (date: Date | undefined) => {
+      if (!date) return 'یک تاریخ انتخاب کنید';
       return new Intl.DateTimeFormat('fa-IR', {
           year: 'numeric',
           month: 'long',
@@ -50,22 +71,15 @@ export default function NewRequestPage() {
       }).format(date);
   }
 
-  const toPersianNumber = (n: number | string) => {
-    const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
-    return String(n).replace(/\d/g, (d: any) => persianDigits[d]);
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const onSubmit = (values: FormValues) => {
     const newShipment = {
-        id: `shp${Math.floor(Math.random() * 1000) + 1007}`, // Generate a random ID
-        origin,
-        destination,
-        weight: parseInt(weight) || 0,
-        cargoType,
-        description,
-        date: `${toPersianDate(date)} - ${hour}:${minute}`,
+        id: `shp${Math.floor(Math.random() * 1000) + 1007}`,
+        origin: values.origin,
+        destination: values.destination,
+        weight: parseInt(values.weight) || 0,
+        cargoType: values.cargoType,
+        description: values.description || '',
+        date: `${toPersianDate(values.date)} - ${values.hour}:${values.minute}`,
         status: 'pending' as const,
         bids: [],
     };
@@ -77,13 +91,12 @@ export default function NewRequestPage() {
       description: 'درخواست حمل بار شما با موفقیت ثبت شد و به رانندگان نمایش داده می‌شود.',
       variant: 'default',
     });
-    navigate('/dashboard');
+    router.push('/dashboard');
   };
-
-  const nextStep = () => setCurrentStep((prev) => (prev < steps.length ? prev + 1 : prev));
-  const prevStep = () => setCurrentStep((prev) => (prev > 1 ? prev - 1 : prev));
-
-  const progressValue = ((currentStep - 1) / (steps.length - 1)) * 100;
+  
+  const navigate = (path: string) => {
+      router.push(path);
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -91,155 +104,194 @@ export default function NewRequestPage() {
             <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/5 to-transparent"></div>
             <div className="relative z-10">
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight">ایجاد درخواست حمل بار</h1>
-            <p className="mt-2 text-muted-foreground max-w-prose">این فرآیند {steps.length} مرحله‌ای را برای ثبت درخواست خود کامل کنید.</p>
+            <p className="mt-2 text-muted-foreground max-w-prose">اطلاعات زیر را برای ثبت درخواست خود تکمیل کنید.</p>
             </div>
             <button onClick={() => navigate('/dashboard')} className="relative z-10 p-2 rounded-full bg-background/50 hover:bg-background transition-colors">
                 <ArrowLeft className="h-6 w-6" />
             </button>
         </div>
       
-      <Card className="overflow-hidden">
-         <div className="p-6 border-b">
-            <div className="relative flex justify-between items-center mb-4 px-4 md:px-8">
-                 <Progress value={progressValue} className="absolute h-1 top-1/2 -translate-y-1/2 -z-10 transition-all duration-300" />
-                {steps.map((step, index) => (
-                    <div key={step.id} className="flex flex-col items-center z-10">
-                        <div className={cn(
-                            "flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300 bg-background",
-                            currentStep > index + 1 ? "bg-primary border-primary text-primary-foreground" :
-                            currentStep === index + 1 ? "border-primary text-primary" :
-                            "bg-muted border-border text-muted-foreground"
-                        )}>
-                            <step.icon className="w-5 h-5" />
-                        </div>
-                        <p className={cn(
-                             "mt-2 text-xs md:text-sm font-medium transition-colors duration-300",
-                             currentStep >= index + 1 ? "text-foreground" : "text-muted-foreground"
-                        )}>{step.title}</p>
-                    </div>
-                ))}
-            </div>
-        </div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-2xl"><MapPin/>مسیر</CardTitle>
+                    <CardDescription>مبدا و مقصد حمل بار خود را مشخص کنید.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="origin"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>مبدا</FormLabel>
+                          <FormControl>
+                            <Input placeholder="مثال: تهران، میدان آزادی" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="destination"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>مقصد</FormLabel>
+                          <FormControl>
+                            <Input placeholder="مثال: اصفهان، میدان نقش جهان" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                </CardContent>
+            </Card>
 
-        <form onSubmit={handleSubmit}>
-            <CardContent className="p-6 md:p-8">
-                <div className={cn("transition-all duration-300", currentStep === 1 ? "block" : "hidden")}>
-                    <CardHeader className="p-0 mb-6">
-                        <CardTitle className="text-2xl">مرحله ۱: مبدا و مقصد</CardTitle>
-                        <CardDescription>مسیر حمل بار خود را مشخص کنید.</CardDescription>
-                    </CardHeader>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-2xl"><Package/>مشخصات بار</CardTitle>
+                    <CardDescription>اطلاعات مربوط به وزن، نوع و توضیحات بار را وارد کنید.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="origin">مبدا</Label>
-                            <Input id="origin" placeholder="مثال: تهران، میدان آزادی" required value={origin} onChange={e => setOrigin(e.target.value)} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="destination">مقصد</Label>
-                            <Input id="destination" placeholder="مثال: اصفهان، میدان نقش جهان" required value={destination} onChange={e => setDestination(e.target.value)} />
-                        </div>
+                        <FormField
+                            control={form.control}
+                            name="weight"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>وزن (کیلوگرم)</FormLabel>
+                                <FormControl>
+                                <Input type="number" placeholder="مثال: ۵۰۰" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="cargoType"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>نوع بار</FormLabel>
+                                <FormControl>
+                                <Input placeholder="مثال: مبلمان" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
                     </div>
-                </div>
-
-                <div className={cn("transition-all duration-300", currentStep === 2 ? "block" : "hidden")}>
-                     <CardHeader className="p-0 mb-6">
-                        <CardTitle className="text-2xl">مرحله ۲: مشخصات بار</CardTitle>
-                        <CardDescription>اطلاعات مربوط به وزن، حجم و نوع بار خود را وارد کنید.</CardDescription>
-                    </CardHeader>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                         <div className="space-y-2">
-                            <Label htmlFor="weight">وزن (کیلوگرم)</Label>
-                            <Input id="weight" type="number" placeholder="مثال: ۵۰۰" required value={weight} onChange={e => setWeight(e.target.value)} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="cargoType">نوع بار</Label>
-                            <Input id="cargoType" placeholder="مثال: مبلمان" required value={cargoType} onChange={e => setCargoType(e.target.value)} />
-                        </div>
-                         <div className="md:col-span-2 space-y-2">
-                            <Label htmlFor="description">توضیحات (اختیاری)</Label>
-                            <Textarea id="description" placeholder="اطلاعات تکمیلی مانند نوع بار، حساسیت، نیاز به تجهیزات خاص و ..." value={description} onChange={e => setDescription(e.target.value)} />
-                        </div>
-                    </div>
-                </div>
-
-                 <div className={cn("transition-all duration-300", currentStep === 3 ? "block" : "hidden")}>
-                    <CardHeader className="p-0 mb-6">
-                        <CardTitle className="text-2xl">مرحله ۳: تاریخ و زمان بارگیری</CardTitle>
-                        <CardDescription>تاریخ و ساعت مورد نظر خود برای شروع حمل را انتخاب کنید.</CardDescription>
-                    </CardHeader>
-                    <div className="flex flex-col items-center gap-6">
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button
-                                variant={"outline"}
-                                className={cn(
-                                    "w-[280px] justify-start text-right font-normal h-12 text-base",
-                                    !date && "text-muted-foreground"
-                                )}
-                                >
-                                <CalendarIcon className="ml-2 h-5 w-5" />
-                                {date ? toPersianDate(date) : <span>یک تاریخ انتخاب کنید</span>}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                                <PersianCalendar
-                                    selectedDate={date}
-                                    onDateChange={setDate}
-                                />
-                            </PopoverContent>
-                        </Popover>
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>توضیحات (اختیاری)</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="اطلاعات تکمیلی مانند نوع بار، حساسیت، نیاز به تجهیزات خاص و ..." {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                </CardContent>
+            </Card>
+            
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-2xl"><CalendarIcon/>تاریخ و زمان بارگیری</CardTitle>
+                    <CardDescription>تاریخ و ساعت مورد نظر خود برای شروع حمل را انتخاب کنید.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col md:flex-row items-center justify-center gap-6 pt-6">
+                     <FormField
+                        control={form.control}
+                        name="date"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-col items-center">
+                               <Popover>
+                                   <PopoverTrigger asChild>
+                                        <FormControl>
+                                            <Button
+                                            variant={"outline"}
+                                            className={cn(
+                                                "w-[280px] justify-start text-right font-normal h-12 text-base",
+                                                !field.value && "text-muted-foreground"
+                                            )}
+                                            >
+                                                <CalendarIcon className="ml-2 h-5 w-5" />
+                                                {toPersianDate(field.value)}
+                                            </Button>
+                                        </FormControl>
+                                   </PopoverTrigger>
+                                   <PopoverContent className="w-auto p-0">
+                                       <PersianCalendar
+                                           selectedDate={field.value}
+                                           onDateChange={field.onChange}
+                                       />
+                                   </PopoverContent>
+                               </Popover>
+                               <FormMessage className="mt-2" />
+                            </FormItem>
+                        )}
+                        />
 
                         <div className="flex items-center gap-4" dir="rtl">
                             <Clock className="h-6 w-6 text-muted-foreground" />
                             <div className="flex items-center gap-2" dir="ltr">
-                                <Select value={minute} onValueChange={setMinute}>
-                                    <SelectTrigger className="w-[100px]">
-                                        <SelectValue className="font-headline text-lg" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {['00', '15', '30', '45'].map(m => (
-                                            <SelectItem key={m} value={m} className="font-headline text-lg justify-center">{toPersianNumber(m)}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                 <FormField
+                                    control={form.control}
+                                    name="minute"
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger className="w-[100px]">
+                                                    <SelectValue className="font-headline text-lg" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {['00', '15', '30', '45'].map(m => (
+                                                    <SelectItem key={m} value={m} className="font-headline text-lg justify-center">{toPersianNumber(m)}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </FormItem>
+                                    )}
+                                />
                                 <span className="font-bold text-xl">:</span>
-                                <Select value={hour} onValueChange={setHour}>
-                                    <SelectTrigger className="w-[100px]">
-                                        <SelectValue className="font-headline text-lg" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map(h => (
-                                            <SelectItem key={h} value={h} className="font-headline text-lg justify-center">{toPersianNumber(h)}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <FormField
+                                    control={form.control}
+                                    name="hour"
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger className="w-[100px]">
+                                                    <SelectValue className="font-headline text-lg" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map(h => (
+                                                    <SelectItem key={h} value={h} className="font-headline text-lg justify-center">{toPersianNumber(h)}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </FormItem>
+                                    )}
+                                />
                             </div>
                         </div>
-                    </div>
-                </div>
+                </CardContent>
+            </Card>
 
-            </CardContent>
-
-            <div className="flex items-center justify-between p-6 bg-muted/50 border-t">
-                <Button type="button" variant="outline" onClick={prevStep} disabled={currentStep === 1}>
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                    قبلی
+            <div className="flex justify-end p-6">
+                <Button type="submit" size="lg" className="w-full md:w-auto bg-accent text-accent-foreground hover:bg-accent/90">
+                    ثبت نهایی درخواست
                 </Button>
-                {currentStep < steps.length && (
-                    <Button type="button" onClick={nextStep}>
-                        بعدی
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                    </Button>
-                )}
-                {currentStep === steps.length && (
-                    <Button type="submit" size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
-                        ثبت نهایی درخواست
-                    </Button>
-                )}
             </div>
         </form>
-      </Card>
+      </Form>
     </div>
   );
 }
-
-    

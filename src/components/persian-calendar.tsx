@@ -69,7 +69,7 @@ const PERSIAN_WEEK_DAYS = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'];
 // --- End of Jalali Calendar Logic ---
 
 interface PersianCalendarProps {
-  selectedDate: Date;
+  selectedDate: Date | undefined;
   onDateChange: (date: Date) => void;
 }
 
