@@ -8,14 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { Calendar as CalendarIcon, Package, MapPin, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Package, MapPin, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns-jalali';
-import { faIR } from 'date-fns/locale';
 
 const steps = [
   { id: 1, title: 'مسیر', icon: MapPin },
@@ -26,7 +22,6 @@ export default function NewRequestPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const { toast } = useToast();
-  const [date, setDate] = useState<Date>();
 
   const navigate = (path: string) => {
     router.push(path);
@@ -62,11 +57,12 @@ export default function NewRequestPage() {
       
       <Card className="overflow-hidden">
         <div className="p-6 border-b">
-            <div className="flex justify-between items-center mb-4 px-4 md:px-8">
+            <div className="relative flex justify-between items-center mb-4 px-4 md:px-8">
+                 <Progress value={progressValue} className="absolute h-1 top-1/2 -translate-y-1/2 -z-10 transition-all duration-300" />
                 {steps.map((step, index) => (
                     <div key={step.id} className="flex flex-col items-center z-10">
                         <div className={cn(
-                            "flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300",
+                            "flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300 bg-background",
                             currentStep > index + 1 ? "bg-primary border-primary text-primary-foreground" :
                             currentStep === index + 1 ? "border-primary text-primary" :
                             "bg-muted border-border text-muted-foreground"
@@ -80,7 +76,6 @@ export default function NewRequestPage() {
                     </div>
                 ))}
             </div>
-            <Progress value={progressValue} className="h-1 transition-all duration-300" />
         </div>
 
         <form onSubmit={handleSubmit}>
