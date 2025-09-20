@@ -3,14 +3,17 @@
 
 import { Truck } from 'lucide-react';
 
-export function AnimatedTruckLoader({ slogan }: { slogan?: string }) {
+export function AnimatedTruckLoader({ slogan, sloganKey }: { slogan?: string; sloganKey?: number }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background overflow-hidden">
       <div className="flex-grow flex flex-col items-center justify-center w-full text-center px-4">
         <h2 className="text-4xl md:text-5xl font-headline font-bold text-foreground mb-4 animate-in fade-in-0 slide-in-from-top-10 duration-1000">
           باربر ایرانی
         </h2>
-        <p className="text-muted-foreground text-lg mb-8 min-h-[2rem] animate-in fade-in-0 delay-200 duration-1000">
+        <p 
+          key={sloganKey}
+          className="text-muted-foreground text-lg mb-8 min-h-[2rem] animate-in fade-in-0 duration-1000"
+        >
           {slogan ? `"${slogan}"` : ''}
         </p>
         <div className="relative w-full max-w-lg h-32 overflow-hidden">
