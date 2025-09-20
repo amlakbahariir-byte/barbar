@@ -92,7 +92,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
+    <div className="space-y-8 max-w-5xl mx-auto mt-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button onClick={() => router.back()} className="p-2 rounded-md hover:bg-muted">
@@ -106,7 +106,7 @@ export default function ProfilePage() {
         </Button>
       </div>
 
-      <div className="relative mt-24">
+      <div className="relative">
         <Card className="overflow-visible pt-28">
             <CardContent className="text-center">
                 <div className="absolute w-full flex justify-center -top-20">
@@ -282,6 +282,8 @@ export default function ProfilePage() {
       </div>
     </div>
   );
+
+    
 
     
 
