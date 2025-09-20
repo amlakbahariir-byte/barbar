@@ -14,7 +14,6 @@ interface ShipmentListPageProps {
     shipments: Shipment[];
     role: 'shipper' | 'driver';
     navigate: (path: string) => void;
-    play: (() => void) | null;
 }
 
 const statusFilters: { value: Shipment['status'] | 'all', label: string }[] = [
@@ -25,7 +24,7 @@ const statusFilters: { value: Shipment['status'] | 'all', label: string }[] = [
 ];
 
 
-export function ShipmentListPage({ title, description, shipments, role, navigate, play }: ShipmentListPageProps) {
+export function ShipmentListPage({ title, description, shipments, role, navigate }: ShipmentListPageProps) {
     const [activeTab, setActiveTab] = useState<'all' | Shipment['status']>('all');
     
     const filteredShipments = activeTab === 'all'
@@ -33,7 +32,6 @@ export function ShipmentListPage({ title, description, shipments, role, navigate
         : shipments.filter(s => s.status === activeTab);
         
     const handleTabChange = (value: string) => {
-        play?.();
         setActiveTab(value as any);
     }
 

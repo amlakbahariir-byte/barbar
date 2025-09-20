@@ -9,7 +9,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { auth } from '@/lib/firebase/config';
 import { LoaderWithSlogan } from '@/components/ui/loader-with-slogan';
-import { useSound } from '@/hooks/use-sound';
 
 export type DashboardPageProps = {
   role: 'shipper' | 'driver' | null;
@@ -27,7 +26,6 @@ export default function DashboardLayout({
   const isMobile = useIsMobile();
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
   const [isChecking, setIsChecking] = useState(true);
-  const [play] = useSound('/sounds/pop.mp3');
   
   useEffect(() => {
     // This effect handles authentication state changes.
@@ -50,7 +48,6 @@ export default function DashboardLayout({
 
   const navigate = (newPath: string) => {
     if (newPath === pathname) return;
-    play?.();
     router.push(newPath);
   };
   
@@ -64,7 +61,7 @@ export default function DashboardLayout({
   // We need to clone the children to pass down the navigate and play props.
   const childrenWithProps = React.Children.map(children, child => {
     if (React.isValidElement(child)) {
-      return React.cloneElement(child, { navigate, play } as any);
+      return React.cloneElement(child, { navigate } as any);
     }
     return child;
   });

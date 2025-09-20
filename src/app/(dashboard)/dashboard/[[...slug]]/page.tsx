@@ -83,13 +83,13 @@ function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
   );
 }
 
-function DriverDashboard({ navigate, play }: { navigate: (path: string) => void, play: (() => void) | null }) {
+function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
   const mapImage = PlaceHolderImages.find(p => p.id === 'map-view');
 
   return (
     <div className="space-y-6">
         <h1 className="text-3xl font-bold animate-in fade-in-0 slide-in-from-top-4 duration-500">درخواست‌های بار نزدیک شما</h1>
-        <Tabs defaultValue="list-view" className="animate-in fade-in-0 slide-in-from-top-8 duration-500 delay-100" onValueChange={play || undefined}>
+        <Tabs defaultValue="list-view" className="animate-in fade-in-0 slide-in-from-top-8 duration-500 delay-100">
             <div className="flex justify-between items-center">
                 <TabsList>
                     <TabsTrigger value="list-view"><List className="ml-2 h-4 w-4" />نمای لیست</TabsTrigger>
@@ -133,7 +133,7 @@ function DriverDashboard({ navigate, play }: { navigate: (path: string) => void,
 }
 
 // A simple component to render the correct page based on the slug
-const PageRenderer = ({ slug, role, navigate, play }: { slug: string[], role: 'shipper' | 'driver', navigate: (path: string) => void, play: (() => void) | null }) => {
+const PageRenderer = ({ slug, role, navigate }: { slug: string[], role: 'shipper' | 'driver', navigate: (path: string) => void }) => {
   const page = slug[0] || 'home';
   const subPage = slug[1];
   const detailId = slug[2];
@@ -157,7 +157,6 @@ const PageRenderer = ({ slug, role, navigate, play }: { slug: string[], role: 's
         shipments={getMyShipments('shipper', 'all')} 
         role={role} 
         navigate={navigate} 
-        play={play}
       />;
     }
     if (subPage === 'available' && role === 'driver') {
@@ -167,7 +166,6 @@ const PageRenderer = ({ slug, role, navigate, play }: { slug: string[], role: 's
         shipments={getMyShipments('driver', 'available')} 
         role={role} 
         navigate={navigate} 
-        play={play}
       />;
     }
     if (subPage === 'my-shipments' && role === 'driver') {
@@ -177,7 +175,6 @@ const PageRenderer = ({ slug, role, navigate, play }: { slug: string[], role: 's
         shipments={getMyShipments('driver', 'accepted')} 
         role={role} 
         navigate={navigate} 
-        play={play}
       />;
     }
     // This handles /requests/[id]
@@ -190,11 +187,11 @@ const PageRenderer = ({ slug, role, navigate, play }: { slug: string[], role: 's
   if (role === 'shipper') {
     return <ShipperDashboard navigate={navigate} />;
   }
-  return <DriverDashboard navigate={navigate} play={play} />;
+  return <DriverDashboard navigate={navigate} />;
 };
 
 
-export default function DashboardPage({ navigate, play }: { navigate: (path: string) => void, play: (() => void) | null }) {
+export default function DashboardPage({ navigate }: { navigate: (path: string) => void }) {
   const pathname = usePathname();
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
   const [isClient, setIsClient] = useState(false);
@@ -222,5 +219,5 @@ export default function DashboardPage({ navigate, play }: { navigate: (path: str
   }
 
   // Pass the necessary props to the renderer
-  return <PageRenderer slug={slug} role={role} navigate={navigate} play={play} />;
+  return <PageRenderer slug={slug} role={role} navigate={navigate} />;
 }
