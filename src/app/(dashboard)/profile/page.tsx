@@ -129,14 +129,16 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6">
-       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <button onClick={() => router.back()} className="p-2 rounded-md hover:bg-muted">
-              <ArrowRight className="h-5 w-5" />
-          </button>
-          <h1 className="text-3xl font-bold">پروفایل کاربری</h1>
+       <div className="relative flex items-center justify-between p-6 rounded-2xl overflow-hidden bg-card border shadow-sm">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/5 to-transparent"></div>
+            <div className="relative z-10">
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight">پروفایل کاربری</h1>
+                <p className="mt-2 text-muted-foreground max-w-prose">اطلاعات کاربری، مدارک و تنظیمات خود را مدیریت کنید.</p>
+            </div>
+            <button onClick={() => router.back()} className="relative z-10 p-2 rounded-full bg-background/50 hover:bg-background transition-colors">
+                <ArrowRight className="h-6 w-6" />
+            </button>
         </div>
-      </div>
 
       <Card className="relative overflow-hidden shadow-lg">
         <Image 
@@ -388,17 +390,6 @@ export default function ProfilePage() {
       </div>
     </div>
   );
-
-    
-
-    
-
-
-    
-
-
-
-
-    
+}
 
     
