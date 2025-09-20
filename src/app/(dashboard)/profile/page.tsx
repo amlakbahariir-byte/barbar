@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, LogOut, Edit, Save, User as UserIcon, Truck, Star, FileText, Fingerprint, Phone, Mail, MapPin, Calendar, Heart, CreditCard, Bell, Moon, Palette, Check, History } from 'lucide-react';
+import { ArrowRight, LogOut, Edit, Save, User as UserIcon, Truck, Star, FileText, Fingerprint, Phone, Mail, MapPin, Calendar, Heart, CreditCard, Bell, Moon, Palette, Check, History, Car, Shield } from 'lucide-react';
 import { auth } from '@/lib/firebase/config';
 import { Badge } from '@/components/ui/badge';
 import { FileUploadItem } from '@/components/file-upload-item';
@@ -237,19 +237,32 @@ export default function ProfilePage() {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2"><Truck className='text-primary'/>اطلاعات خودرو</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-1">
-                                <Label htmlFor="vehicleType">نوع وسیله نقلیه</Label>
-                                <Input id="vehicleType" value={userData.vehicleType} disabled={!isEditing} />
-                            </div>
-                            <div className="space-y-1">
-                                <Label htmlFor="vehicleModel">مدل</Label>
-                                <Input id="vehicleModel" value={userData.vehicleModel} disabled={!isEditing} />
-                            </div>
-                            <div className="space-y-1">
-                                <Label htmlFor="licensePlate">شماره پلاک</Label>
-                                <Input id="licensePlate" value={userData.licensePlate} disabled={!isEditing} />
-                            </div>
+                        <CardContent className="space-y-3">
+                            {Object.entries({
+                                vehicleType: { label: 'نوع وسیله نقلیه', icon: Truck, editable: true },
+                                vehicleModel: { label: 'مدل', icon: Car, editable: true },
+                                licensePlate: { label: 'شماره پلاک', icon: Shield, editable: true },
+                            }).map(([key, { label, icon: Icon, editable }]) => (
+                                <div key={key} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
+                                    <div className="flex items-center gap-3">
+                                        <Icon className="w-5 h-5 text-muted-foreground" />
+                                        <Label className="font-semibold">{label}</Label>
+                                    </div>
+                                    {isEditing && editable ? (
+                                        <Input
+                                            id={key}
+                                            value={userData[key as keyof typeof userData] as string}
+                                            onChange={(e) => setUserData(prev => ({...prev, [key]: e.target.value}))}
+                                            className="max-w-xs text-left"
+                                            dir="ltr"
+                                        />
+                                    ) : (
+                                        <span className="font-medium text-muted-foreground">
+                                            {userData[key as keyof typeof userData]}
+                                        </span>
+                                    )}
+                                </div>
+                            ))}
                         </CardContent>
                     </Card>
                 )}
@@ -380,3 +393,4 @@ export default function ProfilePage() {
 
 
     
+
