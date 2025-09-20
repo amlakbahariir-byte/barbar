@@ -53,7 +53,7 @@ export function BottomNavbar({ navigate }: { navigate: (path: string) => void })
   if (!role) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-background border-t border-border md:hidden">
+    <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-background border-t border-border">
       <div className="grid h-full max-w-lg grid-cols-5 mx-auto font-medium">
         {menu.map((item) => (
           <button

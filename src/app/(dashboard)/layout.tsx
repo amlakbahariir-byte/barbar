@@ -1,12 +1,10 @@
 
 'use client';
 
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/sidebar';
 import { BottomNavbar } from '@/components/layout/bottom-navbar';
 import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { auth } from '@/lib/firebase/config';
 import { LoaderWithSlogan } from '@/components/ui/loader-with-slogan';
 
@@ -17,7 +15,6 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const isMobile = useIsMobile();
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
   const [isChecking, setIsChecking] = useState(true);
   
@@ -65,18 +62,13 @@ export default function DashboardLayout({
   });
 
   return (
-    <SidebarProvider>
-      <AppSidebar navigate={navigate} />
-      <SidebarInset>
-        <main className="flex-1 p-4 md:p-6 pb-24 md:pb-6 overflow-y-auto">
-           <div key={pathname} className="animate-in fade-in-0 slide-in-from-top-4 duration-300">
-              {childrenWithProps}
-           </div>
-        </main>
-        {isMobile && <BottomNavbar navigate={navigate} />}
-      </SidebarInset>
-    </SidebarProvider>
+    <div className="flex flex-col min-h-screen">
+      <main className="flex-1 p-4 md:p-6 pb-24 md:pb-24 overflow-y-auto">
+         <div key={pathname} className="animate-in fade-in-0 slide-in-from-top-4 duration-300">
+            {childrenWithProps}
+         </div>
+      </main>
+      <BottomNavbar navigate={navigate} />
+    </div>
   );
 }
-
-    
