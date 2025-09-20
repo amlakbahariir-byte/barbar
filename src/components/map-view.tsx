@@ -23,8 +23,14 @@ export function MapView() {
 
     try {
       // Initialize the map
-      const map = L.map(mapRef.current).setView([35.7152, 51.4043], 13); // Centered on Tehran
+      const map = L.map(mapRef.current, {
+        zoomControl: false, // Disable default zoom control
+      }).setView([35.7152, 51.4043], 13); // Centered on Tehran
       leafletMapRef.current = map;
+      
+      // Add new zoom control at a different position
+      L.control.zoom({ position: 'bottomleft' }).addTo(map);
+
 
       // Add OpenStreetMap tile layer
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
