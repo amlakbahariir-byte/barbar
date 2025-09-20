@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns-jalali';
-import { faIR } from 'date-fns/locale/fa-IR';
+import { faIR } from 'date-fns/locale';
 import { Calendar as CalendarIcon, Package, MapPin, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
