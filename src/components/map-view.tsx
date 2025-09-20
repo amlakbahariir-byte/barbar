@@ -5,7 +5,7 @@ import { useState, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { MapPin, Search } from 'lucide-react';
+import { MapPin, Search, LocateFixed } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { FakeMap, LngLat } from './fake-map';
 
@@ -39,6 +39,34 @@ export function MapView() {
     }
   }
 
+  const handleFindMyLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setLocation({ lat: latitude, lng: longitude });
+          toast({
+            title: 'موقعیت شما پیدا شد',
+            description: 'نقشه بر روی مکان فعلی شما متمرکز شد.',
+          });
+        },
+        () => {
+          toast({
+            variant: 'destructive',
+            title: 'خطا در موقعیت‌یابی',
+            description: 'امکان دسترسی به موقعیت مکانی شما وجود ندارد.',
+          });
+        }
+      );
+    } else {
+       toast({
+            variant: 'destructive',
+            title: 'عدم پشتیبانی',
+            description: 'مرورگر شما از موقعیت‌یابی پشتیبانی نمی‌کند.',
+          });
+    }
+  };
+
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-0 relative h-[60vh] md:h-[70vh]">
@@ -48,18 +76,23 @@ export function MapView() {
 
         <div className="absolute top-4 right-4 left-4 z-10 space-y-2">
           <Card className="shadow-lg">
-            <CardContent className="p-3">
+            <CardContent className="p-2">
               <form onSubmit={handleSearch}>
-                <div className="relative">
-                  <Button type="submit" size="icon" variant="ghost" className="absolute left-1 top-1/2 -translate-y-1/2 h-8 w-8">
-                    <Search className="h-5 w-5 text-muted-foreground" />
+                <div className="relative flex gap-2">
+                   <Button type="button" size="icon" variant="ghost" className="h-11 w-11 flex-shrink-0" onClick={handleFindMyLocation}>
+                    <LocateFixed className="h-6 w-6 text-muted-foreground" />
                   </Button>
-                  <Input
-                    placeholder="جستجوی مبدا یا مقصد..."
-                    className="pl-10 h-11 text-base"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
+                  <div className="relative flex-grow">
+                    <Button type="submit" size="icon" variant="ghost" className="absolute left-1 top-1/2 -translate-y-1/2 h-8 w-8">
+                      <Search className="h-5 w-5 text-muted-foreground" />
+                    </Button>
+                    <Input
+                      placeholder="جستجوی مبدا یا مقصد..."
+                      className="pl-10 h-11 text-base"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
                 </div>
               </form>
             </CardContent>
