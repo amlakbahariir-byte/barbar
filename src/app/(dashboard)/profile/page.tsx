@@ -107,9 +107,9 @@ export default function ProfilePage() {
       </div>
 
       <div className="relative mt-8">
-        <Card className="overflow-visible pt-28">
+        <Card className="overflow-visible pt-24">
             <CardContent className="text-center">
-                <div className="absolute w-full flex justify-center -top-20">
+                <div className="absolute w-full flex justify-center -top-16">
                     <div className="relative">
                         <div className="ring-4 ring-primary/50 ring-offset-4 ring-offset-background rounded-2xl">
                              <Image 
@@ -283,3 +283,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    
