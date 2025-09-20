@@ -17,15 +17,6 @@ import { Badge } from '@/components/ui/badge';
 import { FileUploadItem } from '@/components/file-upload-item';
 import { ThemeSwitcher } from '@/components/theme-switcher';
 
-const settingsOptions = [
-    {
-        id: 'notifications',
-        icon: Bell,
-        title: 'اعلانات',
-        description: 'دریافت اعلان برای پیشنهادها و وضعیت بار',
-    },
-];
-
 const documentUploads = [
     "صفحه اول شناسنامه",
     "صفحات توضیحات شناسنامه",
@@ -65,7 +56,6 @@ export default function ProfilePage() {
         setUserData(prev => ({...prev, name: 'راننده نمونه'}));
     }
     
-    // Check for saved theme preference
     const darkModePreference = localStorage.getItem('dark-mode') === 'true';
     setIsDarkMode(darkModePreference);
     if (darkModePreference) {
@@ -106,11 +96,20 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center gap-4">
-         <button onClick={() => router.push('/dashboard')} className="p-2 rounded-md hover:bg-muted">
-            <ArrowRight className="h-5 w-5" />
-        </button>
-        <h1 className="text-3xl font-bold">پروفایل کاربری</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button onClick={() => router.back()} className="p-2 rounded-md hover:bg-muted">
+              <ArrowRight className="h-5 w-5" />
+          </button>
+          <h1 className="text-3xl font-bold">پروفایل کاربری</h1>
+        </div>
+        <div className="flex items-center gap-2">
+            <Button variant={isEditing ? "default" : "outline"} onClick={() => setIsEditing(!isEditing)} >
+                {isEditing ? <Save className="ml-2 h-4 w-4"/> : <Edit className="ml-2 h-4 w-4"/>}
+                {isEditing ? 'ذخیره' : 'ویرایش'}
+            </Button>
+             {isEditing && <Button size="lg" onClick={handleSave} className="bg-accent text-accent-foreground hover:bg-accent/90"><Save className="ml-2 h-4 w-4"/>ذخیره نهایی</Button>}
+        </div>
       </div>
 
       <Card>
@@ -123,18 +122,15 @@ export default function ProfilePage() {
                 <h2 className="text-3xl font-bold">{userData.name}</h2>
                 <p className="text-base text-muted-foreground mt-1 capitalize">{role === 'shipper' ? 'صاحب بار' : 'راننده'}</p>
             </div>
-            <Button variant={isEditing ? "default" : "outline"} size="lg" onClick={() => setIsEditing(!isEditing)} className="md:ml-auto mt-4 md:mt-0 w-full md:w-auto">
-                {isEditing ? <Save className="ml-2"/> : <Edit className="ml-2"/>}
-                {isEditing ? 'ذخیره' : 'ویرایش پروفایل'}
-            </Button>
+            
         </CardContent>
       </Card>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="lg:col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
             <Card>
                 <CardHeader><CardTitle className="flex items-center gap-2"><UserIcon className='text-primary'/>اطلاعات شخصی</CardTitle></CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                     <div>
                         <Label htmlFor="name">نام و نام خانوادگی</Label>
                         <Input id="name" value={userData.name} disabled={!isEditing} />
@@ -163,16 +159,14 @@ export default function ProfilePage() {
                         <Label htmlFor="maritalStatus">وضعیت تاهل</Label>
                         <Input id="maritalStatus" value={userData.maritalStatus} disabled={!isEditing} />
                     </div>
-                    <div className="md:col-span-3">
+                    <div className="md:col-span-2">
                         <Label htmlFor="email">ایمیل</Label>
                         <Input id="email" value={userData.email} disabled={!isEditing} />
                     </div>
                 </CardContent>
             </Card>
-        </div>
 
-        {role === 'driver' && (
-            <>
+             {role === 'driver' && (
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><Truck className='text-primary'/>اطلاعات خودرو</CardTitle>
@@ -197,7 +191,10 @@ export default function ProfilePage() {
                         <FileUploadItem label="برگه سبز خودرو" />
                     </CardContent>
                 </Card>
-
+            )}
+        </div>
+        <div className="lg:col-span-1 space-y-8">
+            {role === 'driver' && (
                 <Card>
                     <CardHeader><CardTitle className="flex items-center gap-2"><FileText className='text-primary'/>مدارک و گواهی‌ها</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
@@ -215,57 +212,55 @@ export default function ProfilePage() {
                         ))}
                     </CardContent>
                 </Card>
-            </>
-        )}
+            )}
 
-        <Card>
-            <CardHeader><CardTitle>کیف پول</CardTitle></CardHeader>
-            <CardContent className="flex flex-col md:flex-row items-center justify-between gap-4">
-                <div>
-                    <p className="text-muted-foreground">موجودی فعلی</p>
-                    <p className="text-3xl font-bold">۱۲,۵۰۰,۰۰۰ <span className='text-base font-normal'>تومان</span></p>
-                </div>
-                <Button variant="outline" onClick={() => router.push('/dashboard/transactions')}><CreditCard className="ml-2"/>تاریخچه تراکنش‌ها</Button>
-            </CardContent>
-        </Card>
+             <Card>
+                <CardHeader><CardTitle>کیف پول</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                     <div>
+                        <p className="text-muted-foreground">موجودی فعلی</p>
+                        <p className="text-3xl font-bold">۱۲,۵۰۰,۰۰۰ <span className='text-base font-normal'>تومان</span></p>
+                    </div>
+                    <Button variant="outline" className="w-full" onClick={() => router.push('/dashboard/transactions')}><CreditCard className="ml-2"/>تاریخچه تراکنش‌ها</Button>
+                </CardContent>
+            </Card>
 
-        <Card>
-            <CardHeader><CardTitle>تنظیمات</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
-                    <div className='flex items-center gap-3'>
-                        <Bell className="text-muted-foreground"/>
-                        <Label htmlFor="notifications" className="font-semibold">اعلانات</Label>
+            <Card>
+                <CardHeader><CardTitle>تنظیمات</CardTitle></CardHeader>
+                <CardContent className="space-y-2">
+                    <div className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50">
+                        <div className='flex items-center gap-3'>
+                            <Bell className="text-muted-foreground"/>
+                            <Label htmlFor="notifications" className="font-semibold cursor-pointer">اعلانات</Label>
+                        </div>
+                        <Switch id="notifications" defaultChecked/>
                     </div>
-                    <Switch id="notifications" defaultChecked/>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
-                    <div className='flex items-center gap-3'>
-                        <Moon className="text-muted-foreground"/>
-                        <Label htmlFor="dark-mode" className="font-semibold">حالت تیره</Label>
+                    <div className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50">
+                        <div className='flex items-center gap-3'>
+                            <Moon className="text-muted-foreground"/>
+                            <Label htmlFor="dark-mode" className="font-semibold cursor-pointer">حالت تیره</Label>
+                        </div>
+                        <Switch id="dark-mode" checked={isDarkMode} onCheckedChange={handleDarkModeToggle}/>
                     </div>
-                    <Switch id="dark-mode" checked={isDarkMode} onCheckedChange={handleDarkModeToggle}/>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
-                    <div className='flex items-center gap-3'>
-                        <Palette className="text-muted-foreground"/>
-                        <Label className="font-semibold">شخصی‌سازی ظاهر</Label>
+                    <div className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50">
+                        <div className='flex items-center gap-3'>
+                            <Palette className="text-muted-foreground"/>
+                            <Label className="font-semibold">شخصی‌سازی ظاهر</Label>
+                        </div>
+                        <ThemeSwitcher />
                     </div>
-                    <ThemeSwitcher />
-                </div>
-            </CardContent>
-        </Card>
+                </CardContent>
+            </Card>
+        </div>
       </div>
 
       <Separator />
 
       <div className="flex justify-end gap-4 pb-8">
           <Button variant="destructive" onClick={handleLogout}><LogOut className="ml-2"/>خروج از حساب</Button>
-          {isEditing && <Button size="lg" onClick={handleSave} className="bg-accent text-accent-foreground hover:bg-accent/90"><Save className="ml-2"/>ذخیره نهایی</Button>}
       </div>
     </div>
   );
 }
 
-    
     
