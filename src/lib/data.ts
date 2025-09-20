@@ -133,6 +133,10 @@ export const getShipmentById = (id: string) => {
     return shipments.find(s => s.id === id);
 }
 
+export const addShipment = (shipment: Shipment) => {
+    shipments.unshift(shipment);
+}
+
 export const getMyShipments = (role: 'shipper' | 'driver', type: 'all' | 'available' | 'accepted') => {
     if (role === 'shipper') {
         // Shippers see all their own shipments regardless of status
@@ -157,3 +161,5 @@ export const getMyShipments = (role: 'shipper' | 'driver', type: 'all' | 'availa
 export const getTransactions = () => {
     return transactions;
 }
+
+    

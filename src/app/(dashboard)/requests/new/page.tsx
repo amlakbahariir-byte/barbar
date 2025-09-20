@@ -15,6 +15,7 @@ import { Progress } from '@/components/ui/progress';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { PersianCalendar } from '@/components/persian-calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { addShipment } from '@/lib/data';
 
 const steps = [
   { id: 1, title: 'مسیر', icon: MapPin },
@@ -26,6 +27,13 @@ export default function NewRequestPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const { toast } = useToast();
+
+  // States for form fields
+  const [origin, setOrigin] = useState('');
+  const [destination, setDestination] = useState('');
+  const [weight, setWeight] = useState('');
+  const [cargoType, setCargoType] = useState('');
+  const [description, setDescription] = useState('');
   const [date, setDate] = useState<Date>(new Date());
   const [hour, setHour] = useState<string>('09');
   const [minute, setMinute] = useState<string>('00');
@@ -49,6 +57,21 @@ export default function NewRequestPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const newShipment = {
+        id: `shp${Math.floor(Math.random() * 1000) + 1007}`, // Generate a random ID
+        origin,
+        destination,
+        weight: parseInt(weight) || 0,
+        cargoType,
+        description,
+        date: toPersianDate(date),
+        status: 'pending' as const,
+        bids: [],
+    };
+
+    addShipment(newShipment);
+
     toast({
       title: 'درخواست شما ثبت شد',
       description: 'درخواست حمل بار شما با موفقیت ثبت شد و به رانندگان نمایش داده می‌شود.',
@@ -108,11 +131,11 @@ export default function NewRequestPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="origin">مبدا</Label>
-                            <Input id="origin" placeholder="مثال: تهران، میدان آزادی" required />
+                            <Input id="origin" placeholder="مثال: تهران، میدان آزادی" required value={origin} onChange={e => setOrigin(e.target.value)} />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="destination">مقصد</Label>
-                            <Input id="destination" placeholder="مثال: اصفهان، میدان نقش جهان" required />
+                            <Input id="destination" placeholder="مثال: اصفهان، میدان نقش جهان" required value={destination} onChange={e => setDestination(e.target.value)} />
                         </div>
                     </div>
                 </div>
@@ -125,15 +148,15 @@ export default function NewRequestPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                          <div className="space-y-2">
                             <Label htmlFor="weight">وزن (کیلوگرم)</Label>
-                            <Input id="weight" type="number" placeholder="مثال: ۵۰۰" required />
+                            <Input id="weight" type="number" placeholder="مثال: ۵۰۰" required value={weight} onChange={e => setWeight(e.target.value)} />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="cargoType">نوع بار</Label>
-                            <Input id="cargoType" placeholder="مثال: مبلمان" required />
+                            <Input id="cargoType" placeholder="مثال: مبلمان" required value={cargoType} onChange={e => setCargoType(e.target.value)} />
                         </div>
                          <div className="md:col-span-2 space-y-2">
                             <Label htmlFor="description">توضیحات (اختیاری)</Label>
-                            <Textarea id="description" placeholder="اطلاعات تکمیلی مانند نوع بار، حساسیت، نیاز به تجهیزات خاص و ..." />
+                            <Textarea id="description" placeholder="اطلاعات تکمیلی مانند نوع بار، حساسیت، نیاز به تجهیزات خاص و ..." value={description} onChange={e => setDescription(e.target.value)} />
                         </div>
                     </div>
                 </div>
@@ -168,17 +191,6 @@ export default function NewRequestPage() {
                         <div className="flex items-center gap-4" dir="rtl">
                             <Clock className="h-6 w-6 text-muted-foreground" />
                             <div className="flex items-center gap-2" dir="ltr">
-                                <Select value={hour} onValueChange={setHour}>
-                                    <SelectTrigger className="w-[100px]">
-                                        <SelectValue className="font-headline text-lg" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map(h => (
-                                            <SelectItem key={h} value={h} className="font-headline text-lg justify-center">{toPersianNumber(h)}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <span className="font-bold text-xl">:</span>
                                 <Select value={minute} onValueChange={setMinute}>
                                     <SelectTrigger className="w-[100px]">
                                         <SelectValue className="font-headline text-lg" />
@@ -186,6 +198,17 @@ export default function NewRequestPage() {
                                     <SelectContent>
                                         {['00', '15', '30', '45'].map(m => (
                                             <SelectItem key={m} value={m} className="font-headline text-lg justify-center">{toPersianNumber(m)}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <span className="font-bold text-xl">:</span>
+                                <Select value={hour} onValueChange={setHour}>
+                                    <SelectTrigger className="w-[100px]">
+                                        <SelectValue className="font-headline text-lg" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map(h => (
+                                            <SelectItem key={h} value={h} className="font-headline text-lg justify-center">{toPersianNumber(h)}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
