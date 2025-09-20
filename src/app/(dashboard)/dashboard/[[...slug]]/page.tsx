@@ -113,10 +113,7 @@ function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
   return (
     <div className="space-y-6">
         <Card className="border-primary/50 bg-gradient-to-tr from-primary/10 via-background to-background animate-in fade-in-0 slide-in-from-top-4 duration-500">
-            <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2"><MessageSquareQuote className="text-primary"/>جملات قصار پشت وانتی</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 text-center">
+            <CardContent className="space-y-4 text-center pt-6">
                 <p className="font-headline text-2xl h-16 flex items-center justify-center text-foreground/80 transition-opacity duration-500">
                     &quot;{slogan}&quot;
                 </p>
@@ -279,3 +276,5 @@ export default function DashboardPage({ _navigate }: { _navigate?: (path: string
   // Pass the necessary props to the renderer
   return <PageRenderer slug={slug} role={role} navigate={navigate} />;
 }
+
+    
