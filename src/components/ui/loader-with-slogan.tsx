@@ -2,31 +2,38 @@
 'use client';
 
 import * as React from 'react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { slogans } from '@/lib/slogans';
 import { AnimatedTruckLoader } from './animated-truck-loader';
 import { applyTheme } from '../theme-switcher';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  type CarouselApi,
-} from '@/components/ui/carousel';
-import Autoplay from 'embla-carousel-autoplay';
+import { cn } from '@/lib/utils';
 
 export function LoaderWithSlogan() {
-  const plugin = useRef(
-    Autoplay({ delay: 4000, stopOnInteraction: true })
-  );
+  const [slogan, setSlogan] = useState('');
+  const [isVisible, setIsVisible] = useState(false);
 
+  // Apply theme from localStorage once on initial client load
   useEffect(() => {
-    // Apply theme from localStorage on initial client load.
-    // This needs to be in useEffect to avoid SSR issues.
     const savedThemeName = localStorage.getItem('app-theme') || 'Violet';
-    const savedSaturation = parseFloat(
-      localStorage.getItem('app-saturation') || '1'
-    );
+    const savedSaturation = parseFloat(localStorage.getItem('app-saturation') || '1');
     applyTheme(savedThemeName, savedSaturation);
+  }, []);
+
+  // Effect to cycle through slogans
+  useEffect(() => {
+    const pickSlogan = () => {
+      setIsVisible(false);
+      setTimeout(() => {
+        const randomIndex = Math.floor(Math.random() * slogans.length);
+        setSlogan(slogans[randomIndex]);
+        setIsVisible(true);
+      }, 500); // Wait for fade-out
+    };
+
+    pickSlogan(); // Initial slogan
+    const intervalId = setInterval(pickSlogan, 4000); // Change slogan every 4 seconds
+
+    return () => clearInterval(intervalId);
   }, []);
 
 
@@ -34,30 +41,16 @@ export function LoaderWithSlogan() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-background overflow-hidden p-4">
       <div className="flex-grow flex flex-col items-center justify-center w-full">
         <AnimatedTruckLoader />
-        <div className="mt-8 h-16 flex items-center justify-center w-full max-w-2xl">
-          <Carousel
-            plugins={[plugin.current]}
-            className="w-full"
-            onMouseEnter={plugin.current.stop}
-            onMouseLeave={plugin.current.reset}
-            opts={{
-              align: 'center',
-              loop: true,
-            }}
-          >
-            <CarouselContent>
-              {slogans.map((slogan, index) => (
-                <CarouselItem key={index}>
-                  <p className="text-muted-foreground text-lg text-center">
-                    &quot;{slogan}&quot;
-                  </p>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
+        <div className="mt-12 h-16 flex items-center justify-center w-full max-w-2xl text-center">
+            <p className={cn(
+                "text-muted-foreground text-lg transition-opacity duration-500",
+                isVisible ? "opacity-100" : "opacity-0"
+            )}>
+              &quot;{slogan}&quot;
+            </p>
         </div>
       </div>
-      <div className="w-full text-center pb-8 px-4 h-8">
+       <div className="w-full text-center pb-8 px-4 h-8">
         {/* Placeholder for footer content if needed in the future */}
       </div>
     </div>
