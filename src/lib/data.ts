@@ -26,6 +26,16 @@ export type Shipment = {
   acceptedDriver?: Driver;
 };
 
+export type Transaction = {
+  id: string;
+  date: string;
+  type: 'deposit' | 'withdrawal' | 'payment' | 'refund';
+  amount: number;
+  status: 'completed' | 'pending' | 'failed';
+  description: string;
+};
+
+
 const drivers: Driver[] = [
   { id: 'd1', name: 'رضا احمدی', avatar: 'https://i.pravatar.cc/150?u=d1', vehicle: 'کامیون تک', rating: 4.8 },
   { id: 'd2', name: 'مریم حسینی', avatar: 'https://i.pravatar.cc/150?u=d2', vehicle: 'وانت نیسان', rating: 4.9 },
@@ -107,6 +117,17 @@ export const shipments: Shipment[] = [
   },
 ];
 
+export const transactions: Transaction[] = [
+    { id: 'txn1', date: '۱۴۰۳/۰۵/۰۱', type: 'deposit', amount: 5000000, status: 'completed', description: 'افزایش موجودی' },
+    { id: 'txn2', date: '۱۴۰۳/۰۵/۰۳', type: 'payment', amount: -1200000, status: 'completed', description: 'پرداخت هزینه بار #shp1001' },
+    { id: 'txn3', date: '۱۴۰۳/۰۵/۰۵', type: 'withdrawal', amount: -2000000, status: 'completed', description: 'برداشت از حساب' },
+    { id: 'txn4', date: '۱۴۰۳/۰۵/۰۸', type: 'deposit', amount: 10000000, status: 'completed', description: 'افزایش موجودی' },
+    { id: 'txn5', date: '۱۴۰۳/۰۵/۰۹', type: 'payment', amount: -850000, status: 'pending', description: 'بیعانه بار #shp1002' },
+    { id: 'txn6', date: '۱۴۰۳/۰۵/۱۰', type: 'refund', amount: 100000, status: 'completed', description: 'بازگشت وجه - کنسلی' },
+    { id: 'txn7', date: '۱۴۰۳/۰۵/۱۱', type: 'deposit', amount: 1500000, status: 'failed', description: 'تراکنش ناموفق' },
+];
+
+
 export const getShipmentById = (id: string) => {
     return shipments.find(s => s.id === id);
 }
@@ -130,4 +151,8 @@ export const getMyShipments = (role: 'shipper' | 'driver', type: 'all' | 'availa
     }
     
     return [];
+}
+
+export const getTransactions = () => {
+    return transactions;
 }

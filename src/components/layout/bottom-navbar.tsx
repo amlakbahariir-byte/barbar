@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Home, Package, Truck, User, LogOut, PackagePlus } from 'lucide-react';
+import { Home, Package, Truck, User, LogOut, PackagePlus, CreditCard } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';

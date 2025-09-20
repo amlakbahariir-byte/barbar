@@ -27,7 +27,7 @@ const settingsOptions = [
     },
     {
         id: 'dark-mode',
-        icon: Palette,
+        icon: Moon,
         title: 'حالت تیره',
         description: 'فعال‌سازی تم تاریک برای مطالعه در شب',
         defaultChecked: false,
@@ -248,7 +248,7 @@ export default function ProfilePage() {
                 <p className="text-muted-foreground">موجودی فعلی</p>
                 <p className="text-3xl font-bold">۱۲,۵۰۰,۰۰۰ <span className='text-base font-normal'>تومان</span></p>
               </div>
-              <Button variant="outline"><CreditCard className="ml-2"/>تاریخچه تراکنش‌ها</Button>
+              <Button variant="outline" onClick={() => router.push('/dashboard/transactions')}><CreditCard className="ml-2"/>تاریخچه تراکنش‌ها</Button>
           </CardContent>
       </Card>
 
@@ -261,7 +261,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-    
-
-    

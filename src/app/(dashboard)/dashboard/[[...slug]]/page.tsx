@@ -15,6 +15,7 @@ import { ShipmentListPage } from '@/components/shipment-list-page';
 import NewRequestPage from '../../requests/new/page';
 import RequestDetailsPage from '../../requests/[id]/page';
 import ProfilePage from '../../profile/page';
+import TransactionsPage from '../../transactions/page';
 
 function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
   const myShipments = getMyShipments('shipper', 'all');
@@ -139,6 +140,10 @@ const PageRenderer = ({ slug, role, navigate }: { slug: string[], role: 'shipper
 
   if (page === 'profile') {
     return <ProfilePage />;
+  }
+
+  if (page === 'transactions') {
+    return <TransactionsPage />;
   }
 
   if (page === 'requests') {
