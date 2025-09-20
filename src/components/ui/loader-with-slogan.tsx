@@ -18,13 +18,14 @@ export function LoaderWithSlogan() {
     // Apply the theme immediately on client load
     applyTheme(savedThemeName, savedSaturation);
     
-    // Set an initial random slogan
-    setSloganIndex(Math.floor(Math.random() * slogans.length));
+    // Set an initial random slogan index to start with
+    const initialIndex = Math.floor(Math.random() * slogans.length);
+    setSloganIndex(initialIndex);
 
-    // Set up an interval to change the slogan every 4 seconds
+    // Set up an interval to cycle through slogans
     const sloganInterval = setInterval(() => {
       setSloganIndex(prevIndex => (prevIndex + 1) % slogans.length);
-    }, 4000);
+    }, 4000); // Change slogan every 4 seconds
 
     // Clean up the interval when the component unmounts
     return () => clearInterval(sloganInterval);
