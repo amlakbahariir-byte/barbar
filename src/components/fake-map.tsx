@@ -74,7 +74,7 @@ export function FakeMap({
   });
 
   // Update map center when spring values change (e.g., after drag/zoom)
-  useEffect(() => {
+   useEffect(() => {
     const unsubscribe = viewState.x.onChange((x) => {
       if (isDragging.current) return;
       const newCenter = pointToLngLat({ x: -x, y: -viewState.y.get() }, viewState.zoom.get());
