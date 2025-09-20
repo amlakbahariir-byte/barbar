@@ -36,21 +36,21 @@ body {
     --chart-5: 220 calc(75% * var(--saturation-scale)) 55%;
     --radius: 0.8rem;
     
-    --sidebar-background: 222.2 84% 4.9%;
+    --sidebar-background: 222.2 calc(84% * var(--saturation-scale)) 4.9%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 347 calc(80% * var(--saturation-scale)) 63%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent: 217.2 calc(32.6% * var(--saturation-scale)) 17.5%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-border: 217.2 calc(32.6% * var(--saturation-scale)) 17.5%;
     --sidebar-ring: 347 calc(80% * var(--saturation-scale)) 63%;
   }
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 222.2 calc(84% * var(--saturation-scale)) 4.9%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    --card: 222.2 calc(84% * var(--saturation-scale)) 4.9%;
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+    --popover: 222.2 calc(84% * var(--saturation-scale)) 4.9%;
     --popover-foreground: 210 40% 98%;
     --primary: 347 calc(70% * var(--saturation-scale)) 55%;
     --primary-foreground: 0 0% 100%;
@@ -72,13 +72,13 @@ body {
     --chart-4: 280 calc(60% * var(--saturation-scale)) 60%;
     --chart-5: 220 calc(70% * var(--saturation-scale)) 65%;
     
-    --sidebar-background: 222.2 84% 4.9%;
+    --sidebar-background: 222.2 calc(84% * var(--saturation-scale)) 4.9%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 347 calc(70% * var(--saturation-scale)) 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent: 217.2 calc(32.6% * var(--saturation-scale)) 17.5%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-border: 217.2 calc(32.6% * var(--saturation-scale)) 17.5%;
     --sidebar-ring: 347 calc(70% * var(--saturation-scale)) 55%;
   }
 }

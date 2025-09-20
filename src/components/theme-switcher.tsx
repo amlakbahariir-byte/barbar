@@ -109,6 +109,24 @@ const themes: Theme[] = [
 ];
 
 
+export function applyTheme(themeName: string, saturation: number) {
+    const theme = themes.find((t) => t.name === themeName) || themes[0];
+    const root = document.documentElement;
+    if(!root) return;
+
+    // Apply saturation
+    root.style.setProperty('--saturation-scale', saturation.toString());
+    
+    // Apply primary color
+    const isDark = root.classList.contains('dark');
+    const primaryColor = isDark ? theme.palette.dark.primary : theme.palette.light.primary;
+
+    root.style.setProperty('--primary', primaryColor);
+    // Also update ring and sidebar colors to match
+    root.style.setProperty('--ring', primaryColor);
+    root.style.setProperty('--sidebar-primary', primaryColor);
+}
+
 export function ThemeSwitcher() {
   const [activeThemeName, setActiveThemeName] = useState('Rose');
   const [saturation, setSaturation] = useState(1);
@@ -124,34 +142,12 @@ export function ThemeSwitcher() {
     setSaturation(savedSaturation);
   }, []);
   
-  const activeTheme = useMemo(() => themes.find((t) => t.name === activeThemeName) || themes[0], [activeThemeName]);
-
-
-  const applyTheme = (theme: Theme, saturationValue: number) => {
-    const root = document.documentElement;
-    if(!root) return;
-
-    // Apply saturation
-    root.style.setProperty('--saturation-scale', saturationValue.toString());
-    
-    // Apply primary color
-    const isDark = root.classList.contains('dark');
-    const primaryColor = isDark ? theme.palette.dark.primary : theme.palette.light.primary;
-
-    root.style.setProperty('--primary', primaryColor);
-    // Also update ring and sidebar colors to match
-    root.style.setProperty('--ring', primaryColor);
-    root.style.setProperty('--sidebar-primary', primaryColor);
-    
-    // The rest of the colors are defined in globals.css and will react to dark mode and saturation changes
-  };
-
-  // Effect to apply theme when activeThemeName or saturation changes, or on initial load
+  // Effect to apply theme when activeThemeName or saturation changes
    useEffect(() => {
     if (isClient) {
-      applyTheme(activeTheme, saturation);
+      applyTheme(activeThemeName, saturation);
     }
-  }, [isClient, activeTheme, saturation]);
+  }, [isClient, activeThemeName, saturation]);
 
 
   // Re-apply theme palette when dark mode changes
@@ -161,14 +157,14 @@ export function ThemeSwitcher() {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.attributeName === 'class') {
-          applyTheme(activeTheme, saturation);
+          applyTheme(activeThemeName, saturation);
         }
       });
     });
 
     observer.observe(document.documentElement, { attributes: true });
     return () => observer.disconnect();
-  }, [isClient, activeTheme, saturation]);
+  }, [isClient, activeThemeName, saturation]);
 
   const handleThemeChange = (themeName: string) => {
     setActiveThemeName(themeName);
