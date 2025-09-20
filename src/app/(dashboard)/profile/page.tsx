@@ -188,7 +188,16 @@ export default function ProfilePage() {
           <TabsContent value="info" className="mt-6">
              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
-                    <CardHeader><CardTitle className="flex items-center gap-2"><UserIcon className='text-primary'/>اطلاعات شخصی</CardTitle></CardHeader>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <CardTitle className="flex items-center gap-2"><UserIcon className='text-primary'/>اطلاعات شخصی</CardTitle>
+                         <Button variant="ghost" size="icon" onClick={() => {
+                             if (isEditing) handleSave();
+                             else setIsEditing(true);
+                         }}>
+                            {isEditing ? <Save className="h-5 w-5"/> : <Edit className="h-5 w-5"/>}
+                            <span className="sr-only">{isEditing ? 'ذخیره' : 'ویرایش'}</span>
+                        </Button>
+                    </CardHeader>
                     <CardContent className="space-y-3">
                         {Object.entries({
                             name: { label: 'نام و نام خانوادگی', icon: UserIcon, editable: true },
@@ -245,15 +254,6 @@ export default function ProfilePage() {
                     </Card>
                 )}
              </div>
-             <div className="flex justify-end mt-4">
-                 <Button variant={isEditing ? "default" : "outline"} onClick={() => {
-                     if (isEditing) handleSave();
-                     else setIsEditing(true);
-                 }}>
-                    {isEditing ? <Save className="ml-2 h-4 w-4"/> : <Edit className="ml-2 h-4 w-4"/>}
-                    {isEditing ? 'ذخیره' : 'ویرایش پروفایل'}
-                </Button>
-            </div>
           </TabsContent>
           
           <TabsContent value="docs" className="mt-6">
