@@ -18,6 +18,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Separator } from '@/components/ui/separator';
 
 const toPersianNumber = (n: number | string) => {
     const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
@@ -203,9 +204,9 @@ export default function NewRequestPage() {
                     <CardTitle className="flex items-center gap-2 text-2xl"><CalendarIcon/>تاریخ و زمان بارگیری</CardTitle>
                     <CardDescription>تاریخ و ساعت مورد نظر خود برای شروع حمل را انتخاب کنید.</CardDescription>
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center pt-6">
-                    <div className="flex justify-center">
-                         <FormField
+                <CardContent className="flex justify-center items-center pt-6">
+                    <div className="flex items-center gap-2 rounded-lg bg-secondary p-2">
+                        <FormField
                             control={form.control}
                             name="date"
                             render={({ field }) => (
@@ -214,9 +215,9 @@ export default function NewRequestPage() {
                                        <PopoverTrigger asChild>
                                             <FormControl>
                                                 <Button
-                                                variant={"outline"}
+                                                variant={"ghost"}
                                                 className={cn(
-                                                    "w-[280px] justify-start text-right font-normal h-12 text-base",
+                                                    "w-[200px] justify-start text-right font-normal h-12 text-base",
                                                     !field.value && "text-muted-foreground"
                                                 )}
                                                 >
@@ -235,55 +236,52 @@ export default function NewRequestPage() {
                                    <FormMessage className="mt-2" />
                                 </FormItem>
                             )}
-                            />
-                    </div>
+                        />
 
-                    <div className="flex justify-center">
-                        <div className="flex items-center gap-4" dir="rtl">
-                            <Clock className="h-6 w-6 text-muted-foreground" />
-                            <div className="flex items-center gap-2" dir="ltr">
-                                 <FormField
-                                    control={form.control}
-                                    name="minute"
-                                    render={({ field }) => (
-                                    <FormItem>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl>
-                                                <SelectTrigger className="w-[100px]">
-                                                    <SelectValue className="font-headline text-lg" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {['00', '15', '30', '45'].map(m => (
-                                                    <SelectItem key={m} value={m} className="font-headline text-lg justify-center">{toPersianNumber(m)}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </FormItem>
-                                    )}
-                                />
-                                <span className="font-bold text-xl">:</span>
-                                <FormField
-                                    control={form.control}
-                                    name="hour"
-                                    render={({ field }) => (
-                                    <FormItem>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl>
-                                                <SelectTrigger className="w-[100px]">
-                                                    <SelectValue className="font-headline text-lg" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map(h => (
-                                                    <SelectItem key={h} value={h} className="font-headline text-lg justify-center">{toPersianNumber(h)}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </FormItem>
-                                    )}
-                                />
-                            </div>
+                        <Separator orientation="vertical" className="h-8 bg-muted-foreground/50"/>
+                        
+                        <div className="flex items-center gap-2" dir="ltr">
+                             <FormField
+                                control={form.control}
+                                name="minute"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger className="w-[80px] h-12 border-0 bg-transparent shadow-none">
+                                                <SelectValue className="font-headline text-lg" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {['00', '15', '30', '45'].map(m => (
+                                                <SelectItem key={m} value={m} className="font-headline text-lg justify-center">{toPersianNumber(m)}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </FormItem>
+                                )}
+                            />
+                            <span className="font-bold text-xl">:</span>
+                            <FormField
+                                control={form.control}
+                                name="hour"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger className="w-[80px] h-12 border-0 bg-transparent shadow-none">
+                                                <SelectValue className="font-headline text-lg" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map(h => (
+                                                <SelectItem key={h} value={h} className="font-headline text-lg justify-center">{toPersianNumber(h)}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </FormItem>
+                                )}
+                            />
                         </div>
                     </div>
                 </CardContent>
