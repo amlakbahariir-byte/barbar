@@ -7,7 +7,8 @@ import { AnimatedTruckLoader } from './animated-truck-loader';
 import { applyTheme } from '../theme-switcher';
 
 export function LoaderWithSlogan() {
-  const [sloganIndex, setSloganIndex] = useState(0);
+  // Start with a random index to avoid showing the same slogan on every load.
+  const [sloganIndex, setSloganIndex] = useState(() => Math.floor(Math.random() * slogans.length));
 
   useEffect(() => {
     // This effect runs only on the client side, after hydration.
@@ -18,10 +19,6 @@ export function LoaderWithSlogan() {
     // Apply the theme immediately on client load
     applyTheme(savedThemeName, savedSaturation);
     
-    // Set an initial random slogan index to start with
-    const initialIndex = Math.floor(Math.random() * slogans.length);
-    setSloganIndex(initialIndex);
-
     // Set up an interval to cycle through slogans
     const sloganInterval = setInterval(() => {
       setSloganIndex(prevIndex => (prevIndex + 1) % slogans.length);
