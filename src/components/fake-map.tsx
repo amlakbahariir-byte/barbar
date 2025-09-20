@@ -45,7 +45,8 @@ const pointToLngLat = ({ x, y }: Point, zoom: number): LngLat => {
 // --- TILE COMPONENT ---
 const MapTile = React.memo(({ tile, style }: { tile: Tile; style: React.CSSProperties }) => {
   const url = `https://a.tile.openstreetmap.org/${tile.z}/${tile.x}/${tile.y}.png`;
-  return <animated.img src={url} alt={`Map tile ${tile.z}/${tile.x}/${tile.y}`} className="absolute" style={style} />;
+  // Add pointer-events-none to prevent browser's default image drag behavior
+  return <animated.img src={url} alt={`Map tile ${tile.z}/${tile.x}/${tile.y}`} className="absolute pointer-events-none" style={style} />;
 });
 MapTile.displayName = 'MapTile';
 
@@ -60,19 +61,44 @@ export function FakeMap({
 }: FakeMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
+  const isDragging = useRef(false);
 
-  const [viewState, setViewState] = useSpring(() => ({
-    zoom: controlledZoom,
-    x: 0,
-    y: 0,
-    config: { tension: 250, friction: 30, clamp: true },
-    onChange: ({ value }) => {
-        const newCenter = pointToLngLat({ x: -value.x, y: -value.y }, value.zoom);
-        onCenterChange(newCenter);
+  const [viewState, setViewState] = useSpring(() => {
+    const initialPoint = lngLatToPoint(center, controlledZoom);
+    return {
+        zoom: controlledZoom,
+        x: -initialPoint.x,
+        y: -initialPoint.y,
+        config: { tension: 250, friction: 30, clamp: true },
     }
-  }));
+  });
 
-  // Update spring when controlled center prop changes
+  // Update map center when spring values change (e.g., after drag/zoom)
+  useEffect(() => {
+    const unsubscribe = viewState.x.onChange((x) => {
+      if (isDragging.current) return;
+      const newCenter = pointToLngLat({ x: -x, y: -viewState.y.get() }, viewState.zoom.get());
+      onCenterChange(newCenter);
+    });
+    const unsubscribeY = viewState.y.onChange((y) => {
+        if (isDragging.current) return;
+        const newCenter = pointToLngLat({ x: -viewState.x.get(), y: -y }, viewState.zoom.get());
+        onCenterChange(newCenter);
+    });
+    const unsubscribeZoom = viewState.zoom.onChange((zoom) => {
+        const newCenter = pointToLngLat({ x: -viewState.x.get(), y: -viewState.y.get() }, zoom);
+        onCenterChange(newCenter);
+    });
+
+    return () => {
+      unsubscribe();
+      unsubscribeY();
+      unsubscribeZoom();
+    };
+  }, [viewState, onCenterChange]);
+
+
+  // Update spring when controlled center prop changes from outside
   useEffect(() => {
     const point = lngLatToPoint(center, viewState.zoom.get());
     setViewState.start({ x: -point.x, y: -point.y, immediate: true });
@@ -96,10 +122,15 @@ export function FakeMap({
   // Gesture handling for pan and zoom
   useGesture(
     {
-      onDrag: ({ offset: [dx, dy], pinching }) => {
-        if (pinching) return;
-        const point = lngLatToPoint(center, viewState.zoom.get());
-        setViewState.start({ x: -point.x + dx, y: -point.y + dy });
+      onDrag: ({ offset: [dx, dy] }) => {
+        setViewState.start({ x: dx, y: dy });
+      },
+      onDragStart: () => { isDragging.current = true; },
+      onDragEnd: () => { 
+        isDragging.current = false;
+        // Manually trigger onCenterChange at the end of the drag
+        const newCenter = pointToLngLat({ x: -viewState.x.get(), y: -viewState.y.get() }, viewState.zoom.get());
+        onCenterChange(newCenter);
       },
       onPinch: ({ offset: [d] }) => {
           const newZoom = controlledZoom + d/100;
@@ -129,7 +160,7 @@ export function FakeMap({
     {
       target: mapRef,
       eventOptions: { passive: false },
-      drag: { from: () => [viewState.x.get() + lngLatToPoint(center, viewState.zoom.get()).x, viewState.y.get() + lngLatToPoint(center, viewState.zoom.get()).y] },
+      drag: { from: () => [viewState.x.get(), viewState.y.get()] },
       wheel: {
           from: () => [0, viewState.zoom.get()],
           axis: 'y'
