@@ -1,14 +1,17 @@
 
 'use client';
 
-import { Palette } from 'lucide-react';
+import { Palette, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
 import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
 
 type Theme = {
   name: string;
@@ -148,7 +151,7 @@ const themes: Theme[] = [
       },
     },
   },
-  {
+    {
     name: 'Orange',
     palette: {
       light: {
@@ -195,15 +198,19 @@ const themes: Theme[] = [
 
 export function ThemeSwitcher() {
   const [activeTheme, setActiveTheme] = useState('Rose');
+  const [saturation, setSaturation] = useState(1);
   const [isClient, setIsClient] = useState(false);
 
+  // Apply theme and saturation from localStorage on initial client load
   useEffect(() => {
     setIsClient(true);
     const savedThemeName = localStorage.getItem('app-theme') || 'Rose';
-    applyTheme(savedThemeName);
+    const savedSaturation = parseFloat(localStorage.getItem('app-saturation') || '1');
+    setSaturation(savedSaturation);
+    applyTheme(savedThemeName, savedSaturation);
   }, []);
 
-  const applyTheme = (themeName: string) => {
+  const applyTheme = (themeName: string, saturationValue: number) => {
     const theme = themes.find((t) => t.name === themeName);
     if (!theme) return;
 
@@ -215,41 +222,40 @@ export function ThemeSwitcher() {
       root.style.setProperty(`--${key}`, value);
     }
     
-    // Also apply sidebar and chart colors based on the primary color
-    root.style.setProperty('--sidebar-primary', palette.primary);
-    root.style.setProperty('--sidebar-accent', palette.primary);
-    root.style.setProperty('--sidebar-ring', palette.ring);
-    root.style.setProperty('--chart-1', palette.primary);
-
-
+    root.style.setProperty('--saturation-scale', saturationValue.toString());
     setActiveTheme(themeName);
   };
   
   const handleThemeChange = (themeName: string) => {
-    applyTheme(themeName);
+    applyTheme(themeName, saturation);
     localStorage.setItem('app-theme', themeName);
   }
 
+  const handleSaturationChange = (value: number[]) => {
+    const newSaturation = value[0];
+    setSaturation(newSaturation);
+    document.documentElement.style.setProperty('--saturation-scale', newSaturation.toString());
+    localStorage.setItem('app-saturation', newSaturation.toString());
+  };
+
+  // Re-apply theme palette when dark mode changes
   useEffect(() => {
-    // Re-apply theme when dark mode changes
+    if (!isClient) return;
+    
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.attributeName === 'class') {
-          const savedThemeName = localStorage.getItem('app-theme') || 'Rose';
-          applyTheme(savedThemeName);
+          applyTheme(activeTheme, saturation);
         }
       });
     });
 
-    if(isClient) {
-      observer.observe(document.documentElement, { attributes: true });
-    }
-
+    observer.observe(document.documentElement, { attributes: true });
     return () => observer.disconnect();
-  }, [isClient]);
+  }, [isClient, activeTheme, saturation]);
 
   if (!isClient) {
-    return <div className="h-8 w-8" />; // Return a placeholder on the server
+    return <div className="h-8 w-8" />; // Placeholder on the server
   }
 
   return (
@@ -260,31 +266,50 @@ export function ThemeSwitcher() {
           <span className="sr-only">تغییر تم</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-4" align="start">
-        <div className="grid gap-3">
+      <PopoverContent className="w-72 p-4" align="start">
+        <div className="grid gap-4">
           <div className="space-y-2">
-            <h4 className="font-medium leading-none">انتخاب رنگ تم</h4>
+            <h4 className="font-medium leading-none">شخصی‌سازی ظاهر</h4>
             <p className="text-sm text-muted-foreground">
-              پالت رنگی برنامه را انتخاب کنید.
+              پالت رنگی و غلظت آن را انتخاب کنید.
             </p>
           </div>
-          <div className="flex items-center gap-2 pt-2">
-            {themes.map((theme) => (
-              <button
-                key={theme.name}
-                onClick={() => handleThemeChange(theme.name)}
-                className={`flex h-8 w-8 items-center justify-center rounded-full border-2 ${
-                  activeTheme === theme.name ? 'border-foreground' : 'border-transparent'
-                }`}
-                style={{ backgroundColor: `hsl(${theme.palette.light.primary})` }}
-                title={theme.name}
-              >
-                <span className="sr-only">{theme.name}</span>
-              </button>
-            ))}
+          
+          <div className="space-y-2">
+            <Label>رنگ تم</Label>
+            <div className="flex items-center gap-2 pt-1">
+              {themes.map((theme) => (
+                <button
+                  key={theme.name}
+                  onClick={() => handleThemeChange(theme.name)}
+                  className={cn(
+                    'flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all',
+                    activeTheme === theme.name ? 'border-foreground scale-110' : 'border-transparent'
+                  )}
+                  style={{ backgroundColor: `hsl(${theme.palette.light.primary})` }}
+                  title={theme.name}
+                >
+                  {activeTheme === theme.name && <div className="h-3 w-3 rounded-full bg-white/80" />}
+                  <span className="sr-only">{theme.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+             <Label>غلظت رنگ</Label>
+             <Slider
+                defaultValue={[saturation]}
+                max={1.5}
+                min={0}
+                step={0.1}
+                onValueChange={handleSaturationChange}
+              />
           </div>
         </div>
       </PopoverContent>
     </Popover>
   );
 }
+
+    

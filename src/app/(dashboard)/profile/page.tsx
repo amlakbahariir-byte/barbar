@@ -114,9 +114,6 @@ export default function ProfilePage() {
       </div>
 
       <Card className="relative">
-        <div className="absolute top-4 left-4">
-            {/* The new theme switcher component */}
-        </div>
         <CardHeader>
           <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-right">
               <Avatar className="w-24 h-24 border-4 border-primary">
@@ -264,8 +261,8 @@ export default function ProfilePage() {
                     <div className='flex items-center gap-3'>
                         <Palette className="text-muted-foreground"/>
                         <div>
-                            <Label className="font-semibold">تغییر تم</Label>
-                            <p className='text-xs text-muted-foreground'>رنگ اصلی برنامه را انتخاب کنید</p>
+                            <Label className="font-semibold">شخصی‌سازی ظاهر</Label>
+                            <p className='text-xs text-muted-foreground'>رنگ و غلظت تم برنامه را انتخاب کنید</p>
                         </div>
                     </div>
                     <ThemeSwitcher />
@@ -293,3 +290,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    
