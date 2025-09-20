@@ -11,9 +11,10 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, Bell, CreditCard, Edit, LogOut, Moon, Palette, Save, User as UserIcon, Truck, BadgeCheck, FileText } from 'lucide-react';
+import { ArrowRight, Bell, CreditCard, Edit, LogOut, Moon, Palette, Save, User as UserIcon, Truck, BadgeCheck, FileText, UploadCloud } from 'lucide-react';
 import { auth } from '@/lib/firebase/config';
 import { Badge } from '@/components/ui/badge';
+import { FileUploadItem } from '@/components/file-upload-item';
 
 const settingsOptions = [
     {
@@ -189,6 +190,20 @@ export default function ProfilePage() {
                             </div>
                             <Badge variant={userData.addictionCertificate ? "secondary" : "destructive"} className="text-accent-foreground">{userData.addictionCertificate ? "تایید شده" : "تایید نشده"}</Badge>
                         </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <UploadCloud className='text-primary'/>آپلود مدارک شناسایی
+                        </CardTitle>
+                        <CardDescription>برای تکمیل فرآیند تایید هویت، لطفا تصاویر مدارک خود را بارگذاری کنید.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                       <FileUploadItem label="صفحه اول شناسنامه" />
+                       <FileUploadItem label="صفحات توضیحات شناسنامه" />
+                       <FileUploadItem label="کارت ملی (پشت و رو)" />
                     </CardContent>
                 </Card>
             </div>
