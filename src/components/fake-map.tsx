@@ -63,7 +63,7 @@ export function FakeMap({
   const [size, setSize] = useState({ width: 0, height: 0 });
   const isDragging = useRef(false);
 
-  const [viewState, setViewState] = useSpring(() => {
+  const [{ x, y, zoom }, setViewState] = useSpring(() => {
     const initialPoint = lngLatToPoint(center, controlledZoom);
     return {
         zoom: controlledZoom,
@@ -75,34 +75,36 @@ export function FakeMap({
 
   // Update map center when spring values change (e.g., after drag/zoom)
    useEffect(() => {
-    const unsubscribe = viewState.x.onChange((x) => {
-      if (isDragging.current) return;
-      const newCenter = pointToLngLat({ x: -x, y: -viewState.y.get() }, viewState.zoom.get());
-      onCenterChange(newCenter);
-    });
-    const unsubscribeY = viewState.y.onChange((y) => {
+    const unsubscribeX = x.onChange(val => {
         if (isDragging.current) return;
-        const newCenter = pointToLngLat({ x: -viewState.x.get(), y: -y }, viewState.zoom.get());
+        const newCenter = pointToLngLat({ x: -val, y: -y.get() }, zoom.get());
         onCenterChange(newCenter);
     });
-    const unsubscribeZoom = viewState.zoom.onChange((zoom) => {
-        const newCenter = pointToLngLat({ x: -viewState.x.get(), y: -viewState.y.get() }, zoom);
+
+    const unsubscribeY = y.onChange(val => {
+        if (isDragging.current) return;
+        const newCenter = pointToLngLat({ x: -x.get(), y: -val }, zoom.get());
+        onCenterChange(newCenter);
+    });
+    
+     const unsubscribeZoom = zoom.onChange(val => {
+        const newCenter = pointToLngLat({ x: -x.get(), y: -y.get() }, val);
         onCenterChange(newCenter);
     });
 
     return () => {
-      unsubscribe();
+      unsubscribeX();
       unsubscribeY();
       unsubscribeZoom();
     };
-  }, [viewState, onCenterChange]);
+  }, [x, y, zoom, onCenterChange]);
 
 
   // Update spring when controlled center prop changes from outside
   useEffect(() => {
-    const point = lngLatToPoint(center, viewState.zoom.get());
+    const point = lngLatToPoint(center, zoom.get());
     setViewState.start({ x: -point.x, y: -point.y, immediate: true });
-  }, [center, setViewState, viewState.zoom]);
+  }, [center, setViewState, zoom]);
   
   // Update map size on mount and resize
   useEffect(() => {
@@ -129,7 +131,7 @@ export function FakeMap({
       onDragEnd: () => { 
         isDragging.current = false;
         // Manually trigger onCenterChange at the end of the drag
-        const newCenter = pointToLngLat({ x: -viewState.x.get(), y: -viewState.y.get() }, viewState.zoom.get());
+        const newCenter = pointToLngLat({ x: -x.get(), y: -y.get() }, zoom.get());
         onCenterChange(newCenter);
       },
       onPinch: ({ offset: [d] }) => {
@@ -138,14 +140,14 @@ export function FakeMap({
       },
       onWheel: ({ event, movement: [, dy] }) => {
         event.preventDefault();
-        const currentZoom = viewState.zoom.get();
+        const currentZoom = zoom.get();
         const newZoom = Math.max(minZoom, Math.min(maxZoom, currentZoom - dy / 100));
         
         const { x: mouseX, y: mouseY } = mapRef.current!.getBoundingClientRect();
         const mousePoint = { x: event.clientX - mouseX, y: event.clientY - mouseY };
 
-        const currentMapX = viewState.x.get();
-        const currentMapY = viewState.y.get();
+        const currentMapX = x.get();
+        const currentMapY = y.get();
         
         const mouseOnMap = { x: mousePoint.x - currentMapX, y: mousePoint.y - currentMapY };
         
@@ -160,13 +162,13 @@ export function FakeMap({
     {
       target: mapRef,
       eventOptions: { passive: false },
-      drag: { from: () => [viewState.x.get(), viewState.y.get()] },
+      drag: { from: () => [x.get(), y.get()] },
       wheel: {
-          from: () => [0, viewState.zoom.get()],
+          from: () => [0, zoom.get()],
           axis: 'y'
       },
       pinch: {
-          from: () => [0, viewState.zoom.get()],
+          from: () => [0, zoom.get()],
           scaleBounds: { min: minZoom, max: maxZoom },
           rubberband: true
       }
@@ -175,16 +177,16 @@ export function FakeMap({
 
   // Calculate which tiles are visible
   const getVisibleTiles = useCallback(
-    ({ width, height, x, y, zoom }: { width: number; height: number; x: number; y: number; zoom: number }): Tile[] => {
+    (width: number, height: number, currentX: number, currentY: number, currentZoom: number): Tile[] => {
       if (width === 0 || height === 0) return [];
 
-      const z = Math.round(zoom);
+      const z = Math.round(currentZoom);
       const tiles: Tile[] = [];
 
-      const startX = Math.floor(-x / TILE_SIZE);
-      const startY = Math.floor(-y / TILE_SIZE);
-      const endX = Math.ceil((-x + width) / TILE_SIZE);
-      const endY = Math.ceil((-y + height) / TILE_SIZE);
+      const startX = Math.floor(-currentX / TILE_SIZE);
+      const startY = Math.floor(-currentY / TILE_SIZE);
+      const endX = Math.ceil((-currentX + width) / TILE_SIZE);
+      const endY = Math.ceil((-currentY + height) / TILE_SIZE);
       
       const maxTile = Math.pow(2, z) - 1;
 
@@ -199,13 +201,13 @@ export function FakeMap({
     []
   );
 
-  const tiles = getVisibleTiles({
-    width: size.width,
-    height: size.height,
-    x: viewState.x.get(),
-    y: viewState.y.get(),
-    zoom: viewState.zoom.get(),
-  });
+  const tiles = getVisibleTiles(
+    size.width,
+    size.height,
+    x.get(),
+    y.get(),
+    zoom.get(),
+  );
 
   return (
     <div
@@ -215,9 +217,9 @@ export function FakeMap({
       <animated.div
         className="absolute inset-0"
         style={{
-          transform: viewState.zoom.to(z => `scale(${Math.pow(2, z) / Math.pow(2, Math.round(z))})`),
-          x: viewState.x,
-          y: viewState.y,
+          transform: zoom.to(z => `scale(${Math.pow(2, z) / Math.pow(2, Math.round(z))})`),
+          x,
+          y,
         }}
       >
         {tiles.map((tile) => {
