@@ -14,6 +14,7 @@ import { useEffect, useState } from 'react';
 import { ShipmentListPage } from '@/components/shipment-list-page';
 import NewRequestPage from '../../requests/new/page';
 import RequestDetailsPage from '../../requests/[id]/page';
+import ProfilePage from '../../profile/page';
 
 function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
   const myShipments = getMyShipments('shipper', 'all');
@@ -135,6 +136,10 @@ const PageRenderer = ({ slug, role, navigate }: { slug: string[], role: 'shipper
   const page = slug[0] || 'home';
   const subPage = slug[1];
   const detailId = slug[2];
+
+  if (page === 'profile') {
+    return <ProfilePage />;
+  }
 
   if (page === 'requests') {
     if (subPage === 'new') {
