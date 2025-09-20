@@ -74,7 +74,7 @@ export function FakeMap({
 
   // Update spring when controlled center prop changes from outside
   useEffect(() => {
-    if (size.width === 0) return;
+    if (size.width === 0 || isDragging.current) return;
     const point = lngLatToPoint(center, zoom.get());
     api.start({ 
         x: -point.x + size.width / 2, 
@@ -87,6 +87,7 @@ export function FakeMap({
   useEffect(() => {
     const handleSpringUpdate = () => {
         if (isDragging.current || size.width === 0) return;
+        
         const currentZoom = zoom.get();
         const worldPoint = {
             x: size.width / 2 - x.get(),
@@ -95,9 +96,14 @@ export function FakeMap({
         const newCenter = pointToLngLat(worldPoint, currentZoom);
         onCenterChange(newCenter);
     };
+    
+    // This is the correct way to listen to multiple spring values in recent versions.
+    const unsubscribe = to([x, y, zoom]).subscribe(handleSpringUpdate);
+    
+    return () => {
+        unsubscribe();
+    };
 
-    const unsubscribe = to([x, y, zoom]).onChange(handleSpringUpdate);
-    return () => unsubscribe();
   }, [x, y, zoom, onCenterChange, size]);
 
   // Update map size on mount and resize
@@ -124,7 +130,8 @@ export function FakeMap({
   // Gesture handling for pan and zoom
   useGesture(
     {
-      onDrag: ({ active, offset: [dx, dy] }) => {
+      onDrag: ({ active, offset: [dx, dy], pinching }) => {
+        if (pinching) return;
         isDragging.current = active;
         api.start({ x: dx, y: dy });
       },
@@ -149,12 +156,34 @@ export function FakeMap({
         
         api.start({ zoom: newZoom, x: newMapX, y: newMapY });
       },
+       onPinch: ({ offset: [d], origin: [ox, oy], event }) => {
+        event.preventDefault();
+        const currentZoom = zoom.get();
+        const newZoom = Math.max(minZoom, Math.min(maxZoom, currentZoom + d / 100));
+
+        const { x: mouseX, y: mouseY } = mapRef.current!.getBoundingClientRect();
+        const pinchOriginPoint = { x: ox - mouseX, y: oy - mouseY };
+
+        const currentMapX = x.get();
+        const currentMapY = y.get();
+
+        const worldPoint = {
+            x: (pinchOriginPoint.x - currentMapX) / Math.pow(2, currentZoom),
+            y: (pinchOriginPoint.y - currentMapY) / Math.pow(2, currentZoom),
+        };
+
+        const newMapX = pinchOriginPoint.x - worldPoint.x * Math.pow(2, newZoom);
+        const newMapY = pinchOriginPoint.y - worldPoint.y * Math.pow(2, newZoom);
+
+        api.start({ zoom: newZoom, x: newMapX, y: newMapY });
+      },
     },
     {
       target: mapRef,
       eventOptions: { passive: false },
       drag: { from: () => [x.get(), y.get()] },
-      wheel: { from: () => [0, zoom.get()], axis: 'y' }
+      wheel: { from: () => [0, zoom.get()], axis: 'y' },
+      pinch: { from: () => [0, zoom.get()] },
     }
   );
 
@@ -163,24 +192,23 @@ export function FakeMap({
     (width: number, height: number, transform: { x: number, y: number, zoom: number }): Tile[] => {
       if (width === 0 || height === 0) return [];
 
-      const z = Math.floor(transform.zoom);
-      const scale = Math.pow(2, z);
+      const z = Math.round(transform.zoom); // Use rounded zoom for tile calculation
+      const scale = TILE_SIZE * Math.pow(2, z);
       const tiles: Tile[] = [];
 
-      const topLeftWorld = { x: -transform.x / scale, y: -transform.y / scale };
-      const bottomRightWorld = { x: (width - transform.x) / scale, y: (height - transform.y) / scale };
-
-      const startX = Math.floor(topLeftWorld.x / TILE_SIZE);
-      const startY = Math.floor(topLeftWorld.y / TILE_SIZE);
-      const endX = Math.ceil(bottomRightWorld.x / TILE_SIZE);
-      const endY = Math.ceil(bottomRightWorld.y / TILE_SIZE);
+      const worldX = -transform.x + width / 2;
+      const worldY = -transform.y + height / 2;
       
-      const maxTile = Math.pow(2, z) - 1;
+      const numTiles = Math.pow(2,z);
 
-      for (let i = startX; i < endX; i++) {
-        for (let j = startY; j < endY; j++) {
-            if(i >= 0 && i <= maxTile && j >=0 && j <= maxTile)
-                tiles.push({ x: i, y: j, z });
+      const startX = Math.floor((worldX - (width/2) * Math.pow(2, transform.zoom - z)) / TILE_SIZE);
+      const startY = Math.floor((worldY - (height/2) * Math.pow(2, transform.zoom - z)) / TILE_SIZE);
+      const endX = Math.ceil((worldX + (width/2) * Math.pow(2, transform.zoom - z)) / TILE_SIZE);
+      const endY = Math.ceil((worldY + (height/2) * Math.pow(2, transform.zoom - z)) / TILE_SIZE);
+
+      for (let i = Math.max(0, startX); i <= Math.min(numTiles - 1, endX); i++) {
+        for (let j = Math.max(0, startY); j <= Math.min(numTiles - 1, endY); j++) {
+            tiles.push({ x: i, y: j, z });
         }
       }
       return tiles;
@@ -188,13 +216,13 @@ export function FakeMap({
     []
   );
 
-  const renderTiles = (zInt: number, currentZoom: number) => {
+  const renderTiles = (currentZoomValue: number) => {
+    const zInt = Math.round(currentZoomValue);
     const tiles = getVisibleTiles(
       size.width,
       size.height,
-      { x: x.get(), y: y.get(), zoom: zInt }
+      { x: x.get(), y: y.get(), zoom: currentZoomValue }
     );
-    const scale = Math.pow(2, currentZoom - zInt);
 
     return tiles.map((tile) => {
       const tileId = `${tile.x}-${tile.y}-${tile.z}`;
@@ -204,9 +232,6 @@ export function FakeMap({
         top: tile.y * TILE_SIZE,
         width: TILE_SIZE + 1,
         height: TILE_SIZE + 1,
-        transform: `scale(${scale})`,
-        transformOrigin: 'top left',
-        opacity: currentZoom > zInt + 1 || currentZoom < zInt ? 0.3 : 1,
       };
       return <MapTile key={tileId} tile={tile} style={tileStyle} />;
     });
@@ -222,15 +247,12 @@ export function FakeMap({
         style={{
             x: to(x, (val) => val),
             y: to(y, (val) => val),
-            transform: zoom.to(z => `scale(${Math.pow(2, z - Math.floor(z))})`),
-            transformOrigin: '0 0'
+            scale: zoom.to(z => Math.pow(2, z)),
+            transformOrigin: '50% 50%',
         }}
       >
-        {size.width > 0 && renderTiles(Math.floor(zoom.get()), zoom.get())}
+          {size.width > 0 && renderTiles(zoom.get())}
       </animated.div>
     </div>
   );
 }
-
-
-    
