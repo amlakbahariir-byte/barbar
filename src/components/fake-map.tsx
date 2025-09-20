@@ -72,6 +72,7 @@ export function FakeMap({
         y: -initialPoint.y + size.height / 2,
         config: { tension: 250, friction: 30, clamp: true },
         onRest: ({ value }) => {
+            // This is called when any spring animation (pan, zoom) settles.
             if (!isDragging.current) {
                 const currentZoom = value.zoom;
                 const worldPoint = {
@@ -104,7 +105,6 @@ export function FakeMap({
         const { clientWidth, clientHeight } = mapRef.current;
         setSize({ width: clientWidth, height: clientHeight });
         
-        // Recenter map on resize
         const point = lngLatToPoint(center, zoom.get());
         api.start({
             x: -point.x + clientWidth / 2,
@@ -124,19 +124,12 @@ export function FakeMap({
       onDrag: ({ active, offset: [dx, dy], pinching }) => {
         if (pinching) return;
         isDragging.current = active;
-        api.start({ x: dx, y: dy, immediate: true });
+        api.start({ x: dx, y: dy, immediate: active });
         if(!active) {
-            // After drag ends, update the center
-            const currentZoom = zoom.get();
-            const worldPoint = {
-                x: size.width / 2 - dx,
-                y: size.height / 2 - dy
-            };
-            const newCenter = pointToLngLat(worldPoint, currentZoom);
-            onCenterChange(newCenter);
+            // After drag ends, onRest will fire and update the center.
         }
       },
-      onWheel: ({ event, delta: [, dy] }) => {
+      onWheel: ({ event, delta: [, dy], memo }) => {
         event.preventDefault();
         const currentZoom = zoom.get();
         const newZoom = Math.max(minZoom, Math.min(maxZoom, currentZoom - dy / 250));
@@ -157,10 +150,10 @@ export function FakeMap({
         
         api.start({ zoom: newZoom, x: newMapX, y: newMapY });
       },
-       onPinch: ({ offset: [d], origin: [ox, oy], event }) => {
+       onPinch: ({ offset: [d], origin: [ox, oy], event, memo }) => {
         event.preventDefault();
         const currentZoom = zoom.get();
-        const newZoom = Math.max(minZoom, Math.min(maxZoom, currentZoom + d / 100));
+        const newZoom = Math.max(minZoom, Math.min(maxZoom, memo + d / 100));
 
         const { x: mouseX, y: mouseY } = mapRef.current!.getBoundingClientRect();
         const pinchOriginPoint = { x: ox - mouseX, y: oy - mouseY };
@@ -176,7 +169,8 @@ export function FakeMap({
         const newMapX = pinchOriginPoint.x - worldPoint.x * Math.pow(2, newZoom);
         const newMapY = pinchOriginPoint.y - worldPoint.y * Math.pow(2, newZoom);
 
-        api.start({ zoom: newZoom, x: newMapX, y: newMapY });
+        api.start({ zoom: newZoom, x: newMapX, y: newMapY, immediate: true });
+        return memo;
       },
     },
     {
@@ -184,28 +178,36 @@ export function FakeMap({
       eventOptions: { passive: false },
       drag: { from: () => [x.get(), y.get()] },
       wheel: { from: () => [0, zoom.get()], axis: 'y' },
-      pinch: { from: () => [0, zoom.get()] },
+      pinch: { from: () => [zoom.get(), 0], memo: zoom.get() },
     }
   );
 
   // Calculate which tiles are visible
   const getVisibleTiles = useCallback(
-    (width: number, height: number, transform: { x: number, y: number, zoom: number }): Tile[] => {
+    (width: number, height: number, transform: { x: number, y: number, z: number }): Tile[] => {
       if (width === 0 || height === 0) return [];
 
-      const z = Math.round(transform.zoom); // Use rounded zoom for tile calculation
+      const z = Math.round(transform.z);
       const tiles: Tile[] = [];
+      const scale = Math.pow(2, transform.z);
+      const TILE_SCALED_SIZE = TILE_SIZE;
+
+      const worldTopLeft = {
+        x: -transform.x / TILE_SCALED_SIZE,
+        y: -transform.y / TILE_SCALED_SIZE,
+      };
+      const worldBottomRight = {
+        x: (width - transform.x) / TILE_SCALED_SIZE,
+        y: (height - transform.y) / TILE_SCALED_SIZE,
+      };
       
-      const numTiles = Math.pow(2,z);
+      const startX = Math.max(0, Math.floor(worldTopLeft.x));
+      const startY = Math.max(0, Math.floor(worldTopLeft.y));
+      const endX = Math.ceil(worldBottomRight.x);
+      const endY = Math.ceil(worldBottomRight.y);
 
-      const startX = Math.floor((-transform.x) / TILE_SIZE / Math.pow(2, transform.zoom - z));
-      const startY = Math.floor((-transform.y) / TILE_SIZE / Math.pow(2, transform.zoom - z));
-      const endX = Math.ceil((width - transform.x) / TILE_SIZE / Math.pow(2, transform.zoom - z));
-      const endY = Math.ceil((height - transform.y) / TILE_SIZE / Math.pow(2, transform.zoom - z));
-
-
-      for (let i = Math.max(0, startX); i < Math.min(numTiles, endX); i++) {
-        for (let j = Math.max(0, startY); j < Math.min(numTiles, endY); j++) {
+      for (let i = startX; i < endX; i++) {
+        for (let j = startY; j < endY; j++) {
             tiles.push({ x: i, y: j, z });
         }
       }
@@ -213,29 +215,30 @@ export function FakeMap({
     },
     []
   );
-
+  
   const renderTiles = (currentZoomValue: number, currentX: number, currentY: number) => {
     const zInt = Math.round(currentZoomValue);
-    const tiles = getVisibleTiles(
-      size.width,
-      size.height,
-      { x: currentX, y: currentY, zoom: currentZoomValue }
-    );
-    
     const tileScale = Math.pow(2, currentZoomValue - zInt);
+    const scaledTileSize = TILE_SIZE * tileScale;
 
+    const tiles = getVisibleTiles(size.width, size.height, {
+      x: currentX,
+      y: currentY,
+      z: currentZoomValue,
+    });
+    
     return tiles.map((tile) => {
-      const tileId = `${tile.x}-${tile.y}-${tile.z}`;
-      const scaledTileSize = TILE_SIZE * tileScale;
+      const tileId = `${tile.z}-${tile.x}-${tile.y}`;
+      const baseTile = { ...tile, z: zInt };
+      const tileIdInt = `${baseTile.x}-${baseTile.y}-${baseTile.z}`;
 
-      const tileStyle: React.CSSProperties = {
-        position: 'absolute',
-        left: tile.x * scaledTileSize,
-        top: tile.y * scaledTileSize,
-        width: scaledTileSize + 1, // +1 to prevent gaps
-        height: scaledTileSize + 1,
+      const tileStyle = {
+        width: scaledTileSize + 0.5,
+        height: scaledTileSize + 0.5,
+        left: baseTile.x * scaledTileSize,
+        top: baseTile.y * scaledTileSize,
       };
-      return <MapTile key={tileId} tile={tile} style={tileStyle} />;
+      return <MapTile key={tileIdInt} tile={baseTile} style={tileStyle} />;
     });
   };
 
@@ -249,6 +252,7 @@ export function FakeMap({
         style={{
             x,
             y,
+            scale: to(zoom, z => Math.pow(2, z - Math.round(z))),
             transformOrigin: '0 0'
         }}
       >
@@ -258,3 +262,4 @@ export function FakeMap({
     </div>
   );
 }
+
