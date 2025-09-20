@@ -259,7 +259,7 @@ function HomePageContent() {
                               ref={el => otpInputs.current[i] = el}
                               type="text"
                               maxLength={1}
-                              className="size-12 md:size-14 text-2xl text-center font-bold bg-input"
+                              className="size-10 md:size-12 text-xl text-center font-bold bg-input"
                               value={otp[i] || ''}
                               onChange={(e) => handleOtpInputChange(e, i)}
                               onKeyDown={(e) => handleOtpKeyDown(e, i)}
