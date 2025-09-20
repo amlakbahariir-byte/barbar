@@ -7,13 +7,13 @@ body {
 
 @layer base {
   :root {
-    --background: 350 100% 98%; /* Light Pinkish White */
+    --background: 350 100% 98%;
     --foreground: 350 10% 20%;
     --card: 0 0% 100%;
     --card-foreground: 350 10% 20%;
     --popover: 0 0% 100%;
     --popover-foreground: 350 10% 20%;
-    --primary: 347 80% 63%; /* Soft Pink/Rose */
+    --primary: 347 80% 63%; /* Rose */
     --primary-foreground: 0 0% 100%;
     --secondary: 350 80% 96%;
     --secondary-foreground: 347 80% 40%;
@@ -32,7 +32,7 @@ body {
     --chart-4: 280 65% 60%;
     --chart-5: 350 85% 65%;
     --radius: 0.8rem;
-    --sidebar-background: 350 10% 20%; /* Dark background for sidebar */
+    --sidebar-background: 350 10% 20%;
     --sidebar-foreground: 350 15% 95%;
     --sidebar-primary: 347 80% 63%;
     --sidebar-primary-foreground: 0 0% 100%;
@@ -48,13 +48,13 @@ body {
     --card-foreground: 350 10% 85%;
     --popover: 350 10% 15%;
     --popover-foreground: 350 10% 85%;
-    --primary: 347 70% 55%;
+    --primary: 347 70% 55%; /* Dark Rose */
     --primary-foreground: 0 0% 100%;
     --secondary: 350 15% 25%;
     --secondary-foreground: 350 10% 90%;
     --muted: 350 15% 25%;
     --muted-foreground: 350 10% 65%;
-    --accent: 85 35% 55%;
+    --accent: 85 35% 55%; /* Dark Olive */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 350 10% 85%;

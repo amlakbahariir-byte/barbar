@@ -23,14 +23,6 @@ const settingsOptions = [
         icon: Bell,
         title: 'اعلانات',
         description: 'دریافت اعلان برای پیشنهادها و وضعیت بار',
-        defaultChecked: true,
-    },
-    {
-        id: 'dark-mode',
-        icon: Moon,
-        title: 'حالت تیره',
-        description: 'فعال‌سازی تم تاریک برای مطالعه در شب',
-        defaultChecked: false,
     },
 ];
 
@@ -46,6 +38,7 @@ export default function ProfilePage() {
   const { toast } = useToast();
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   
   // Dummy user data
   const [userData, setUserData] = useState({
@@ -71,7 +64,26 @@ export default function ProfilePage() {
     if(storedRole === 'driver') {
         setUserData(prev => ({...prev, name: 'راننده نمونه'}));
     }
+    
+    // Check for saved theme preference
+    const darkModePreference = localStorage.getItem('dark-mode') === 'true';
+    setIsDarkMode(darkModePreference);
+    if (darkModePreference) {
+        document.documentElement.classList.add('dark');
+    }
+
   }, []);
+  
+  const handleDarkModeToggle = (checked: boolean) => {
+    setIsDarkMode(checked);
+    localStorage.setItem('dark-mode', String(checked));
+    if (checked) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
+
 
   const handleSave = () => {
     setIsEditing(false);
@@ -103,7 +115,7 @@ export default function ProfilePage() {
 
       <Card className="relative">
         <div className="absolute top-4 left-4">
-            <ThemeSwitcher />
+            {/* The new theme switcher component */}
         </div>
         <CardHeader>
           <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-right">
@@ -234,10 +246,30 @@ export default function ProfilePage() {
                                     <p className='text-xs text-muted-foreground'>{option.description}</p>
                                 </div>
                             </div>
-                            <Switch id={option.id} defaultChecked={option.defaultChecked}/>
+                            <Switch id={option.id} defaultChecked/>
                         </div>
                     );
                 })}
+                <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
+                    <div className='flex items-center gap-3'>
+                        <Moon className="text-muted-foreground"/>
+                        <div>
+                            <Label htmlFor="dark-mode" className="font-semibold">حالت تیره</Label>
+                             <p className='text-xs text-muted-foreground'>فعال‌سازی تم تاریک برای مطالعه در شب</p>
+                        </div>
+                    </div>
+                    <Switch id="dark-mode" checked={isDarkMode} onCheckedChange={handleDarkModeToggle}/>
+                </div>
+                 <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
+                    <div className='flex items-center gap-3'>
+                        <Palette className="text-muted-foreground"/>
+                        <div>
+                            <Label className="font-semibold">تغییر تم</Label>
+                            <p className='text-xs text-muted-foreground'>رنگ اصلی برنامه را انتخاب کنید</p>
+                        </div>
+                    </div>
+                    <ThemeSwitcher />
+                </div>
             </CardContent>
         </Card>
 

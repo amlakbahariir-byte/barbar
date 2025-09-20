@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Palette } from 'lucide-react';
@@ -11,43 +10,68 @@ import {
 import { useEffect, useState } from 'react';
 
 const themes = [
-  { name: 'Rose', primary: '347 80% 63%', accent: '85 30% 45%', background: '350 100% 98%' },
-  { name: 'Blue', primary: '221 83% 53%', accent: '262 83% 58%', background: '220 60% 98%' },
-  { name: 'Green', primary: '142 76% 36%', accent: '142 60% 20%', background: '140 50% 97%' },
-  { name: 'Orange', primary: '25 95% 53%', accent: '25 85% 40%', background: '30 100% 97%' },
-  { name: 'Violet', primary: '262 83% 58%', accent: '221 83% 53%', background: '260 100% 98%' },
+  { name: 'Rose', color: '347 80% 63%' },
+  { name: 'Blue', color: '221 83% 53%' },
+  { name: 'Green', color: '142 76% 36%' },
+  { name: 'Orange', color: '25 95% 53%' },
+  { name: 'Violet', color: '262 83% 58%' },
+];
+
+const darkThemes = [
+  { name: 'Rose', color: '347 70% 55%' },
+  { name: 'Blue', color: '221 70% 55%' },
+  { name: 'Green', color: '142 60% 40%' },
+  { name: 'Orange', color: '25 85% 55%' },
+  { name: 'Violet', color: '262 70% 60%' },
 ];
 
 export function ThemeSwitcher() {
   const [activeTheme, setActiveTheme] = useState('Rose');
 
   useEffect(() => {
-    // On mount, check localStorage for a saved theme
-    const savedTheme = localStorage.getItem('app-theme');
-    if (savedTheme) {
-      handleThemeChange(savedTheme);
-    }
+    // On mount, check localStorage for a saved theme and apply it
+    const savedThemeName = localStorage.getItem('app-theme') || 'Rose';
+    handleThemeChange(savedThemeName, true);
   }, []);
-  
-  const handleThemeChange = (themeName: string) => {
-    const theme = themes.find(t => t.name === themeName);
+
+  const handleThemeChange = (themeName: string, isInitial = false) => {
+    const root = document.documentElement;
+    const isDark = root.classList.contains('dark');
+    
+    const themeList = isDark ? darkThemes : themes;
+    const theme = themeList.find(t => t.name === themeName);
+    
     if (!theme) return;
 
-    const root = document.documentElement;
-    root.style.setProperty('--background', theme.background);
-    root.style.setProperty('--primary', theme.primary);
-    root.style.setProperty('--ring', theme.primary);
-    root.style.setProperty('--sidebar-primary', theme.primary);
-    root.style.setProperty('--sidebar-accent', theme.primary);
-    root.style.setProperty('--sidebar-ring', theme.primary);
-    root.style.setProperty('--chart-1', theme.primary);
-    
-    root.style.setProperty('--accent', theme.accent);
-    root.style.setProperty('--chart-2', theme.accent);
+    root.style.setProperty('--primary', theme.color);
+    root.style.setProperty('--ring', theme.color);
+    root.style.setProperty('--sidebar-primary', theme.color);
+    root.style.setProperty('--sidebar-accent', theme.color);
+    root.style.setProperty('--sidebar-ring', theme.color);
+    root.style.setProperty('--chart-1', theme.color);
 
     setActiveTheme(themeName);
-    localStorage.setItem('app-theme', themeName);
+    if (!isInitial) {
+      localStorage.setItem('app-theme', themeName);
+    }
   };
+  
+  useEffect(() => {
+    // Re-apply theme when dark mode changes
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+           const savedThemeName = localStorage.getItem('app-theme') || 'Rose';
+           handleThemeChange(savedThemeName, true);
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, { attributes: true });
+
+    return () => observer.disconnect();
+  }, []);
+
 
   return (
     <Popover>
@@ -62,7 +86,7 @@ export function ThemeSwitcher() {
           <div className="space-y-2">
             <h4 className="font-medium leading-none">انتخاب رنگ تم</h4>
             <p className="text-sm text-muted-foreground">
-              رنگ اصلی و ثانویه برنامه را انتخاب کنید.
+              رنگ اصلی برنامه را انتخاب کنید.
             </p>
           </div>
           <div className="flex items-center gap-2 pt-2">
@@ -73,7 +97,7 @@ export function ThemeSwitcher() {
                 className={`flex h-8 w-8 items-center justify-center rounded-full border-2 ${
                   activeTheme === theme.name ? 'border-foreground' : 'border-transparent'
                 }`}
-                style={{ backgroundColor: `hsl(${theme.primary})` }}
+                style={{ backgroundColor: `hsl(${theme.color})` }}
                 title={theme.name}
               >
                 <span className="sr-only">{theme.name}</span>
@@ -85,5 +109,3 @@ export function ThemeSwitcher() {
     </Popover>
   );
 }
-
-    
