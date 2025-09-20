@@ -12,21 +12,15 @@ import { Calendar as CalendarIcon, Package, MapPin, ArrowLeft, ArrowRight } from
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns-jalali';
-import { faIR } from 'date-fns/locale';
 
 const steps = [
   { id: 1, title: 'مسیر', icon: MapPin },
   { id: 2, title: 'مشخصات بار', icon: Package },
-  { id: 3, title: 'تاریخ', icon: CalendarIcon },
 ];
 
 export default function NewRequestPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
-  const [date, setDate] = useState<Date | undefined>(new Date());
   const { toast } = useToast();
 
   const navigate = (path: string) => {
@@ -119,38 +113,6 @@ export default function NewRequestPage() {
                             <Textarea id="description" placeholder="اطلاعات تکمیلی مانند نوع بار، حساسیت، نیاز به تجهیزات خاص و ..." />
                         </div>
                     </div>
-                </div>
-
-                <div className={cn("transition-all duration-300", currentStep === 3 ? "block" : "hidden")}>
-                    <CardHeader className="p-0 mb-6">
-                        <CardTitle className="text-2xl">مرحله ۳: تاریخ بارگیری</CardTitle>
-                        <CardDescription>تاریخ مورد نظر برای شروع حمل را انتخاب کنید.</CardDescription>
-                    </CardHeader>
-                     <div className="flex justify-center">
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button
-                                variant={"outline"}
-                                className={cn(
-                                    "w-[280px] justify-start text-right font-normal h-12 text-base",
-                                    !date && "text-muted-foreground"
-                                )}
-                                >
-                                <CalendarIcon className="ml-2 h-4 w-4" />
-                                {date ? format(date, 'd MMMM yyyy', { locale: faIR }) : <span>یک تاریخ انتخاب کنید</span>}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                                <Calendar
-                                mode="single"
-                                selected={date}
-                                onSelect={setDate}
-                                initialFocus
-                                locale={faIR}
-                                />
-                            </PopoverContent>
-                        </Popover>
-                     </div>
                 </div>
 
             </CardContent>
