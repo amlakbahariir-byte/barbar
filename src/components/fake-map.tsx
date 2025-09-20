@@ -71,7 +71,7 @@ export function FakeMap({
         config: { tension: 250, friction: 30, clamp: true },
     }
   });
-  
+
   // Update spring when controlled center prop changes from outside
   useEffect(() => {
     const point = lngLatToPoint(center, zoom.get());
@@ -79,27 +79,21 @@ export function FakeMap({
   }, [center, setViewState, zoom]);
 
   // Update map center when spring values change (e.g., after drag/zoom)
-   useEffect(() => {
-    // This function will be called whenever the spring values change.
+  useEffect(() => {
     const handleSpringUpdate = () => {
       if (isDragging.current) return;
       const newCenter = pointToLngLat({ x: -x.get(), y: -y.get() }, zoom.get());
       onCenterChange(newCenter);
     };
-
-    // We can't use .onChange anymore, so we subscribe to all changes and call the handler.
-    const unsubscribeX = x.onChange(handleSpringUpdate);
-    const unsubscribeY = y.onChange(handleSpringUpdate);
-    const unsubscribeZoom = zoom.onChange(handleSpringUpdate);
-
-    // Cleanup subscription on component unmount
+    
+    // This is the correct way to listen to multiple spring values in recent versions.
+    const unsubscribe = animated.controller([x, y, zoom]).on(handleSpringUpdate);
+    
     return () => {
-      unsubscribeX();
-      unsubscribeY();
-      unsubscribeZoom();
-    };
+        unsubscribe();
+    }
   }, [x, y, zoom, onCenterChange]);
-  
+
   // Update map size on mount and resize
   useEffect(() => {
     const updateSize = () => {
