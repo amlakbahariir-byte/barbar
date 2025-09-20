@@ -11,7 +11,7 @@ export default {
     extend: {
       fontFamily: {
         body: ['"Vazirmatn"', 'sans-serif'],
-        headline: ['"Vazirmatn"', 'sans-serif'],
+        headline: ['"Lalezar"', '"Vazirmatn"', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {
