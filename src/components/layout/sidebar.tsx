@@ -103,5 +103,3 @@ export function AppSidebar({ navigate }: { navigate: (path: string) => void }) {
     </Sidebar>
   );
 }
-
-    

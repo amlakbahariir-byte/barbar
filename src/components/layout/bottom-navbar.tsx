@@ -81,5 +81,3 @@ export function BottomNavbar({ navigate }: { navigate: (path: string) => void })
     </div>
   );
 }
-
-    
