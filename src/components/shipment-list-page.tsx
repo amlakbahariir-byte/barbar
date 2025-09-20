@@ -44,13 +44,15 @@ export function ShipmentListPage({ title, description, shipments, role, navigate
             </div>
 
             <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
-                     {statusFilters.map(filter => (
-                        // For shipper, we don't show accepted, it's covered by in_transit
-                        (role === 'shipper' && filter.value === 'accepted') ? null :
-                        <TabsTrigger key={filter.value} value={filter.value}>{filter.label}</TabsTrigger>
-                     ))}
-                </TabsList>
+                <div className="flex justify-center">
+                    <TabsList>
+                        {statusFilters.map(filter => (
+                            // For shipper, we don't show accepted, it's covered by in_transit
+                            (role === 'shipper' && filter.value === 'accepted') ? null :
+                            <TabsTrigger key={filter.value} value={filter.value}>{filter.label}</TabsTrigger>
+                        ))}
+                    </TabsList>
+                </div>
                 
                 <TabsContent value={activeTab} className="mt-6">
                      {filteredShipments.length > 0 ? (
