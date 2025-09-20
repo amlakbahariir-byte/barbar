@@ -319,34 +319,36 @@ export default function ProfilePage() {
                     </CardHeader>
                     <CardContent>
                         <div className="border rounded-lg overflow-hidden">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                    <TableHead>تاریخ</TableHead>
-                                    <TableHead>نوع تراکنش</TableHead>
-                                    <TableHead>شرح</TableHead>
-                                    <TableHead className="text-left">مبلغ (تومان)</TableHead>
-                                    <TableHead className="text-center">وضعیت</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {transactions.slice(0, 5).map((tx) => (
-                                    <TableRow key={tx.id}>
-                                        <TableCell className="font-medium">{tx.date}</TableCell>
-                                        <TableCell>{transactionTypeMap[tx.type].text}</TableCell>
-                                        <TableCell className="text-muted-foreground">{tx.description}</TableCell>
-                                        <TableCell className={`text-left font-semibold ${getAmountClass(tx.type)}`}>
-                                        {transactionTypeMap[tx.type].sign} {Math.abs(tx.amount).toLocaleString('fa-IR')}
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                        <Badge variant={transactionStatusMap[tx.status].variant}>
-                                            {transactionStatusMap[tx.status].text}
-                                        </Badge>
-                                        </TableCell>
-                                    </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                        <TableHead>تاریخ</TableHead>
+                                        <TableHead>نوع تراکنش</TableHead>
+                                        <TableHead>شرح</TableHead>
+                                        <TableHead className="text-left">مبلغ (تومان)</TableHead>
+                                        <TableHead className="text-center">وضعیت</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {transactions.slice(0, 5).map((tx) => (
+                                        <TableRow key={tx.id}>
+                                            <TableCell className="font-medium whitespace-nowrap">{tx.date}</TableCell>
+                                            <TableCell className="whitespace-nowrap">{transactionTypeMap[tx.type].text}</TableCell>
+                                            <TableCell className="text-muted-foreground whitespace-nowrap">{tx.description}</TableCell>
+                                            <TableCell className={`text-left font-semibold whitespace-nowrap ${getAmountClass(tx.type)}`}>
+                                            {transactionTypeMap[tx.type].sign} {Math.abs(tx.amount).toLocaleString('fa-IR')}
+                                            </TableCell>
+                                            <TableCell className="text-center whitespace-nowrap">
+                                            <Badge variant={transactionStatusMap[tx.status].variant}>
+                                                {transactionStatusMap[tx.status].text}
+                                            </Badge>
+                                            </TableCell>
+                                        </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         </div>
                          {transactions.length > 5 && (
                              <div className="mt-4 text-center">
@@ -395,3 +397,6 @@ export default function ProfilePage() {
     
 
 
+
+
+    
