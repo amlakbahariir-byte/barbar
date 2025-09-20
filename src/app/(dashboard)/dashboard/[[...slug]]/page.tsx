@@ -88,13 +88,7 @@ function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
     const [currentLocation, setCurrentLocation] = useState("در حال خواندن موقعیت...");
     const [slogan, setSlogan] = useState('');
 
-    const getNewSlogan = () => {
-        const randomIndex = Math.floor(Math.random() * slogans.length);
-        setSlogan(slogans[randomIndex]);
-    };
-
     useEffect(() => {
-        getNewSlogan();
         const storedLocation = localStorage.getItem('driverLocation');
         if (storedLocation) {
             setCurrentLocation(storedLocation);
@@ -103,6 +97,19 @@ function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
         }
     }, []);
 
+    useEffect(() => {
+        const getNewSlogan = () => {
+            const randomIndex = Math.floor(Math.random() * slogans.length);
+            setSlogan(slogans[randomIndex]);
+        };
+
+        getNewSlogan(); // Initial slogan
+        const intervalId = setInterval(getNewSlogan, 5000); // Change slogan every 5 seconds
+
+        return () => clearInterval(intervalId); // Cleanup on component unmount
+    }, []);
+
+
   return (
     <div className="space-y-6">
         <Card className="border-primary/50 bg-gradient-to-tr from-primary/10 via-background to-background animate-in fade-in-0 slide-in-from-top-4 duration-500">
@@ -110,13 +117,9 @@ function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
                 <CardTitle className="flex items-center gap-2"><MessageSquareQuote className="text-primary"/>جملات قصار پشت وانتی</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 text-center">
-                <p className="font-headline text-2xl h-16 flex items-center justify-center text-foreground/80">
+                <p className="font-headline text-2xl h-16 flex items-center justify-center text-foreground/80 transition-opacity duration-500">
                     &quot;{slogan}&quot;
                 </p>
-                <Button variant="outline" onClick={getNewSlogan}>
-                    <RefreshCw className="ml-2 h-4 w-4"/>
-                    یکی دیگه!
-                </Button>
             </CardContent>
         </Card>
 
