@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Truck, ChevronRight, User, Building, LogIn } from 'lucide-react';
 import type { RecaptchaVerifier, ConfirmationResult } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
-import { AnimatedTruckLoader } from '@/components/ui/animated-truck-loader';
+import { LoaderWithSlogan } from '@/components/ui/loader-with-slogan';
 
 // Extend window type to include our custom properties
 declare global {
@@ -40,7 +40,7 @@ function AuthChecker({ children }: { children: React.ReactNode }) {
 
   // While checking auth state, show a full-screen loader.
   if (!authChecked) {
-    return <AnimatedTruckLoader />;
+    return <LoaderWithSlogan />;
   }
 
   // If auth state is checked and the user isn't logged in, render the children (the login page).

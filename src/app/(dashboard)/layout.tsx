@@ -8,7 +8,7 @@ import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { auth } from '@/lib/firebase/config';
-import { AnimatedTruckLoader } from '@/components/ui/animated-truck-loader';
+import { LoaderWithSlogan } from '@/components/ui/loader-with-slogan';
 
 export type DashboardPageProps = {
   role: 'shipper' | 'driver' | null;
@@ -54,7 +54,7 @@ export default function DashboardLayout({
   // While we are checking for the role, show a loader.
   // This prevents a flash of the dashboard before a potential redirect.
   if (isChecking) {
-    return <AnimatedTruckLoader />;
+    return <LoaderWithSlogan />;
   }
   
   // If we've passed the loading stage and have a role, render the dashboard.
