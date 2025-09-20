@@ -33,6 +33,13 @@ const settingsOptions = [
     },
 ];
 
+const documentUploads = [
+    "صفحه اول شناسنامه",
+    "صفحات توضیحات شناسنامه",
+    "کارت ملی (پشت و رو)"
+];
+
+
 export default function ProfilePage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -116,7 +123,7 @@ export default function ProfilePage() {
         <Card>
             <CardHeader><CardTitle className="flex items-center gap-2"><UserIcon className='text-primary'/>اطلاعات شخصی</CardTitle></CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 <div>
+                <div>
                     <Label htmlFor="name">نام و نام خانوادگی</Label>
                     <Input id="name" value={userData.name} disabled={!isEditing} />
                 </div>
@@ -200,9 +207,9 @@ export default function ProfilePage() {
                             <Badge variant={userData.addictionCertificate ? "secondary" : "destructive"} className="text-accent-foreground">{userData.addictionCertificate ? "تایید شده" : "تایید نشده"}</Badge>
                         </div>
                         <Separator />
-                        <FileUploadItem label="صفحه اول شناسنامه" />
-                        <FileUploadItem label="صفحات توضیحات شناسنامه" />
-                        <FileUploadItem label="کارت ملی (پشت و رو)" />
+                        {documentUploads.map((docLabel) => (
+                           <FileUploadItem key={docLabel} label={docLabel} />
+                        ))}
                     </CardContent>
                 </Card>
             </div>
