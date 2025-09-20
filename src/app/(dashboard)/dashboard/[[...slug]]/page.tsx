@@ -84,7 +84,18 @@ function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
 }
 
 function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
-  const [currentLocation, setCurrentLocation] = useState("تهران، میدان آزادی"); // Fake location
+    const [currentLocation, setCurrentLocation] = useState("در حال خواندن موقعیت...");
+
+    useEffect(() => {
+        // This effect runs on the client and reads the location from localStorage.
+        const storedLocation = localStorage.getItem('driverLocation');
+        if (storedLocation) {
+            setCurrentLocation(storedLocation);
+        } else {
+            // Fallback to a default location if nothing is stored
+            setCurrentLocation("تهران، میدان آزادی");
+        }
+    }, []);
 
   return (
     <div className="space-y-6">

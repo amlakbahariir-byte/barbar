@@ -92,6 +92,12 @@ export function MapView({ onConfirm }: { onConfirm?: () => void }) {
   const handleConfirmLocation = () => {
     if (leafletMapRef.current) {
       const center = leafletMapRef.current.getCenter();
+      
+      // In a real app, you would use a reverse geocoding service here.
+      // For this demo, we'll just create a placeholder address and save to localStorage.
+      const simulatedAddress = `موقعیت سفارشی (${center.lat.toFixed(3)}, ${center.lng.toFixed(3)})`;
+      localStorage.setItem('driverLocation', simulatedAddress);
+
       toast({
         title: 'موقعیت شما ثبت شد',
         description: `موقعیت جدید شما برای نمایش به صاحبان بار ذخیره شد.`,
