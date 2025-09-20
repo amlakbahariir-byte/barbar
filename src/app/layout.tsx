@@ -22,19 +22,22 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap"
           rel="stylesheet"
         />
-        {/* Neshan Maps CSS */}
+        {/* Leaflet CSS */}
         <link
-          href="https://static.neshan.org/sdk/leaflet/1.4.0/leaflet.css"
           rel="stylesheet"
-          type="text/css"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossOrigin=""
         />
       </head>
       <body className="font-body antialiased overflow-x-hidden">
         {children}
         <Toaster />
-        {/* Neshan Maps JS */}
+        {/* Leaflet JS */}
         <Script
-          src="https://static.neshan.org/sdk/leaflet/1.4.0/leaflet.js"
+          src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+          crossOrigin=""
           strategy="beforeInteractive"
         />
       </body>

@@ -8,60 +8,70 @@ import { Button } from '@/components/ui/button';
 import { MapPin, Search, LocateFixed } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+// Declare Leaflet types for TypeScript
+declare const L: any;
+
 export function MapView() {
   const { toast } = useToast();
   const mapRef = useRef<HTMLDivElement>(null);
-  const neshanMapRef = useRef<any>(null);
+  const leafletMapRef = useRef<any>(null);
+  const markerRef = useRef<any>(null);
   const [searchQuery, setSearchQuery] = useState('تهران، ایران');
-  const [isMapReady, setIsMapReady] = useState(false);
-  const [apiKeyMissing, setApiKeyMissing] = useState(false);
-
+  
   useEffect(() => {
-    if (!process.env.NEXT_PUBLIC_NESHAN_API_KEY) {
-      setApiKeyMissing(true);
+    if (typeof window === 'undefined' || !mapRef.current || leafletMapRef.current) return;
+
+    try {
+      // Initialize the map
+      const map = L.map(mapRef.current).setView([35.7152, 51.4043], 13); // Centered on Tehran
+      leafletMapRef.current = map;
+
+      // Add OpenStreetMap tile layer
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+      
+      // Add a draggable marker
+      const marker = L.marker(map.getCenter(), {
+        draggable: true,
+        icon: L.divIcon({
+            className: 'custom-marker',
+            html: `<div class="relative flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--primary))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin drop-shadow-lg"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                   </div>`,
+            iconSize: [48, 48],
+            iconAnchor: [24, 48]
+        })
+      }).addTo(map);
+
+      markerRef.current = marker;
+
+      // Update marker on map move
+      map.on('move', function() {
+        marker.setLatLng(map.getCenter());
+      });
+
+    } catch (error) {
+      console.error('Error initializing Leaflet map:', error);
       toast({
         variant: 'destructive',
-        title: 'کلید API نقشه موجود نیست',
-        description: 'لطفا کلید API نشان را در فایل .env با نام NEXT_PUBLIC_NESHAN_API_KEY قرار دهید.',
-        duration: Infinity,
+        title: 'خطا در بارگذاری نقشه',
+        description: 'متاسفانه در اتصال به سرویس نقشه مشکلی پیش آمده است.',
       });
-      return;
     }
 
-    if (window.neshan && mapRef.current && !neshanMapRef.current) {
-      try {
-        const map = new window.neshan.Map({
-          key: process.env.NEXT_PUBLIC_NESHAN_API_KEY,
-          maptype: 'dreamy',
-          poi: true,
-          traffic: false,
-          element: mapRef.current,
-          center: [35.7152, 51.4043], // Tehran coordinates
-          zoom: 13,
-        });
-        neshanMapRef.current = map;
-        setIsMapReady(true);
-      } catch (error) {
-        console.error('Error initializing Neshan map:', error);
-        toast({
-          variant: 'destructive',
-          title: 'خطا در بارگذاری نقشه',
-          description: 'متاسفانه در اتصال به سرویس نقشه مشکلی پیش آمده است.',
-        });
-      }
-    }
-
+    // Cleanup on unmount
     return () => {
-      if (neshanMapRef.current) {
-        neshanMapRef.current.destroy();
-        neshanMapRef.current = null;
+      if (leafletMapRef.current) {
+        leafletMapRef.current.remove();
+        leafletMapRef.current = null;
       }
     };
   }, [toast]);
 
   const handleConfirmLocation = () => {
-    if (neshanMapRef.current) {
-      const center = neshanMapRef.current.getCenter();
+    if (leafletMapRef.current) {
+      const center = leafletMapRef.current.getCenter();
       toast({
         title: 'مکان انتخاب شد',
         description: `مکان انتخابی: ${center.lat.toFixed(4)}, ${center.lng.toFixed(4)}`,
@@ -72,7 +82,7 @@ export function MapView() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     toast({ title: 'جستجو', description: `جستجو برای: ${searchQuery}` });
-    // In a real app, you would use Neshan's Search API here
+    // In a real app, you would use a geocoding service here to convert address to lat/lng
   };
 
   const handleFindMyLocation = () => {
@@ -80,8 +90,8 @@ export function MapView() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          if (neshanMapRef.current) {
-            neshanMapRef.current.setCenter([latitude, longitude], 15);
+          if (leafletMapRef.current) {
+            leafletMapRef.current.setView([latitude, longitude], 15);
           }
           toast({
             title: 'موقعیت شما پیدا شد',
@@ -108,60 +118,38 @@ export function MapView() {
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-0 relative h-[60vh] md:h-[70vh]">
-        <div ref={mapRef} className="w-full h-full bg-muted" />
-
-        {apiKeyMissing && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-[1001]">
-            <div className="text-center p-4 max-w-md mx-auto">
-              <MapPin className="mx-auto h-12 w-12 text-destructive" />
-              <h3 className="mt-4 text-lg font-semibold">کلید API نقشه یافت نشد</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                برای استفاده از نقشه، لطفاً کلید API خود را از وب‌سایت نشان دریافت کرده و در فایل `.env` با نام `NEXT_PUBLIC_NESHAN_API_KEY` قرار دهید. سپس برنامه را مجددا راه‌اندازی کنید.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {!apiKeyMissing && (
-          <>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-transparent pointer-events-none" />
-
-            <div className="absolute top-4 right-4 left-4 z-[1000] space-y-2">
-              <Card className="shadow-lg">
-                <CardContent className="p-2">
-                  <form onSubmit={handleSearch}>
-                    <div className="relative flex gap-2">
-                      <Button type="button" size="icon" variant="ghost" className="h-11 w-11 flex-shrink-0 bg-background hover:bg-muted" onClick={handleFindMyLocation}>
-                        <LocateFixed className="h-6 w-6 text-muted-foreground" />
-                      </Button>
-                      <div className="relative flex-grow">
-                        <Button type="submit" size="icon" variant="ghost" className="absolute left-1 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-transparent">
-                          <Search className="h-5 w-5 text-muted-foreground" />
-                        </Button>
-                        <Input
-                          placeholder="جستجوی مبدا یا مقصد..."
-                          className="pl-10 h-11 text-base bg-background"
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                      </div>
+        <div ref={mapRef} className="w-full h-full bg-muted z-0" />
+        
+        <div className="absolute top-4 right-4 left-4 z-[401] space-y-2">
+            <Card className="shadow-lg">
+            <CardContent className="p-2">
+                <form onSubmit={handleSearch}>
+                <div className="relative flex gap-2">
+                    <Button type="button" size="icon" variant="ghost" className="h-11 w-11 flex-shrink-0 bg-background hover:bg-muted" onClick={handleFindMyLocation}>
+                    <LocateFixed className="h-6 w-6 text-muted-foreground" />
+                    </Button>
+                    <div className="relative flex-grow">
+                    <Button type="submit" size="icon" variant="ghost" className="absolute left-1 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-transparent">
+                        <Search className="h-5 w-5 text-muted-foreground" />
+                    </Button>
+                    <Input
+                        placeholder="جستجوی مبدا یا مقصد..."
+                        className="pl-10 h-11 text-base bg-background"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                     </div>
-                  </form>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+                </form>
+            </CardContent>
+            </Card>
+        </div>
 
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[calc(50%_+_24px)] z-[1000] text-center pointer-events-none">
-              <MapPin className="h-12 w-12 text-primary drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]" style={{ transform: 'translateY(-50%)' }}/>
-            </div>
-
-            <div className="absolute bottom-4 right-4 left-4 z-[1000]">
-              <Button size="lg" className="w-full text-lg" onClick={handleConfirmLocation}>
-                تایید مکان
-              </Button>
-            </div>
-          </>
-        )}
+        <div className="absolute bottom-4 right-4 left-4 z-[401]">
+            <Button size="lg" className="w-full text-lg" onClick={handleConfirmLocation}>
+            تایید مکان
+            </Button>
+        </div>
       </CardContent>
     </Card>
   );
