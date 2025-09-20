@@ -50,41 +50,62 @@ const themes: Theme[] = [
       dark: { primary: '25 85% 60%' },
     },
   },
-    {
+  {
     name: 'Violet',
     palette: {
       light: { primary: '262 85% 58%' },
       dark: { primary: '263 70% 68%' },
     },
   },
-    {
+  {
     name: 'Yellow',
     palette: {
       light: { primary: '48 96% 53%' },
       dark: { primary: '48 90% 60%' },
     },
   },
-    {
+  {
     name: 'Slate',
     palette: {
       light: { primary: '215 28% 40%' },
       dark: { primary: '215 20% 65%' },
     },
   },
-    {
+  {
     name: 'Gray',
     palette: {
       light: { primary: '220 9% 46%' },
       dark: { primary: '215 14% 65%' },
     },
   },
-    {
+  {
     name: 'Zinc',
     palette: {
       light: { primary: '220 13% 42%' },
       dark: { primary: '220 10% 65%' },
     },
   },
+  {
+    name: 'Stone',
+    palette: {
+        light: { primary: '25 10% 40%' },
+        dark: { primary: '25 5% 65%' },
+    }
+  },
+  {
+    name: 'Cyan',
+    palette: {
+        light: { primary: '190 95% 45%' },
+        dark: { primary: '190 85% 60%' },
+    }
+  },
+  {
+    name: 'Lime',
+    palette: {
+        light: { primary: '84 90% 45%' },
+        dark: { primary: '84 80% 55%' },
+    }
+  }
 ];
 
 
@@ -108,6 +129,7 @@ export function ThemeSwitcher() {
 
   const applyTheme = (theme: Theme, saturationValue: number) => {
     const root = document.documentElement;
+    if(!root) return;
 
     // Apply saturation
     root.style.setProperty('--saturation-scale', saturationValue.toString());
@@ -120,8 +142,6 @@ export function ThemeSwitcher() {
     // Also update ring and sidebar colors to match
     root.style.setProperty('--ring', primaryColor);
     root.style.setProperty('--sidebar-primary', primaryColor);
-    root.style.setProperty('--sidebar-accent', primaryColor);
-    root.style.setProperty('--sidebar-ring', primaryColor);
     
     // The rest of the colors are defined in globals.css and will react to dark mode and saturation changes
   };
