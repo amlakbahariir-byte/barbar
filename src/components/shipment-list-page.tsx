@@ -7,6 +7,7 @@ import { Shipment } from "@/lib/data";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useSound } from "@/hooks/use-sound";
 
 interface ShipmentListPageProps {
     title: string;
@@ -26,10 +27,16 @@ const statusFilters: { value: Shipment['status'] | 'all', label: string }[] = [
 
 export function ShipmentListPage({ title, description, shipments, role, navigate }: ShipmentListPageProps) {
     const [activeTab, setActiveTab] = useState<'all' | Shipment['status']>('all');
+    const [play] = useSound('/sounds/pop.mp3');
 
     const filteredShipments = activeTab === 'all'
         ? shipments
         : shipments.filter(s => s.status === activeTab);
+        
+    const handleTabChange = (value: string) => {
+        play();
+        setActiveTab(value as any);
+    }
 
     return (
         <div className="space-y-6">
@@ -43,7 +50,7 @@ export function ShipmentListPage({ title, description, shipments, role, navigate
                 </div>
             </div>
 
-            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="w-full">
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 <div className="flex justify-center">
                     <TabsList>
                         {statusFilters.map(filter => (
@@ -54,7 +61,7 @@ export function ShipmentListPage({ title, description, shipments, role, navigate
                     </TabsList>
                 </div>
                 
-                <TabsContent value={activeTab} className="mt-6">
+                <TabsContent value={activeTab} className="mt-6 animate-in fade-in-0 slide-in-from-top-2 duration-300">
                      {filteredShipments.length > 0 ? (
                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {filteredShipments.map((shipment, index) => (

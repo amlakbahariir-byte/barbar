@@ -16,6 +16,7 @@ import NewRequestPage from '../../requests/new/page';
 import RequestDetailsPage from '../../requests/[id]/page';
 import ProfilePage from '../../profile/page';
 import TransactionsPage from '../../transactions/page';
+import { useSound } from '@/hooks/use-sound';
 
 function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
   const myShipments = getMyShipments('shipper', 'all');
@@ -85,11 +86,12 @@ function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
 
 function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
   const mapImage = PlaceHolderImages.find(p => p.id === 'map-view');
+  const [play] = useSound('/sounds/pop.mp3');
 
   return (
     <div className="space-y-6">
         <h1 className="text-3xl font-bold animate-in fade-in-0 slide-in-from-top-4 duration-500">درخواست‌های بار نزدیک شما</h1>
-        <Tabs defaultValue="list-view" className="animate-in fade-in-0 slide-in-from-top-8 duration-500 delay-100">
+        <Tabs defaultValue="list-view" className="animate-in fade-in-0 slide-in-from-top-8 duration-500 delay-100" onValueChange={play}>
             <div className="flex justify-between items-center">
                 <TabsList>
                     <TabsTrigger value="list-view"><List className="ml-2 h-4 w-4" />نمای لیست</TabsTrigger>
@@ -97,7 +99,7 @@ function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
                 </TabsList>
                 {/* Add sorting options here if needed */}
             </div>
-            <TabsContent value="list-view" className="mt-6">
+            <TabsContent value="list-view" className="mt-6 animate-in fade-in-0 slide-in-from-top-2 duration-300">
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {shipments.filter(s => s.status === 'pending').map((shipment, index) => (
                          <div key={shipment.id} className="animate-in fade-in-0 slide-in-from-top-12 duration-500" style={{ animationDelay: `${index * 100 + 200}ms`, animationFillMode: 'backwards' }}>
@@ -106,7 +108,7 @@ function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
                     ))}
                 </div>
             </TabsContent>
-            <TabsContent value="map-view" className="mt-6">
+            <TabsContent value="map-view" className="mt-6 animate-in fade-in-0 slide-in-from-top-2 duration-300">
                 <Card className="animate-in fade-in duration-300">
                     <CardContent className="p-2">
                         {mapImage && (
@@ -196,6 +198,7 @@ export default function DashboardPage() {
   const pathname = usePathname();
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const [play] = useSound('/sounds/pop.mp3');
   
   // Correctly derive slug from pathname for client components
   const slug = pathname.replace('/dashboard', '').split('/').filter(Boolean);
@@ -215,6 +218,7 @@ export default function DashboardPage() {
     const targetPath = newPath.replace(/\/$/, '');
 
     if (currentPath === targetPath) return;
+    play();
     router.push(newPath);
   };
   

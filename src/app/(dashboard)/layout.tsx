@@ -9,6 +9,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { auth } from '@/lib/firebase/config';
 import { LoaderWithSlogan } from '@/components/ui/loader-with-slogan';
+import { useSound } from '@/hooks/use-sound';
 
 export type DashboardPageProps = {
   role: 'shipper' | 'driver' | null;
@@ -26,6 +27,7 @@ export default function DashboardLayout({
   const isMobile = useIsMobile();
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
   const [isChecking, setIsChecking] = useState(true);
+  const [play] = useSound('/sounds/pop.mp3');
   
   useEffect(() => {
     // This effect handles authentication state changes.
@@ -48,6 +50,7 @@ export default function DashboardLayout({
 
   const navigate = (newPath: string) => {
     if (newPath === pathname) return;
+    play();
     router.push(newPath);
   };
   
@@ -63,7 +66,7 @@ export default function DashboardLayout({
       <AppSidebar navigate={navigate} />
       <SidebarInset>
         <main className="flex-1 p-4 md:p-6 pb-24 md:pb-6 overflow-y-auto">
-           <div key={pathname} className="animate-in fade-in duration-500">
+           <div key={pathname} className="animate-in fade-in-0 slide-in-from-top-4 duration-300">
               {children}
            </div>
         </main>
@@ -76,4 +79,5 @@ export default function DashboardLayout({
     
 
     
+
 
