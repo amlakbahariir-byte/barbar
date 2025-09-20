@@ -15,30 +15,19 @@ import {
 import Autoplay from 'embla-carousel-autoplay';
 
 export function LoaderWithSlogan() {
-  const [api, setApi] = React.useState<CarouselApi>();
-  const plugin = useRef<any>(null);
+  const plugin = useRef(
+    Autoplay({ delay: 4000, stopOnInteraction: true })
+  );
 
   useEffect(() => {
-    // Apply theme from localStorage on initial client load
+    // Apply theme from localStorage on initial client load.
+    // This needs to be in useEffect to avoid SSR issues.
     const savedThemeName = localStorage.getItem('app-theme') || 'Violet';
     const savedSaturation = parseFloat(
       localStorage.getItem('app-saturation') || '1'
     );
     applyTheme(savedThemeName, savedSaturation);
-
-    // Initialize plugin on client side
-    plugin.current = Autoplay({
-      delay: 1000,
-      stopOnInteraction: false,
-      stopOnMouseEnter: true,
-    });
-    
-    // Force a re-render to apply the plugin if the api is already set.
-    if(api) {
-        api.reInit();
-    }
-
-  }, [api]);
+  }, []);
 
 
   return (
@@ -47,13 +36,10 @@ export function LoaderWithSlogan() {
         <AnimatedTruckLoader />
         <div className="mt-8 h-16 flex items-center justify-center w-full max-w-2xl">
           <Carousel
-            // Adding a key ensures re-initialization when plugin ref changes.
-            key={plugin.current ? 'autoplay-ready' : 'no-autoplay'}
-            plugins={plugin.current ? [plugin.current] : []}
-            setApi={setApi}
+            plugins={[plugin.current]}
             className="w-full"
-            onMouseEnter={() => plugin.current?.stop()}
-            onMouseLeave={() => plugin.current?.reset()}
+            onMouseEnter={plugin.current.stop}
+            onMouseLeave={plugin.current.reset}
             opts={{
               align: 'center',
               loop: true,
