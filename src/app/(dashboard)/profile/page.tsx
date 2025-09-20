@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { FileUploadItem } from '@/components/file-upload-item';
 import { ThemeSwitcher } from '@/components/theme-switcher';
 import Image from 'next/image';
+import { Switch } from '@/components/ui/switch';
 
 const documentUploads = [
     "صفحه اول شناسنامه",
@@ -281,5 +282,7 @@ export default function ProfilePage() {
       </div>
     </div>
   );
+
+    
 
     
