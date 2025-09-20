@@ -79,7 +79,7 @@ export function PersianCalendar({ selectedDate, onDateChange }: PersianCalendarP
   const jalaliDisplay = toJalali(displayDate.getFullYear(), displayDate.getMonth() + 1, displayDate.getDate());
   const jalaliSelected = selectedDate ? toJalali(selectedDate.getFullYear(), selectedDate.getMonth() + 1, selectedDate.getDate()) : null;
   const today = new Date();
-  const jalaliToday = toJali(today.getFullYear(), today.getMonth() + 1, today.getDate());
+  const jalaliToday = toJalali(today.getFullYear(), today.getMonth() + 1, today.getDate());
 
   const { jy, jm } = jalaliDisplay;
 
