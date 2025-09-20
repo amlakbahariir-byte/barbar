@@ -5,17 +5,16 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PackagePlus, List, Map as MapIcon, ArrowLeft, Package, Truck, CheckCircle2 } from 'lucide-react';
-import Image from 'next/image';
+import { PackagePlus, List, Map as MapIcon, ArrowLeft, Package } from 'lucide-react';
 import { ShipmentCard } from '@/components/shipment-card';
 import { getMyShipments, shipments } from '@/lib/data';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useEffect, useState } from 'react';
 import { ShipmentListPage } from '@/components/shipment-list-page';
 import NewRequestPage from '../../requests/new/page';
 import RequestDetailsPage from '../../requests/[id]/page';
 import ProfilePage from '../../profile/page';
 import TransactionsPage from '../../transactions/page';
+import { MapView } from '@/components/map-view';
 
 function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
   const myShipments = getMyShipments('shipper', 'all');
@@ -84,8 +83,6 @@ function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
 }
 
 function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
-  const mapImage = PlaceHolderImages.find(p => p.id === 'map-view');
-
   return (
     <div className="space-y-6">
         <h1 className="text-3xl font-bold animate-in fade-in-0 slide-in-from-top-4 duration-500">درخواست‌های بار نزدیک شما</h1>
@@ -95,7 +92,6 @@ function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
                     <TabsTrigger value="list-view"><List className="ml-2 h-4 w-4" />نمای لیست</TabsTrigger>
                     <TabsTrigger value="map-view"><MapIcon className="ml-2 h-4 w-4" />نمای نقشه</TabsTrigger>
                 </TabsList>
-                {/* Add sorting options here if needed */}
             </div>
             <TabsContent value="list-view" className="mt-6 animate-in fade-in-0 slide-in-from-top-2 duration-300">
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -107,25 +103,7 @@ function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
                 </div>
             </TabsContent>
             <TabsContent value="map-view" className="mt-6 animate-in fade-in-0 slide-in-from-top-2 duration-300">
-                <Card className="animate-in fade-in duration-300">
-                    <CardContent className="p-2">
-                        {mapImage && (
-                             <Image
-                                src={mapImage.imageUrl}
-                                alt={mapImage.description}
-                                data-ai-hint={mapImage.imageHint}
-                                width={1200}
-                                height={800}
-                                className="w-full h-auto rounded-md aspect-[16/9] object-cover"
-                            />
-                        )}
-                       
-                    </CardContent>
-                     <CardHeader>
-                        <CardTitle>نمای نقشه</CardTitle>
-                        <CardDescription>در این قسمت، یک نقشه از ارائه دهنده ایرانی (مانند نشان) برای نمایش درخواست‌های بار بر روی نقشه قرار می‌گیرد.</CardDescription>
-                    </CardHeader>
-                </Card>
+                <MapView />
             </TabsContent>
         </Tabs>
     </div>
@@ -136,7 +114,6 @@ function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
 const PageRenderer = ({ slug, role, navigate }: { slug: string[], role: 'shipper' | 'driver', navigate: (path: string) => void }) => {
   const page = slug[0] || 'home';
   const subPage = slug[1];
-  const detailId = slug[2];
 
   if (page === 'profile') {
     return <ProfilePage />;
