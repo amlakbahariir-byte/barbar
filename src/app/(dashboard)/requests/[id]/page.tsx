@@ -75,9 +75,10 @@ export default function RequestDetailsPage() {
         <button onClick={() => router.back()} className="p-2 rounded-md hover:bg-accent">
             <ArrowRight className="h-5 w-5" />
         </button>
-        <h1 className="text-3xl font-bold">جزئیات درخواست: {shipment.id}</h1>
+        <h1 className="text-3xl font-bold">جزئیات درخواست</h1>
          <Badge variant={statusMap[shipment.status].variant} className="mr-auto">{statusMap[shipment.status].text}</Badge>
       </div>
+      <p className='text-muted-foreground -mt-4'>شناسه: {shipment.id}</p>
 
       {isShipper && (shipment.status === 'in_transit' || shipment.status === 'accepted') && shipment.acceptedDriver && (
         <ShipmentTracking shipment={shipment} />
@@ -94,7 +95,7 @@ export default function RequestDetailsPage() {
                         <MapPin className="text-primary"/> 
                         <span>{shipment.origin}</span>
                     </div>
-                     <ArrowRight className="h-5 w-5 text-muted-foreground"/>
+                     <ArrowLeft className="h-5 w-5 text-muted-foreground"/>
                      <div className="flex items-center gap-2 font-semibold">
                         <MapPin className="text-primary"/>
                         <span>{shipment.destination}</span>
@@ -127,7 +128,7 @@ export default function RequestDetailsPage() {
                                 </div>
                                 <div className="text-left">
                                     <p className="font-bold text-primary">{bid.amount.toLocaleString('fa-IR')} تومان</p>
-                                    <Button size="sm" className="mt-1" onClick={handleAcceptBid}><Check className="w-4 h-4 ml-1"/>پذیرفتن</Button>
+                                    <Button size="sm" className="mt-1 bg-accent text-accent-foreground hover:bg-accent/90" onClick={handleAcceptBid}><Check className="w-4 h-4 ml-1"/>پذیرفتن</Button>
                                 </div>
                             </div>
                         )) : <p className="text-sm text-muted-foreground text-center py-4">هنوز پیشنهادی ثبت نشده است.</p>}
@@ -136,7 +137,7 @@ export default function RequestDetailsPage() {
             )}
 
             {!isShipper && shipment.status === 'pending' && (
-                <Card className="bg-primary/10 border-primary">
+                <Card>
                     <CardHeader><CardTitle>ثبت پیشنهاد قیمت</CardTitle></CardHeader>
                     <form onSubmit={handlePlaceBid}>
                         <CardContent className="space-y-3">
@@ -147,7 +148,7 @@ export default function RequestDetailsPage() {
                             </div>
                         </CardContent>
                         <CardFooter>
-                            <Button type="submit" className="w-full">ثبت پیشنهاد</Button>
+                            <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90">ثبت پیشنهاد</Button>
                         </CardFooter>
                     </form>
                 </Card>
@@ -172,5 +173,3 @@ export default function RequestDetailsPage() {
     </div>
   );
 }
-
-    

@@ -7,7 +7,7 @@ body {
 
 @layer base {
   :root {
-    --background: 220 20% 98%; /* Light cool gray */
+    --background: 240 5% 96%; /* Light Gray */
     --foreground: 222 47% 11%;
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
@@ -19,8 +19,8 @@ body {
     --secondary-foreground: 222 47% 11%;
     --muted: 220 14% 96%;
     --muted-foreground: 220 9% 46%;
-    --accent: 220 14% 96%; /* Lighter gray accent */
-    --accent-foreground: 222 47% 11%;
+    --accent: 142 76% 36%; /* Green */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 220 13% 91%;
@@ -31,7 +31,7 @@ body {
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --radius: 0.75rem; /* Adjusted border radius */
+    --radius: 0.5rem;
     --sidebar-background: 222 47% 8%; /* Dark blue for sidebar */
     --sidebar-foreground: 220 20% 98%;
     --sidebar-primary: 217 91% 60%;
@@ -54,8 +54,8 @@ body {
     --secondary-foreground: 210 40% 98%;
     --muted: 217 33% 17%;
     --muted-foreground: 215 20% 65%;
-    --accent: 217 33% 17%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 142 76% 36%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
     --border: 217 33% 17%;

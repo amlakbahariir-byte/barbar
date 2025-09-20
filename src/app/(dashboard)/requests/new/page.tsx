@@ -51,34 +51,34 @@ export default function NewRequestPage() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center gap-4 mb-4">
-         <button onClick={() => navigate('/dashboard')} className="p-2 rounded-md hover:bg-accent">
+         <button onClick={() => navigate('/dashboard')} className="p-2 rounded-md hover:bg-muted">
             <ArrowRight className="h-5 w-5" />
         </button>
-        <h1 className="text-3xl font-bold">ایجاد درخواست حمل بار جدید</h1>
+        <h1 className="text-3xl font-bold">ایجاد درخواست حمل بار</h1>
       </div>
       <p className="text-muted-foreground mb-8">این فرآیند ۳ مرحله‌ای را برای ثبت درخواست خود کامل کنید.</p>
       
       <Card className="overflow-hidden">
         <div className="p-6 border-b">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-4 px-4 md:px-8">
                 {steps.map((step, index) => (
                     <div key={step.id} className="flex flex-col items-center z-10">
                         <div className={cn(
-                            "flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-300",
+                            "flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300",
                             currentStep > index + 1 ? "bg-primary border-primary text-primary-foreground" :
-                            currentStep === index + 1 ? "bg-primary/20 border-primary text-primary" :
+                            currentStep === index + 1 ? "border-primary text-primary" :
                             "bg-muted border-border text-muted-foreground"
                         )}>
-                            <step.icon className="w-6 h-6" />
+                            <step.icon className="w-5 h-5" />
                         </div>
                         <p className={cn(
-                             "mt-2 text-sm font-medium transition-colors duration-300",
+                             "mt-2 text-xs md:text-sm font-medium transition-colors duration-300",
                              currentStep >= index + 1 ? "text-foreground" : "text-muted-foreground"
                         )}>{step.title}</p>
                     </div>
                 ))}
             </div>
-            <Progress value={progressValue} className="h-2 transition-all duration-300" />
+            <Progress value={progressValue} className="h-1 transition-all duration-300" />
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -166,7 +166,7 @@ export default function NewRequestPage() {
                     </Button>
                 )}
                 {currentStep === 3 && (
-                    <Button type="submit" size="lg">
+                    <Button type="submit" size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
                         ثبت نهایی درخواست
                     </Button>
                 )}

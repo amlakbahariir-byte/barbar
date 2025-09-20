@@ -51,10 +51,7 @@ function AuthChecker({ children }: { children: React.ReactNode }) {
 export default function Home() {
   return (
     <AuthChecker>
-      <main className="h-screen w-full flex items-center justify-center bg-secondary overflow-hidden relative p-4">
-          <div className="absolute top-0 left-0 w-full h-full opacity-30 bg-primary/20">
-             <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary via-transparent to-primary"></div>
-          </div>
+      <main className="h-screen w-full flex items-center justify-center bg-background overflow-hidden relative p-4">
           <HomePageContent />
       </main>
     </AuthChecker>
@@ -176,7 +173,7 @@ function HomePageContent() {
 
   return (
       <div className="w-full max-w-md space-y-8 animate-in fade-in-0 slide-in-from-bottom-10 duration-700 text-center z-10">
-        <div className="bg-card/90 backdrop-blur-lg p-8 rounded-2xl shadow-xl">
+        <div className="bg-card p-8 rounded-lg shadow-sm border">
             <div>
               <Truck className="mx-auto h-12 w-auto text-primary" />
               <h2 className="mt-6 text-3xl font-bold tracking-tight text-foreground">
@@ -222,7 +219,7 @@ function HomePageContent() {
                           ref={el => otpInputs.current[i] = el}
                           type="text"
                           maxLength={1}
-                          className="size-14 text-2xl text-center font-bold bg-background"
+                          className="size-12 text-2xl text-center font-bold bg-background"
                           value={otp[i] || ''}
                           onChange={(e) => handleOtpInputChange(e, i)}
                           onKeyDown={(e) => handleOtpKeyDown(e, i)}
@@ -243,7 +240,7 @@ function HomePageContent() {
               <div className="space-y-4 !mt-10">
                 <Button
                   variant="outline"
-                  className="w-full h-20 text-xl justify-between bg-background"
+                  className="w-full h-20 text-xl justify-between"
                   onClick={() => handleRoleSelect('shipper')}
                 >
                   <div className='flex items-center gap-4'>
@@ -254,7 +251,7 @@ function HomePageContent() {
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-full h-20 text-xl justify-between bg-background"
+                  className="w-full h-20 text-xl justify-between"
                   onClick={() => handleRoleSelect('driver')}
                 >
                    <div className='flex items-center gap-4'>

@@ -24,30 +24,30 @@ function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-primary text-primary-foreground border-0 animate-in fade-in-0 slide-in-from-top-4 duration-500 shadow-lg">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <div>
-            <CardTitle className="text-2xl">داشبورد شما</CardTitle>
-            <CardDescription className="text-primary-foreground/80">خلاصه وضعیت درخواست‌های شما</CardDescription>
-          </div>
-           <Button size="lg" variant="secondary" onClick={() => navigate('/dashboard/requests/new')}>
-            <PackagePlus className="ml-2 h-5 w-5" />
-            ایجاد درخواست جدید
-          </Button>
+      <Card className="bg-primary text-primary-foreground border-0 animate-in fade-in-0 slide-in-from-top-4 duration-500 shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-2xl">داشبورد شما</CardTitle>
+          <CardDescription className="text-primary-foreground/80">خلاصه وضعیت درخواست‌های شما</CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-3 gap-4 text-center">
-            <div className="bg-primary-foreground/10 p-3 rounded-lg">
-                <p className="text-3xl font-bold">{pendingCount.toLocaleString('fa-IR')}</p>
-                <p className="text-sm text-primary-foreground/80">در انتظار</p>
+        <CardContent className="flex flex-col gap-4">
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="bg-primary-foreground/10 p-3 rounded-lg">
+                  <p className="text-3xl font-bold">{pendingCount.toLocaleString('fa-IR')}</p>
+                  <p className="text-sm text-primary-foreground/80">در انتظار</p>
+              </div>
+              <div className="bg-primary-foreground/10 p-3 rounded-lg">
+                  <p className="text-3xl font-bold">{inTransitCount.toLocaleString('fa-IR')}</p>
+                  <p className="text-sm text-primary-foreground/80">در حال حمل</p>
+              </div>
+              <div className="bg-primary-foreground/10 p-3 rounded-lg">
+                  <p className="text-3xl font-bold">{deliveredCount.toLocaleString('fa-IR')}</p>
+                  <p className="text-sm text-primary-foreground/80">تحویل شده</p>
+              </div>
             </div>
-             <div className="bg-primary-foreground/10 p-3 rounded-lg">
-                <p className="text-3xl font-bold">{inTransitCount.toLocaleString('fa-IR')}</p>
-                <p className="text-sm text-primary-foreground/80">در حال حمل</p>
-            </div>
-             <div className="bg-primary-foreground/10 p-3 rounded-lg">
-                <p className="text-3xl font-bold">{deliveredCount.toLocaleString('fa-IR')}</p>
-                <p className="text-sm text-primary-foreground/80">تحویل شده</p>
-            </div>
+             <Button size="lg" variant="secondary" onClick={() => navigate('/dashboard/requests/new')}>
+              <PackagePlus className="ml-2 h-5 w-5" />
+              ایجاد درخواست جدید
+            </Button>
         </CardContent>
       </Card>
       
@@ -55,7 +55,7 @@ function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
         <h2 className="text-2xl font-bold mb-4">درخواست‌های اخیر شما</h2>
         {recentShipments.length > 0 ? (
           <>
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2">
               {recentShipments.map((shipment, index) => (
                 <div key={shipment.id} className="animate-in fade-in-0 slide-in-from-top-12 duration-500" style={{ animationDelay: `${index * 150 + 300}ms`, animationFillMode: 'backwards' }}>
                   <ShipmentCard shipment={shipment} role="shipper" navigate={navigate} />
@@ -96,7 +96,7 @@ function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
                 {/* Add sorting options here if needed */}
             </div>
             <TabsContent value="list-view" className="mt-6">
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {shipments.filter(s => s.status === 'pending').map((shipment, index) => (
                          <div key={shipment.id} className="animate-in fade-in-0 slide-in-from-top-12 duration-500" style={{ animationDelay: `${index * 100 + 200}ms`, animationFillMode: 'backwards' }}>
                             <ShipmentCard shipment={shipment} role="driver" navigate={navigate} />
