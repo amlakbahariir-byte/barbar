@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,10 @@ export function MapView() {
   const { toast } = useToast();
   const [location, setLocation] = useState<LngLat>({ lng: 51.3890, lat: 35.6892 });
   const [searchQuery, setSearchQuery] = useState('تهران، ایران');
+
+  const handleCenterChange = useCallback((newCenter: LngLat) => {
+    setLocation(newCenter);
+  }, []);
 
   const handleConfirmLocation = () => {
     toast({
@@ -38,7 +42,7 @@ export function MapView() {
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-0 relative h-[60vh] md:h-[70vh]">
-        <FakeMap center={location} onCenterChange={setLocation} />
+        <FakeMap center={location} onCenterChange={handleCenterChange} />
         
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-transparent pointer-events-none" />
 

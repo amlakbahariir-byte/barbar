@@ -66,21 +66,18 @@ export function FakeMap({
     x: 0,
     y: 0,
     config: { tension: 250, friction: 30, clamp: true },
+    onChange: ({ value }) => {
+        const newCenter = pointToLngLat({ x: -value.x, y: -value.y }, value.zoom);
+        onCenterChange(newCenter);
+    }
   }));
 
-  // Update spring when controlled center/zoom props change
+  // Update spring when controlled center prop changes
   useEffect(() => {
     const point = lngLatToPoint(center, viewState.zoom.get());
-    setViewState.start({ x: -point.x, y: -point.y });
+    setViewState.start({ x: -point.x, y: -point.y, immediate: true });
   }, [center, setViewState, viewState.zoom]);
-
-
-  useEffect(() => {
-    const { x, y, zoom } = viewState;
-    const newCenter = pointToLngLat({ x: -x.get(), y: -y.get() }, zoom.get());
-    onCenterChange(newCenter);
-  }, [viewState, onCenterChange]);
-
+  
   // Update map size on mount and resize
   useEffect(() => {
     const updateSize = () => {
@@ -99,9 +96,14 @@ export function FakeMap({
   // Gesture handling for pan and zoom
   useGesture(
     {
-      onDrag: ({ offset: [dx, dy] }) => {
+      onDrag: ({ offset: [dx, dy], pinching }) => {
+        if (pinching) return;
         const point = lngLatToPoint(center, viewState.zoom.get());
         setViewState.start({ x: -point.x + dx, y: -point.y + dy });
+      },
+      onPinch: ({ offset: [d] }) => {
+          const newZoom = controlledZoom + d/100;
+          setViewState.start({ zoom: newZoom });
       },
       onWheel: ({ event, movement: [, dy] }) => {
         event.preventDefault();
@@ -131,6 +133,11 @@ export function FakeMap({
       wheel: {
           from: () => [0, viewState.zoom.get()],
           axis: 'y'
+      },
+      pinch: {
+          from: () => [0, viewState.zoom.get()],
+          scaleBounds: { min: minZoom, max: maxZoom },
+          rubberband: true
       }
     }
   );
@@ -177,10 +184,9 @@ export function FakeMap({
       <animated.div
         className="absolute inset-0"
         style={{
+          transform: viewState.zoom.to(z => `scale(${Math.pow(2, z) / Math.pow(2, Math.round(z))})`),
           x: viewState.x,
           y: viewState.y,
-          width: TILE_SIZE * Math.pow(2, viewState.zoom.get()),
-          height: TILE_SIZE * Math.pow(2, viewState.zoom.get()),
         }}
       >
         {tiles.map((tile) => {
