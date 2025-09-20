@@ -16,13 +16,9 @@ import Autoplay from 'embla-carousel-autoplay';
 
 export function LoaderWithSlogan() {
   const [api, setApi] = React.useState<CarouselApi>();
-  const [isClient, setIsClient] = React.useState(false);
   const plugin = useRef<any>(null);
 
   useEffect(() => {
-    // This effect runs only on the client side, after the initial render.
-    setIsClient(true);
-    
     // Apply theme from localStorage on initial client load
     const savedThemeName = localStorage.getItem('app-theme') || 'Violet';
     const savedSaturation = parseFloat(
@@ -38,17 +34,12 @@ export function LoaderWithSlogan() {
     });
     
     // Force a re-render to apply the plugin if the api is already set.
-    // This is a workaround for embla-carousel's plugin system with server components.
     if(api) {
         api.reInit();
     }
 
   }, [api]);
 
-  if (!isClient) {
-    // On the server or initial client render, return a placeholder to avoid hydration mismatch.
-    return <div className="flex flex-col items-center justify-center min-h-screen bg-background overflow-hidden p-4"></div>;
-  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background overflow-hidden p-4">
