@@ -14,6 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { ShipmentTracking } from '@/components/shipment-tracking';
 import Image from 'next/image';
+import { ShipmentRouteMap } from '@/components/shipment-route-map';
 
 const statusMap: { [key in Shipment['status']]: { text: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' } } = {
   pending: { text: 'در انتظار پیشنهاد', variant: 'secondary' },
@@ -84,6 +85,10 @@ export default function RequestDetailsPage() {
         <ShipmentTracking shipment={shipment} />
       )}
       
+      {shipment.status !== 'in_transit' && shipment.status !== 'accepted' && (
+        <ShipmentRouteMap origin={shipment.origin} destination={shipment.destination} />
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
             <CardHeader>
