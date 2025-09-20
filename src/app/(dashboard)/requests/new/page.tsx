@@ -243,27 +243,6 @@ export default function NewRequestPage() {
                         <div className="flex items-center gap-2" dir="ltr">
                              <FormField
                                 control={form.control}
-                                name="minute"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger className="w-[80px] h-12 border-0 bg-transparent shadow-none">
-                                                <SelectValue className="font-headline text-lg" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {['00', '15', '30', '45'].map(m => (
-                                                <SelectItem key={m} value={m} className="font-headline text-lg justify-center">{toPersianNumber(m)}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </FormItem>
-                                )}
-                            />
-                            <span className="font-bold text-xl">:</span>
-                            <FormField
-                                control={form.control}
                                 name="hour"
                                 render={({ field }) => (
                                 <FormItem>
@@ -276,6 +255,27 @@ export default function NewRequestPage() {
                                         <SelectContent>
                                             {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map(h => (
                                                 <SelectItem key={h} value={h} className="font-headline text-lg justify-center">{toPersianNumber(h)}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </FormItem>
+                                )}
+                            />
+                            <span className="font-bold text-xl">:</span>
+                            <FormField
+                                control={form.control}
+                                name="minute"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger className="w-[80px] h-12 border-0 bg-transparent shadow-none">
+                                                <SelectValue className="font-headline text-lg" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {['00', '15', '30', '45'].map(m => (
+                                                <SelectItem key={m} value={m} className="font-headline text-lg justify-center">{toPersianNumber(m)}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
