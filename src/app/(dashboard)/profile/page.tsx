@@ -152,20 +152,27 @@ export default function ProfilePage() {
         {role === 'driver' && (
             <div className="space-y-6">
                 <Card>
-                    <CardHeader><CardTitle className="flex items-center gap-2"><Truck className='text-primary'/>اطلاعات وسیله نقلیه</CardTitle></CardHeader>
-                    <CardContent className="grid grid-cols-2 gap-4">
-                        <div>
-                            <Label htmlFor="vehicleType">نوع وسیله نقلیه</Label>
-                            <Input id="vehicleType" value={userData.vehicleType} disabled={!isEditing} />
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Truck className='text-primary'/>اطلاعات و مدارک خودرو</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <Label htmlFor="vehicleType">نوع وسیله نقلیه</Label>
+                                <Input id="vehicleType" value={userData.vehicleType} disabled={!isEditing} />
+                            </div>
+                             <div>
+                                <Label htmlFor="vehicleModel">مدل</Label>
+                                <Input id="vehicleModel" value={userData.vehicleModel} disabled={!isEditing} />
+                            </div>
+                            <div className="col-span-2">
+                                <Label htmlFor="licensePlate">شماره پلاک</Label>
+                                <Input id="licensePlate" value={userData.licensePlate} disabled={!isEditing} />
+                            </div>
                         </div>
-                         <div>
-                            <Label htmlFor="vehicleModel">مدل</Label>
-                            <Input id="vehicleModel" value={userData.vehicleModel} disabled={!isEditing} />
-                        </div>
-                        <div className="col-span-2">
-                            <Label htmlFor="licensePlate">شماره پلاک</Label>
-                            <Input id="licensePlate" value={userData.licensePlate} disabled={!isEditing} />
-                        </div>
+                        <Separator />
+                        <FileUploadItem label="کارت ماشین" />
+                        <FileUploadItem label="برگه سبز خودرو" />
                     </CardContent>
                 </Card>
 
@@ -190,20 +197,10 @@ export default function ProfilePage() {
                             </div>
                             <Badge variant={userData.addictionCertificate ? "secondary" : "destructive"} className="text-accent-foreground">{userData.addictionCertificate ? "تایید شده" : "تایید نشده"}</Badge>
                         </div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <UploadCloud className='text-primary'/>آپلود مدارک شناسایی
-                        </CardTitle>
-                        <CardDescription>برای تکمیل فرآیند تایید هویت، لطفا تصاویر مدارک خود را بارگذاری کنید.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                       <FileUploadItem label="صفحه اول شناسنامه" />
-                       <FileUploadItem label="صفحات توضیحات شناسنامه" />
-                       <FileUploadItem label="کارت ملی (پشت و رو)" />
+                        <Separator />
+                        <FileUploadItem label="صفحه اول شناسنامه" />
+                        <FileUploadItem label="صفحات توضیحات شناسنامه" />
+                        <FileUploadItem label="کارت ملی (پشت و رو)" />
                     </CardContent>
                 </Card>
             </div>
