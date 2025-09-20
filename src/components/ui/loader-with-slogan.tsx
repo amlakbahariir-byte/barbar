@@ -1,15 +1,14 @@
 
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { slogans } from '@/lib/slogans';
 import { AnimatedTruckLoader } from './animated-truck-loader';
 import { applyTheme } from '../theme-switcher';
 import { cn } from '@/lib/utils';
 
 export function LoaderWithSlogan() {
-  const [currentSloganIndex, setCurrentSloganIndex] = useState(0);
-  const [isFading, setIsFading] = useState(false);
+  const [slogan, setSlogan] = useState('');
 
   useEffect(() => {
     // Apply theme from localStorage on initial client load
@@ -17,16 +16,8 @@ export function LoaderWithSlogan() {
     const savedSaturation = parseFloat(localStorage.getItem('app-saturation') || '1');
     applyTheme(savedThemeName, savedSaturation);
 
-    // Set up the slogan animation interval
-    const intervalId = setInterval(() => {
-      setIsFading(true); // Start fading out
-      setTimeout(() => {
-        setCurrentSloganIndex((prevIndex) => (prevIndex + 1) % slogans.length);
-        setIsFading(false); // Start fading in
-      }, 500); // Wait for fade-out to complete
-    }, 4000); // Change slogan every 4 seconds
-
-    return () => clearInterval(intervalId);
+    // Select a random slogan on component mount
+    setSlogan(slogans[Math.floor(Math.random() * slogans.length)]);
   }, []);
 
   return (
@@ -35,10 +26,9 @@ export function LoaderWithSlogan() {
             <AnimatedTruckLoader />
             <div className="mt-8 h-16 flex items-center justify-center">
                  <p className={cn(
-                    "text-muted-foreground text-lg text-center transition-all duration-500",
-                    isFading ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
+                    "text-muted-foreground text-lg text-center transition-all duration-500 animate-in fade-in"
                  )}>
-                    "{slogans[currentSloganIndex]}"
+                    {slogan ? `"${slogan}"` : ''}
                  </p>
             </div>
         </div>
