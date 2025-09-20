@@ -11,11 +11,11 @@ import {
 import { useEffect, useState } from 'react';
 
 const themes = [
-  { name: 'Rose', primary: '347 80% 63%', accent: '85 30% 45%' },
-  { name: 'Blue', primary: '221 83% 53%', accent: '262 83% 58%' },
-  { name: 'Green', primary: '142 76% 36%', accent: '142 60% 20%' },
-  { name: 'Orange', primary: '25 95% 53%', accent: '25 85% 40%' },
-  { name: 'Violet', primary: '262 83% 58%', accent: '221 83% 53%' },
+  { name: 'Rose', primary: '347 80% 63%', accent: '85 30% 45%', background: '350 100% 98%' },
+  { name: 'Blue', primary: '221 83% 53%', accent: '262 83% 58%', background: '220 60% 98%' },
+  { name: 'Green', primary: '142 76% 36%', accent: '142 60% 20%', background: '140 50% 97%' },
+  { name: 'Orange', primary: '25 95% 53%', accent: '25 85% 40%', background: '30 100% 97%' },
+  { name: 'Violet', primary: '262 83% 58%', accent: '221 83% 53%', background: '260 100% 98%' },
 ];
 
 export function ThemeSwitcher() {
@@ -34,6 +34,7 @@ export function ThemeSwitcher() {
     if (!theme) return;
 
     const root = document.documentElement;
+    root.style.setProperty('--background', theme.background);
     root.style.setProperty('--primary', theme.primary);
     root.style.setProperty('--ring', theme.primary);
     root.style.setProperty('--sidebar-primary', theme.primary);
