@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Truck, MapPin } from 'lucide-react';
+import { Truck, MapPin, Phone } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { handleDeviationAlert } from '@/app/actions';
@@ -11,6 +11,7 @@ import { DeviationAlertDialog } from './deviation-alert-dialog';
 import { Button } from './ui/button';
 import { Shipment } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 // Declare Leaflet type for TypeScript
 declare const L: any;
@@ -39,6 +40,7 @@ export function ShipmentTracking({ shipment }: { shipment: Shipment }) {
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
   const { toast } = useToast();
+  const router = useRouter();
   const mapRef = useRef<HTMLDivElement>(null);
   const leafletMapRef = useRef<any>(null);
   const truckMarkerRef = useRef<any>(null);
@@ -50,8 +52,12 @@ export function ShipmentTracking({ shipment }: { shipment: Shipment }) {
     if (typeof window === 'undefined' || !mapRef.current || leafletMapRef.current) return;
 
     try {
-      const map = L.map(mapRef.current);
+      const map = L.map(mapRef.current, {
+          zoomControl: false, // Disable default zoom control
+      });
       leafletMapRef.current = map;
+      
+      L.control.zoom({ position: 'bottomleft' }).addTo(map);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -155,48 +161,61 @@ export function ShipmentTracking({ shipment }: { shipment: Shipment }) {
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardTitle>رهگیری زنده محموله</CardTitle>
-          <CardDescription>وضعیت لحظه‌ای حرکت راننده به سمت مقصد را مشاهده کنید.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="relative w-full overflow-hidden rounded-md border aspect-video">
-            <div ref={mapRef} className="w-full h-full bg-muted z-0" />
-          </div>
-          <div className="mt-4 space-y-3">
-            <Progress value={progress} />
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-muted-foreground">{statusText}</span>
-              <span className="text-sm font-bold text-primary">{Math.round(progress)}%</span>
-            </div>
-          </div>
-          <div className="mt-4 border-t pt-4">
-            <h3 className="font-semibold mb-2">اطلاعات راننده</h3>
-            {shipment.acceptedDriver ? (
-                <div className="flex items-center gap-4">
-                <Image
-                    src={shipment.acceptedDriver.avatar}
-                    alt={shipment.acceptedDriver.name}
-                    width={48}
-                    height={48}
-                    className="rounded-full"
-                />
-                <div>
-                    <p className="font-medium">{shipment.acceptedDriver.name}</p>
-                    <p className="text-sm text-muted-foreground">{shipment.acceptedDriver.vehicle}</p>
-                </div>
-                <Button variant="outline" className="mr-auto">تماس با راننده</Button>
-                </div>
-            ) : (
-                <p className="text-sm text-muted-foreground">راننده هنوز مشخص نشده است.</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="relative h-screen w-full">
+         <div ref={mapRef} className="w-full h-full bg-muted z-0" />
+         
+          <div className="absolute top-4 left-4 right-4 z-[1000]">
+             <Card className="bg-background/80 backdrop-blur-sm">
+                <CardHeader className="p-4">
+                    <CardTitle className="flex items-center justify-between">
+                        <span>رهگیری زنده محموله</span>
+                         <Button variant="ghost" size="sm" onClick={() => router.back()}>بازگشت</Button>
+                    </CardTitle>
+                    <CardDescription>شناسه: {shipment.id}</CardDescription>
+                </CardHeader>
+             </Card>
+         </div>
+
+         <div className="absolute bottom-4 left-4 right-4 z-[1000]">
+             <Card className="bg-background/80 backdrop-blur-sm">
+                <CardContent className="p-4">
+                    <div className="space-y-3">
+                        <Progress value={progress} />
+                        <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-muted-foreground">{statusText}</span>
+                        <span className="text-sm font-bold text-primary">{Math.round(progress)}%</span>
+                        </div>
+                    </div>
+                    <div className="mt-4 border-t pt-4">
+                        <h3 className="font-semibold mb-2">اطلاعات راننده</h3>
+                        {shipment.acceptedDriver ? (
+                            <div className="flex items-center gap-4">
+                            <Image
+                                src={shipment.acceptedDriver.avatar}
+                                alt={shipment.acceptedDriver.name}
+                                width={48}
+                                height={48}
+                                className="rounded-full"
+                            />
+                            <div>
+                                <p className="font-medium">{shipment.acceptedDriver.name}</p>
+                                <p className="text-sm text-muted-foreground">{shipment.acceptedDriver.vehicle}</p>
+                            </div>
+                            <Button variant="outline" className="mr-auto">
+                                <Phone className="ml-2 h-4 w-4"/>
+                                تماس
+                            </Button>
+                            </div>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">راننده هنوز مشخص نشده است.</p>
+                        )}
+                    </div>
+                </CardContent>
+             </Card>
+         </div>
+      </div>
       <DeviationAlertDialog isOpen={isAlertOpen} onOpenChange={setIsAlertOpen} alertMessage={alertMessage} />
     </>
   );
 }
 
-    

@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { getShipmentById, Shipment } from '@/lib/data';
-import { ArrowLeft, ArrowRight, Box, Calendar, Check, CircleDollarSign, MapPin, Star, Weight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Box, Calendar, Check, CircleDollarSign, MapPin, Star, Weight, Milestone } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,7 @@ export default function RequestDetailsPage() {
   const [shipment, setShipment] = useState<Shipment | null>(null);
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
   const { toast } = useToast();
+  const [distance, setDistance] = useState(0);
   
   const id = path.split('/').pop() || '';
 
@@ -41,6 +42,8 @@ export default function RequestDetailsPage() {
     }
     const storedRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
     setRole(storedRole);
+    // Simulate distance calculation
+    setDistance(Math.floor(Math.random() * 800) + 100);
   }, [id]);
 
   const navigate = (newPath: string) => {
@@ -65,10 +68,15 @@ export default function RequestDetailsPage() {
   }
 
   if (!shipment || !role) {
-    return <div>در حال بارگذاری جزئیات...</div>;
+    return <div className="flex items-center justify-center h-full">در حال بارگذاری جزئیات...</div>;
   }
 
   const isShipper = role === 'shipper';
+  
+  // For these statuses, we show the full-page tracking view
+  if (isShipper && (shipment.status === 'in_transit' || shipment.status === 'accepted') && shipment.acceptedDriver) {
+    return <ShipmentTracking shipment={shipment} />
+  }
 
   return (
     <div className="space-y-6">
@@ -81,16 +89,11 @@ export default function RequestDetailsPage() {
       </div>
       <p className='text-muted-foreground -mt-4'>شناسه: {shipment.id}</p>
 
-      {isShipper && (shipment.status === 'in_transit' || shipment.status === 'accepted') && shipment.acceptedDriver && (
-        <ShipmentTracking shipment={shipment} />
-      )}
-      
-      {shipment.status !== 'in_transit' && shipment.status !== 'accepted' && (
-        <ShipmentRouteMap origin={shipment.origin} destination={shipment.destination} />
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <div className="lg:col-span-2 space-y-6">
+          <ShipmentRouteMap origin={shipment.origin} destination={shipment.destination} />
+          
+           <Card>
             <CardHeader>
                 <CardTitle>اطلاعات محموله</CardTitle>
             </CardHeader>
@@ -110,20 +113,22 @@ export default function RequestDetailsPage() {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                     <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-muted-foreground"/><span>تاریخ: {shipment.date}</span></div>
                     <div className="flex items-center gap-2"><Weight className="h-4 w-4 text-muted-foreground"/><span>وزن: {shipment.weight.toLocaleString('fa-IR')} کیلوگرم</span></div>
-                    <div className="flex items-center gap-2"><Box className="h-4 w-4 text-muted-foreground"/><span>حجم: {shipment.volume.toLocaleString('fa-IR')} متر مکعب</span></div>
+                    <div className="flex items-center gap-2"><Box className="h-4 w-4 text-muted-foreground"/><span>نوع بار: {shipment.cargoType}</span></div>
+                    <div className="flex items-center gap-2"><Milestone className="h-4 w-4 text-muted-foreground"/><span>فاصله تخمینی: {distance} کیلومتر</span></div>
                 </div>
                 {shipment.description && <p className="text-sm text-muted-foreground bg-secondary/50 p-3 rounded-md">{shipment.description}</p>}
             </CardContent>
         </Card>
+        </div>
 
         {/* Bidding Section */}
-        <div className="space-y-4">
+        <div className="space-y-4 lg:col-span-1">
             {isShipper && shipment.status === 'pending' && (
-                <Card>
+                <Card className="bg-secondary/50">
                     <CardHeader><CardTitle>پیشنهادهای رانندگان ({shipment.bids?.length.toLocaleString('fa-IR') || '۰'})</CardTitle></CardHeader>
                     <CardContent className="space-y-3">
                         {shipment.bids && shipment.bids.length > 0 ? shipment.bids.map(bid => (
-                            <div key={bid.id} className="border p-3 rounded-lg flex items-center justify-between">
+                            <div key={bid.id} className="border p-3 rounded-lg flex items-center justify-between bg-card">
                                 <div className="flex items-center gap-3">
                                     <Image src={bid.driver.avatar} alt={bid.driver.name} width={40} height={40} className="rounded-full" />
                                     <div>
@@ -178,3 +183,4 @@ export default function RequestDetailsPage() {
     </div>
   );
 }
+

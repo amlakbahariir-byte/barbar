@@ -1,3 +1,4 @@
+
 export type Driver = {
   id: string;
   name: string;
@@ -18,7 +19,7 @@ export type Shipment = {
   origin: string;
   destination: string;
   weight: number; // in kg
-  volume: number; // in m³
+  cargoType: string;
   date: string;
   description: string;
   status: 'pending' | 'accepted' | 'in_transit' | 'delivered';
@@ -49,9 +50,9 @@ export const shipments: Shipment[] = [
     origin: 'تهران',
     destination: 'اصفهان',
     weight: 2000,
-    volume: 15,
+    cargoType: 'مبلمان',
     date: '۱۴۰۳/۰۵/۱۰',
-    description: 'مبلمان منزل، شکستنی',
+    description: 'مبلمان منزل، شکستنی و حساس',
     status: 'pending',
     bids: [
       { id: 'b1', driver: drivers[0], amount: 1200000, timestamp: '2 ساعت پیش' },
@@ -63,9 +64,9 @@ export const shipments: Shipment[] = [
     origin: 'شیراز',
     destination: 'تبریز',
     weight: 500,
-    volume: 2,
+    cargoType: 'لوازم الکترونیکی',
     date: '۱۴۰۳/۰۵/۱۲',
-    description: 'لوازم الکترونیکی',
+    description: 'کارتن‌های حاوی قطعات کامپیوتری',
     status: 'pending',
     bids: [
         { id: 'b3', driver: drivers[1], amount: 850000, timestamp: '۳۰ دقیقه پیش' },
@@ -76,9 +77,9 @@ export const shipments: Shipment[] = [
     origin: 'مشهد',
     destination: 'کرج',
     weight: 10000,
-    volume: 30,
+    cargoType: 'مصالح ساختمانی',
     date: '۱۴۰۳/۰۵/۱۱',
-    description: 'مصالح ساختمانی',
+    description: 'کیسه‌های سیمان',
     status: 'accepted',
     acceptedDriver: drivers[2],
   },
@@ -87,9 +88,9 @@ export const shipments: Shipment[] = [
     origin: 'اهواز',
     destination: 'تهران',
     weight: 800,
-    volume: 5,
+    cargoType: 'مواد غذایی',
     date: '۱۴۰۳/۰۵/۰۹',
-    description: 'مواد غذایی',
+    description: 'کارتن‌های مواد غذایی خشک و کنسروی',
     status: 'in_transit',
     acceptedDriver: drivers[0],
   },
@@ -98,9 +99,9 @@ export const shipments: Shipment[] = [
     origin: 'اصفهان',
     destination: 'شیراز',
     weight: 1200,
-    volume: 8,
+    cargoType: 'اثاثیه اداری',
     date: '۱۴۰۳/۰۵/۱۵',
-    description: 'اثاثیه اداری',
+    description: 'شامل میز، صندلی و فایل‌های اداری',
     status: 'pending',
     bids: []
   },
@@ -109,9 +110,9 @@ export const shipments: Shipment[] = [
     origin: 'یزد',
     destination: 'کرمان',
     weight: 300,
-    volume: 1.5,
+    cargoType: 'بسته‌های پستی',
     date: '۱۴۰۳/۰۵/۱۳',
-    description: 'بسته های کوچک پستی',
+    description: 'تعداد ۲۰ بسته کوچک',
     status: 'delivered',
     acceptedDriver: drivers[1],
   },

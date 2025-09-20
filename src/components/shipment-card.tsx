@@ -23,7 +23,7 @@ export function ShipmentCard({ shipment, role, navigate }: { shipment: Shipment;
   }, []);
 
   return (
-    <Card className="hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+    <Card className="hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
       <CardHeader>
         <div className="flex justify-between items-start">
             <div>
@@ -35,7 +35,7 @@ export function ShipmentCard({ shipment, role, navigate }: { shipment: Shipment;
             <Badge variant={statusMap[shipment.status].variant}>{statusMap[shipment.status].text}</Badge>
         </div>
       </CardHeader>
-      <CardContent className="grid grid-cols-2 gap-4 text-sm">
+      <CardContent className="grid grid-cols-2 gap-4 text-sm flex-grow">
         <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-muted-foreground" />
             <span>تاریخ: {shipment.date}</span>
@@ -44,9 +44,9 @@ export function ShipmentCard({ shipment, role, navigate }: { shipment: Shipment;
             <Weight className="h-4 w-4 text-muted-foreground" />
             <span>وزن: {shipment.weight.toLocaleString('fa-IR')} کیلوگرم</span>
         </div>
-         <div className="flex items-center gap-2">
+         <div className="flex items-center gap-2 col-span-2">
             <Box className="h-4 w-4 text-muted-foreground" />
-            <span>حجم: {shipment.volume.toLocaleString('fa-IR')} متر مکعب</span>
+            <span>نوع بار: {shipment.cargoType}</span>
         </div>
         {role === 'driver' && (
              <div className="flex items-center gap-2">
