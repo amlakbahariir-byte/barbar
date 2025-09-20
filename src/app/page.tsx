@@ -23,9 +23,23 @@ declare global {
 function AuthChecker({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
+  const [isInitialVisit, setIsInitialVisit] = useState(true);
 
   useEffect(() => {
     // This effect runs on the client after hydration.
+    const hasVisited = localStorage.getItem('hasVisited');
+
+    if (hasVisited) {
+      // If the user has visited before, we don't need the initial 5-second wait.
+      setIsInitialVisit(false);
+    } else {
+      // First visit: Show loader for 5 seconds then allow content to show.
+      setTimeout(() => {
+        localStorage.setItem('hasVisited', 'true');
+        setIsInitialVisit(false);
+      }, 5000);
+    }
+
     const userRole = localStorage.getItem('userRole');
     
     // If a role is set in localStorage, it means the user is fully logged in. 
@@ -39,8 +53,8 @@ function AuthChecker({ children }: { children: React.ReactNode }) {
     }
   }, [router]);
 
-  // While checking auth state, show a full-screen loader.
-  if (!authChecked) {
+  // While checking auth state OR during the initial 5-second visit, show a full-screen loader.
+  if (!authChecked || isInitialVisit) {
     return <LoaderWithSlogan />;
   }
 
