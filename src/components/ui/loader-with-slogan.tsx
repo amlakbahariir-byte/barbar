@@ -8,29 +8,22 @@ import { applyTheme } from '../theme-switcher';
 
 export function LoaderWithSlogan() {
   const [currentSlogan, setCurrentSlogan] = useState('');
-  const [isThemeApplied, setIsThemeApplied] = useState(false);
 
   useEffect(() => {
     // This effect runs only on the client side, after hydration.
+    // It's responsible for setting the theme and a random slogan.
     const savedThemeName = localStorage.getItem('app-theme') || 'Rose';
     const savedSaturation = parseFloat(localStorage.getItem('app-saturation') || '1');
-    const darkMode = document.documentElement.classList.contains('dark');
     
-    // Apply the theme immediately
+    // Apply the theme immediately on client load
     applyTheme(savedThemeName, savedSaturation);
     
     // Set a random slogan
     setCurrentSlogan(slogans[Math.floor(Math.random() * slogans.length)]);
-    
-    // Mark theme as applied to trigger render
-    setIsThemeApplied(true);
 
   }, []);
   
-  // We don't render the loader until the theme and slogan are ready on the client
-  if (!isThemeApplied) {
-    return null; // Or a very minimal, unstyled loader
-  }
-
+  // The loader is always rendered. The useEffect above will handle applying the correct
+  // theme colors as soon as the component mounts on the client.
   return <AnimatedTruckLoader slogan={currentSlogan} />;
 }
