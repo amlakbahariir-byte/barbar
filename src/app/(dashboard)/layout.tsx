@@ -50,7 +50,7 @@ export default function DashboardLayout({
 
   const navigate = (newPath: string) => {
     if (newPath === pathname) return;
-    play();
+    (play as () => void)();
     router.push(newPath);
   };
   
@@ -79,5 +79,6 @@ export default function DashboardLayout({
     
 
     
+
 
 

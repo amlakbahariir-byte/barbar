@@ -91,7 +91,7 @@ function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
   return (
     <div className="space-y-6">
         <h1 className="text-3xl font-bold animate-in fade-in-0 slide-in-from-top-4 duration-500">درخواست‌های بار نزدیک شما</h1>
-        <Tabs defaultValue="list-view" className="animate-in fade-in-0 slide-in-from-top-8 duration-500 delay-100" onValueChange={play}>
+        <Tabs defaultValue="list-view" className="animate-in fade-in-0 slide-in-from-top-8 duration-500 delay-100" onValueChange={play as () => void}>
             <div className="flex justify-between items-center">
                 <TabsList>
                     <TabsTrigger value="list-view"><List className="ml-2 h-4 w-4" />نمای لیست</TabsTrigger>
@@ -218,7 +218,7 @@ export default function DashboardPage() {
     const targetPath = newPath.replace(/\/$/, '');
 
     if (currentPath === targetPath) return;
-    play();
+    (play as () => void)();
     router.push(newPath);
   };
   

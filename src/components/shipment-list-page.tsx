@@ -34,7 +34,7 @@ export function ShipmentListPage({ title, description, shipments, role, navigate
         : shipments.filter(s => s.status === activeTab);
         
     const handleTabChange = (value: string) => {
-        play();
+        (play as () => void)();
         setActiveTab(value as any);
     }
 
