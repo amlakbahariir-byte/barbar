@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PackagePlus, List, Map as MapIcon, ArrowLeft, Package } from 'lucide-react';
+import { PackagePlus, List, Map as MapIcon, ArrowLeft, Package, LocateFixed, ArrowRight } from 'lucide-react';
 import { ShipmentCard } from '@/components/shipment-card';
 import { getMyShipments, shipments } from '@/lib/data';
 import { useEffect, useState } from 'react';
@@ -85,27 +85,38 @@ function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
 function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
   return (
     <div className="space-y-6">
-        <h1 className="text-3xl font-bold animate-in fade-in-0 slide-in-from-top-4 duration-500">درخواست‌های بار نزدیک شما</h1>
-        <Tabs defaultValue="list-view" className="animate-in fade-in-0 slide-in-from-top-8 duration-500 delay-100">
-            <div className="flex justify-between items-center">
-                <TabsList>
-                    <TabsTrigger value="list-view"><List className="ml-2 h-4 w-4" />نمای لیست</TabsTrigger>
-                    <TabsTrigger value="map-view"><MapIcon className="ml-2 h-4 w-4" />نمای نقشه</TabsTrigger>
-                </TabsList>
+        <Card className="bg-accent/50 border-accent animate-in fade-in-0 slide-in-from-top-4 duration-500">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><LocateFixed className="text-primary"/> موقعیت مکانی شما</CardTitle>
+                <CardDescription>موقعیت خود را به‌روز نگه دارید تا بهترین پیشنهادهای بار در نزدیکی شما نمایش داده شود.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Button className="w-full" onClick={() => navigate('/dashboard/location')}>
+                    <MapIcon className="ml-2 h-5 w-5" />
+                    به‌روزرسانی موقعیت مکانی
+                </Button>
+            </CardContent>
+        </Card>
+
+        <div className="animate-in fade-in-0 slide-in-from-top-8 duration-500 delay-100">
+            <h1 className="text-3xl font-bold">درخواست‌های بار نزدیک شما</h1>
+            <p className="text-muted-foreground mt-1">بر اساس آخرین موقعیت مکانی ثبت شده شما.</p>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-4">
+                {shipments.filter(s => s.status === 'pending').slice(0, 3).map((shipment, index) => (
+                    <div key={shipment.id} className="animate-in fade-in-0 slide-in-from-top-12 duration-500" style={{ animationDelay: `${index * 100 + 200}ms`, animationFillMode: 'backwards' }}>
+                        <ShipmentCard shipment={shipment} role="driver" navigate={navigate} />
+                    </div>
+                ))}
             </div>
-            <TabsContent value="list-view" className="mt-6 animate-in fade-in-0 slide-in-from-top-2 duration-300">
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {shipments.filter(s => s.status === 'pending').map((shipment, index) => (
-                         <div key={shipment.id} className="animate-in fade-in-0 slide-in-from-top-12 duration-500" style={{ animationDelay: `${index * 100 + 200}ms`, animationFillMode: 'backwards' }}>
-                            <ShipmentCard shipment={shipment} role="driver" navigate={navigate} />
-                        </div>
-                    ))}
+            {shipments.filter(s => s.status === 'pending').length > 3 && (
+                <div className="mt-4 text-center">
+                    <Button variant="link" onClick={() => navigate('/dashboard/requests/available')}>
+                        مشاهده همه درخواست‌ها
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                    </Button>
                 </div>
-            </TabsContent>
-            <TabsContent value="map-view" className="mt-6 animate-in fade-in-0 slide-in-from-top-2 duration-300">
-                <MapView />
-            </TabsContent>
-        </Tabs>
+            )}
+        </div>
     </div>
   );
 }
@@ -121,6 +132,23 @@ const PageRenderer = ({ slug, role, navigate }: { slug: string[], role: 'shipper
 
   if (page === 'transactions') {
     return <TransactionsPage />;
+  }
+  
+  if (page === 'location' && role === 'driver') {
+      return (
+        <div className="space-y-6">
+            <div className="flex items-center gap-4">
+                <button onClick={() => navigate('/dashboard')} className="p-2 rounded-md hover:bg-accent">
+                    <ArrowRight className="h-5 w-5" />
+                </button>
+                <div>
+                    <h1 className="text-3xl font-bold">تنظیم موقعیت مکانی</h1>
+                    <p className="text-muted-foreground">مکان خود را روی نقشه مشخص و تایید کنید.</p>
+                </div>
+            </div>
+            <MapView onConfirm={() => navigate('/dashboard')} />
+        </div>
+      );
   }
 
   if (page === 'requests') {
@@ -205,3 +233,5 @@ export default function DashboardPage({ _navigate }: { _navigate?: (path: string
   // Pass the necessary props to the renderer
   return <PageRenderer slug={slug} role={role} navigate={navigate} />;
 }
+
+    

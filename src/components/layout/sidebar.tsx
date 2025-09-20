@@ -11,7 +11,7 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Truck, Home, Package, User, LogOut, PackagePlus, CreditCard } from 'lucide-react';
+import { Truck, Home, Package, User, LogOut, PackagePlus, CreditCard, MapPin } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { auth } from '@/lib/firebase/config';
@@ -26,6 +26,7 @@ const ShipperMenu = [
 
 const DriverMenu = [
   { href: '/dashboard', label: 'داشبورد', icon: Home },
+  { href: '/dashboard/location', label: 'موقعیت من', icon: MapPin },
   { href: '/dashboard/requests/available', label: 'درخواست‌های موجود', icon: Package },
   { href: '/dashboard/requests/my-shipments', label: 'بارهای من', icon: Truck },
   { href: '/dashboard/transactions', label: 'تراکنش‌ها', icon: CreditCard },
@@ -102,3 +103,5 @@ export function AppSidebar({ navigate }: { navigate: (path: string) => void }) {
     </Sidebar>
   );
 }
+
+    

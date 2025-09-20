@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Home, Package, Truck, User, LogOut, PackagePlus, CreditCard } from 'lucide-react';
+import { Home, Package, Truck, User, LogOut, PackagePlus, CreditCard, MapPin } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -17,7 +17,7 @@ const ShipperMenu = [
 
 const DriverMenu = [
   { href: '/dashboard', label: 'داشبورد', icon: Home },
-  { href: '/dashboard/requests/available', label: 'درخواست‌ها', icon: Package },
+  { href: '/dashboard/location', label: 'موقعیت', icon: MapPin },
   { href: '/dashboard/requests/my-shipments', label: 'بارهای من', icon: Truck },
   { href: '/dashboard/profile', label: 'پروفایل', icon: User },
 ];
@@ -81,3 +81,5 @@ export function BottomNavbar({ navigate }: { navigate: (path: string) => void })
     </div>
   );
 }
+
+    

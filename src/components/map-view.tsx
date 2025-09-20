@@ -25,7 +25,7 @@ const cityCoordinates: { [key: string]: [number, number] } = {
 };
 
 
-export function MapView() {
+export function MapView({ onConfirm }: { onConfirm?: () => void }) {
   const { toast } = useToast();
   const mapRef = useRef<HTMLDivElement>(null);
   const leafletMapRef = useRef<any>(null);
@@ -93,9 +93,13 @@ export function MapView() {
     if (leafletMapRef.current) {
       const center = leafletMapRef.current.getCenter();
       toast({
-        title: 'مکان انتخاب شد',
-        description: `مکان انتخابی: ${center.lat.toFixed(4)}, ${center.lng.toFixed(4)}`,
+        title: 'موقعیت شما ثبت شد',
+        description: `موقعیت جدید شما برای نمایش به صاحبان بار ذخیره شد.`,
       });
+      // If a callback is provided, call it.
+      if (onConfirm) {
+        onConfirm();
+      }
     }
   };
 
@@ -183,10 +187,12 @@ export function MapView() {
 
         <div className="absolute bottom-4 right-4 left-4 z-[1000]">
             <Button size="lg" className="w-full text-lg" onClick={handleConfirmLocation}>
-            تایید مکان
+            تایید و ثبت نهایی موقعیت
             </Button>
         </div>
       </CardContent>
     </Card>
   );
 }
+
+    
