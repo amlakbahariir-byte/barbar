@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -95,7 +96,7 @@ export default function RequestDetailsPage() {
                     </div>
                      <ArrowRight className="h-5 w-5 text-muted-foreground"/>
                      <div className="flex items-center gap-2 font-semibold">
-                        <MapPin className="text-accent"/>
+                        <MapPin className="text-primary"/>
                         <span>{shipment.destination}</span>
                     </div>
                 </div>
@@ -171,3 +172,5 @@ export default function RequestDetailsPage() {
     </div>
   );
 }
+
+    
