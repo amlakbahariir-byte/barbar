@@ -92,7 +92,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto mt-8">
+    <div className="space-y-8 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button onClick={() => router.back()} className="p-2 rounded-md hover:bg-muted">
@@ -282,9 +282,4 @@ export default function ProfilePage() {
       </div>
     </div>
   );
-
-    
-
-    
-
-    
+}
