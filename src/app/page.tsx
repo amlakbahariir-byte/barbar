@@ -51,11 +51,9 @@ function AuthChecker({ children }: { children: React.ReactNode }) {
 export default function Home() {
   return (
     <AuthChecker>
-      <main className="h-screen w-full flex items-center justify-center bg-background overflow-hidden relative p-4">
-          <div className="absolute top-0 left-0 w-full h-full opacity-50">
-            <div className="absolute -bottom-1/4 left-0 w-full h-1/2 bg-primary/80 rounded-[100%] rotate-[-15deg] translate-x-[-20%] translate-y-[10%] -z-10 animate-in fade-in-0 duration-1000"></div>
-            <div className="absolute top-0 right-0 w-3/4 h-3/4 bg-accent/60 rounded-full blur-3xl -z-20 animate-in fade-in-0 duration-1000 delay-500"></div>
-            <div className="absolute w-full h-full bg-gradient-to-t from-primary/20 to-transparent -z-10"></div>
+      <main className="h-screen w-full flex items-center justify-center bg-secondary overflow-hidden relative p-4">
+          <div className="absolute top-0 left-0 w-full h-full opacity-30 bg-primary/20">
+             <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary via-transparent to-primary"></div>
           </div>
           <HomePageContent />
       </main>
@@ -178,7 +176,7 @@ function HomePageContent() {
 
   return (
       <div className="w-full max-w-md space-y-8 animate-in fade-in-0 slide-in-from-bottom-10 duration-700 text-center z-10">
-        <div className="bg-card/80 backdrop-blur-sm p-8 rounded-2xl shadow-2xl">
+        <div className="bg-card/90 backdrop-blur-lg p-8 rounded-2xl shadow-xl">
             <div>
               <Truck className="mx-auto h-12 w-auto text-primary" />
               <h2 className="mt-6 text-3xl font-bold tracking-tight text-foreground">
@@ -200,7 +198,7 @@ function HomePageContent() {
                     type="tel"
                     autoComplete="tel"
                     required
-                    className="text-center text-lg tracking-[.2em] h-14 bg-background/70"
+                    className="text-center text-lg tracking-[.2em] h-14 bg-background"
                     placeholder="0912 345 6789"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
@@ -224,7 +222,7 @@ function HomePageContent() {
                           ref={el => otpInputs.current[i] = el}
                           type="text"
                           maxLength={1}
-                          className="size-14 text-2xl text-center font-bold bg-background/70"
+                          className="size-14 text-2xl text-center font-bold bg-background"
                           value={otp[i] || ''}
                           onChange={(e) => handleOtpInputChange(e, i)}
                           onKeyDown={(e) => handleOtpKeyDown(e, i)}
@@ -245,7 +243,7 @@ function HomePageContent() {
               <div className="space-y-4 !mt-10">
                 <Button
                   variant="outline"
-                  className="w-full h-20 text-xl justify-between bg-background/70"
+                  className="w-full h-20 text-xl justify-between bg-background"
                   onClick={() => handleRoleSelect('shipper')}
                 >
                   <div className='flex items-center gap-4'>
@@ -256,11 +254,11 @@ function HomePageContent() {
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-full h-20 text-xl justify-between bg-background/70"
+                  className="w-full h-20 text-xl justify-between bg-background"
                   onClick={() => handleRoleSelect('driver')}
                 >
                    <div className='flex items-center gap-4'>
-                    <User className="size-8 text-accent" />
+                    <User className="size-8 text-primary" />
                     <span>راننده هستم</span>
                   </div>
                   <ChevronRight />
@@ -271,7 +269,3 @@ function HomePageContent() {
       </div>
   );
 }
-
-    
-
-    

@@ -24,8 +24,8 @@ function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-gradient-to-br from-primary to-accent text-primary-foreground border-primary/20 animate-in fade-in-0 slide-in-from-top-4 duration-500 shadow-lg">
-        <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="bg-primary text-primary-foreground border-0 animate-in fade-in-0 slide-in-from-top-4 duration-500 shadow-lg">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
           <div>
             <CardTitle className="text-2xl">داشبورد شما</CardTitle>
             <CardDescription className="text-primary-foreground/80">خلاصه وضعیت درخواست‌های شما</CardDescription>
@@ -219,5 +219,3 @@ export default function DashboardPage({ params }: { params: { slug?: string[] } 
   // Pass the necessary props to the renderer
   return <PageRenderer slug={slug} role={role} navigate={navigate} />;
 }
-
-    
