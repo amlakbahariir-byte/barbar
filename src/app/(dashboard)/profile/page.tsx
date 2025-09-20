@@ -191,7 +191,7 @@ export default function ProfilePage() {
           </TabsList>
           
           <TabsContent value="info" className="mt-6">
-             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+             <div className={cn("grid grid-cols-1 gap-6", role === 'driver' && "lg:grid-cols-2")}>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle className="flex items-center gap-2"><UserIcon className='text-primary'/>اطلاعات شخصی</CardTitle>
@@ -394,5 +394,7 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    
 
     
