@@ -1,41 +1,61 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { slogans } from '@/lib/slogans';
 import { AnimatedTruckLoader } from './animated-truck-loader';
 import { applyTheme } from '../theme-switcher';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from '@/components/ui/carousel';
+import Autoplay from "embla-carousel-autoplay";
 
 export function LoaderWithSlogan() {
-  // Initialize with null to prevent server/client mismatch
-  const [sloganIndex, setSloganIndex] = useState<number | null>(null);
+  const plugin = useRef(
+      Autoplay({ delay: 4000, stopOnInteraction: false })
+  );
 
   useEffect(() => {
     // This effect runs only on the client side, after hydration.
-    // It's responsible for setting the theme and starting the slogan rotation.
+    // It's responsible for setting the theme.
     const savedThemeName = localStorage.getItem('app-theme') || 'Violet';
     const savedSaturation = parseFloat(localStorage.getItem('app-saturation') || '1');
     
     // Apply the theme immediately on client load
     applyTheme(savedThemeName, savedSaturation);
-
-    // Set the initial random slogan only on the client
-    setSloganIndex(Math.floor(Math.random() * slogans.length));
-    
-    // Set up an interval to cycle through slogans
-    const sloganInterval = setInterval(() => {
-      setSloganIndex(prevIndex => (prevIndex !== null ? (prevIndex + 1) % slogans.length : 0));
-    }, 4000); // Change slogan every 4 seconds
-
-    // Clean up the interval when the component unmounts
-    return () => clearInterval(sloganInterval);
-
   }, []);
   
-  // Conditionally render the slogan to avoid mismatch during initial render
-  const slogan = sloganIndex !== null ? slogans[sloganIndex] : '';
-  
-  // The loader is always rendered. The useEffect above will handle applying the correct
-  // theme colors and updating the slogan as soon as the component mounts on the client.
-  return <AnimatedTruckLoader slogan={slogan} sloganKey={sloganIndex ?? 0} />;
+
+  return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background overflow-hidden p-4">
+        <div className="flex-grow flex flex-col items-center justify-center w-full">
+            <AnimatedTruckLoader />
+            <Carousel 
+                plugins={[plugin.current]}
+                className="w-full max-w-md mt-8"
+                onMouseEnter={plugin.current.stop}
+                onMouseLeave={plugin.current.reset}
+                opts={{ loop: true }}
+            >
+                <CarouselContent>
+                    {slogans.map((slogan, index) => (
+                    <CarouselItem key={index}>
+                        <div className="p-1">
+                            <p className="text-muted-foreground text-lg text-center h-full">
+                                "{slogan}"
+                            </p>
+                        </div>
+                    </CarouselItem>
+                    ))}
+                </CarouselContent>
+            </Carousel>
+        </div>
+         <div className="w-full text-center pb-8 px-4 h-8">
+            {/* Placeholder for footer content if needed in the future */}
+        </div>
+      </div>
+  );
 }
