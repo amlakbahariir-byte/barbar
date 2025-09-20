@@ -23,10 +23,10 @@ type Theme = {
 
 const themes: Theme[] = [
   {
-    name: 'Rose',
+    name: 'Violet',
     palette: {
-      light: { primary: '347 80% 63%' },
-      dark: { primary: '347 70% 55%' },
+      light: { primary: '260 50% 55%' },
+      dark: { primary: '260 60% 75%' },
     },
   },
   {
@@ -50,11 +50,11 @@ const themes: Theme[] = [
       dark: { primary: '25 85% 60%' },
     },
   },
-  {
-    name: 'Violet',
+    {
+    name: 'Rose',
     palette: {
-      light: { primary: '262 85% 58%' },
-      dark: { primary: '263 70% 68%' },
+      light: { primary: '347 80% 63%' },
+      dark: { primary: '347 70% 55%' },
     },
   },
   {
@@ -71,41 +71,6 @@ const themes: Theme[] = [
       dark: { primary: '215 20% 65%' },
     },
   },
-  {
-    name: 'Gray',
-    palette: {
-      light: { primary: '220 9% 46%' },
-      dark: { primary: '215 14% 65%' },
-    },
-  },
-  {
-    name: 'Zinc',
-    palette: {
-      light: { primary: '220 13% 42%' },
-      dark: { primary: '220 10% 65%' },
-    },
-  },
-  {
-    name: 'Stone',
-    palette: {
-        light: { primary: '25 10% 40%' },
-        dark: { primary: '25 5% 65%' },
-    }
-  },
-  {
-    name: 'Cyan',
-    palette: {
-        light: { primary: '190 95% 45%' },
-        dark: { primary: '190 85% 60%' },
-    }
-  },
-  {
-    name: 'Lime',
-    palette: {
-        light: { primary: '84 90% 45%' },
-        dark: { primary: '84 80% 55%' },
-    }
-  }
 ];
 
 
@@ -128,14 +93,14 @@ export function applyTheme(themeName: string, saturation: number) {
 }
 
 export function ThemeSwitcher() {
-  const [activeThemeName, setActiveThemeName] = useState('Rose');
+  const [activeThemeName, setActiveThemeName] = useState('Violet');
   const [saturation, setSaturation] = useState(1);
   const [isClient, setIsClient] = useState(false);
 
   // Apply theme from localStorage on initial client load
   useEffect(() => {
     setIsClient(true);
-    const savedThemeName = localStorage.getItem('app-theme') || 'Rose';
+    const savedThemeName = localStorage.getItem('app-theme') || 'Violet';
     const savedSaturation = parseFloat(localStorage.getItem('app-saturation') || '1');
     
     setActiveThemeName(savedThemeName);
@@ -156,7 +121,7 @@ export function ThemeSwitcher() {
     
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'class') {
+        if (mutation.attributeName === 'class' && (mutation.target as HTMLElement).tagName === 'HTML') {
           applyTheme(activeThemeName, saturation);
         }
       });

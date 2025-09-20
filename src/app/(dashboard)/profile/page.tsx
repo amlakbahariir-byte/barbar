@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, LogOut, Edit, Save, User as UserIcon, Truck, Star, FileText, Fingerprint, Phone, Mail, MapPin, Calendar, Heart, CreditCard, Bell, Moon, Palette, Check } from 'lucide-react';
+import { ArrowRight, LogOut, Edit, Save, User as UserIcon, Truck, Star, FileText, Fingerprint, Phone, Mail, MapPin, Calendar, Heart, CreditCard, Bell, Moon, Palette, Check, History } from 'lucide-react';
 import { auth } from '@/lib/firebase/config';
 import { Badge } from '@/components/ui/badge';
 import { FileUploadItem } from '@/components/file-upload-item';
@@ -58,21 +58,19 @@ export default function ProfilePage() {
         setUserData(prev => ({...prev, name: 'راننده نمونه'}));
     }
     
-    const darkModePreference = localStorage.getItem('dark-mode') === 'true';
+    const darkModePreference = document.documentElement.classList.contains('dark');
     setIsDarkMode(darkModePreference);
-    if (darkModePreference) {
-        document.documentElement.classList.add('dark');
-    }
 
   }, []);
   
   const handleDarkModeToggle = (checked: boolean) => {
     setIsDarkMode(checked);
-    localStorage.setItem('dark-mode', String(checked));
     if (checked) {
       document.documentElement.classList.add('dark');
+      localStorage.setItem('dark-mode', 'true');
     } else {
       document.documentElement.classList.remove('dark');
+      localStorage.setItem('dark-mode', 'false');
     }
   };
 
@@ -110,7 +108,6 @@ export default function ProfilePage() {
         </Button>
       </div>
 
-      {/* Profile Header Card */}
       <Card className="relative overflow-hidden shadow-lg">
         <Image 
             src="https://picsum.photos/seed/road/1200/400"
@@ -150,10 +147,11 @@ export default function ProfilePage() {
       </Card>
       
       <Tabs defaultValue="info" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="info"><UserIcon className="ml-2"/>اطلاعات کاربری</TabsTrigger>
               <TabsTrigger value="docs" disabled={role === 'shipper'}><FileText className="ml-2"/>مدارک</TabsTrigger>
-              <TabsTrigger value="settings"><Palette className="ml-2"/>تنظیمات و مالی</TabsTrigger>
+              <TabsTrigger value="wallet"><CreditCard className="ml-2"/>کیف پول</TabsTrigger>
+              <TabsTrigger value="settings"><Palette className="ml-2"/>تنظیمات</TabsTrigger>
           </TabsList>
           
           <TabsContent value="info" className="mt-6">
@@ -246,36 +244,44 @@ export default function ProfilePage() {
             )}
           </TabsContent>
 
+           <TabsContent value="wallet" className="mt-6">
+                <Card>
+                    <CardHeader><CardTitle className="flex items-center gap-2"><CreditCard className='text-primary'/>کیف پول</CardTitle></CardHeader>
+                    <CardContent className="space-y-4 text-center">
+                        <div>
+                            <p className="text-muted-foreground text-sm">موجودی فعلی</p>
+                            <p className="text-4xl font-bold tracking-tighter">۱۲,۵۰۰,۰۰۰ <span className='text-lg font-normal'>تومان</span></p>
+                        </div>
+                        <Separator />
+                         <div className="flex gap-4">
+                            <Button className="flex-1" size="lg">افزایش موجودی</Button>
+                            <Button variant="outline" className="flex-1" size="lg" onClick={() => router.push('/dashboard/transactions')}>
+                                <History className="ml-2 h-5 w-5"/>
+                                تاریخچه تراکنش‌ها
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+           </TabsContent>
+           
            <TabsContent value="settings" className="mt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card>
-                        <CardHeader><CardTitle className="flex items-center gap-2"><CreditCard className='text-primary'/>کیف پول</CardTitle></CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <p className="text-muted-foreground">موجودی فعلی</p>
-                                <p className="text-3xl font-bold">۱۲,۵۰۰,۰۰۰ <span className='text-base font-normal'>تومان</span></p>
-                            </div>
-                            <Button variant="outline" className="w-full" onClick={() => router.push('/dashboard/transactions')}>تاریخچه تراکنش‌ها</Button>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader><CardTitle className="flex items-center gap-2"><Palette className='text-primary'/>تنظیمات</CardTitle></CardHeader>
-                        <CardContent className="space-y-2">
-                            <div className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50">
-                                <Label htmlFor="notifications" className="font-semibold cursor-pointer flex items-center gap-3"><Bell className="text-muted-foreground"/>اعلانات</Label>
-                                <Switch id="notifications" defaultChecked/>
-                            </div>
-                             <div className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50">
-                                <Label htmlFor="dark-mode" className="font-semibold cursor-pointer flex items-center gap-3"><Moon className="text-muted-foreground"/>حالت تیره</Label>
-                                <Switch id="dark-mode" checked={isDarkMode} onCheckedChange={handleDarkModeToggle}/>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50">
-                                <Label className="font-semibold flex items-center gap-3"><Palette className="text-muted-foreground"/>شخصی‌سازی ظاهر</Label>
-                                <ThemeSwitcher />
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
+                <Card>
+                    <CardHeader><CardTitle className="flex items-center gap-2"><Palette className='text-primary'/>تنظیمات</CardTitle></CardHeader>
+                    <CardContent className="space-y-2">
+                        <div className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50">
+                            <Label htmlFor="notifications" className="font-semibold cursor-pointer flex items-center gap-3"><Bell className="text-muted-foreground"/>اعلانات</Label>
+                            <Switch id="notifications" defaultChecked/>
+                        </div>
+                         <div className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50">
+                            <Label htmlFor="dark-mode" className="font-semibold cursor-pointer flex items-center gap-3"><Moon className="text-muted-foreground"/>حالت تیره</Label>
+                            <Switch id="dark-mode" checked={isDarkMode} onCheckedChange={handleDarkModeToggle}/>
+                        </div>
+                        <div className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50">
+                            <Label className="font-semibold flex items-center gap-3"><Palette className="text-muted-foreground"/>شخصی‌سازی ظاهر</Label>
+                            <ThemeSwitcher />
+                        </div>
+                    </CardContent>
+                </Card>
            </TabsContent>
       </Tabs>
 
@@ -289,7 +295,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-    
-
-    

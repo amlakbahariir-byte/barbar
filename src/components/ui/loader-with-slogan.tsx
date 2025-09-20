@@ -12,7 +12,7 @@ export function LoaderWithSlogan() {
   useEffect(() => {
     // This effect runs only on the client side, after hydration.
     // It's responsible for setting the theme and starting the slogan rotation.
-    const savedThemeName = localStorage.getItem('app-theme') || 'Rose';
+    const savedThemeName = localStorage.getItem('app-theme') || 'Violet';
     const savedSaturation = parseFloat(localStorage.getItem('app-saturation') || '1');
     
     // Apply the theme immediately on client load
