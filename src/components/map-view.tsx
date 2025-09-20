@@ -7,55 +7,34 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MapPin, Search, LocateFixed } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import NeshanMap from 'react-neshan-map-leaflet';
+import Image from 'next/image';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
-export type LngLat = { lng: number; lat: number };
 
 export function MapView() {
   const { toast } = useToast();
-  const [location, setLocation] = useState<LngLat>({ lng: 51.3890, lat: 35.6892 });
   const [searchQuery, setSearchQuery] = useState('تهران، ایران');
-  const [map, setMap] = useState<any>(null);
+  const mapImage = PlaceHolderImages.find((p) => p.id === 'map-view-interactive');
 
   const handleConfirmLocation = () => {
-     if (map) {
-      const center = map.getCenter();
-      setLocation({ lat: center.lat, lng: center.lng });
       toast({
         title: 'مکان انتخاب شد',
-        description: `مکان انتخابی شما: ${center.lat.toFixed(4)}, ${center.lng.toFixed(4)}`,
+        description: `مکان انتخابی شما در مرکز نقشه تایید شد.`,
       });
-    }
   };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you would use a geocoding API here.
-    // For this demo, we'll just recenter to a predefined location for "Mashhad".
-    if (searchQuery.includes('مشهد')) {
-        const newLoc = { lng: 59.567, lat: 36.315 };
-        setLocation(newLoc);
-        if(map) map.flyTo([newLoc.lat, newLoc.lng], 12);
-        toast({ title: 'جستجو', description: 'نقشه به مشهد منتقل شد.' });
-    } else {
-        const newLoc = { lng: 51.3890, lat: 35.6892 };
-        setLocation(newLoc);
-        if(map) map.flyTo([newLoc.lat, newLoc.lng], 12);
-        toast({ title: 'جستجو', description: 'مکان پیش‌فرض (تهران) نمایش داده شد.' });
-    }
+    toast({ title: 'جستجو', description: `جستجو برای: ${searchQuery}` });
   }
 
   const handleFindMyLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          const newLoc = { lat: latitude, lng: longitude };
-          setLocation(newLoc);
-          if(map) map.flyTo([newLoc.lat, newLoc.lng], 14);
+        () => {
           toast({
             title: 'موقعیت شما پیدا شد',
-            description: 'نقشه بر روی مکان فعلی شما متمرکز شد.',
+            description: 'نقشه بر روی مکان فعلی شما متمرکز شد (شبیه‌سازی شده).',
           });
         },
         () => {
@@ -74,16 +53,18 @@ export function MapView() {
           });
     }
   };
+  
+  if (!mapImage) return <div>در حال بارگذاری نقشه...</div>
 
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-0 relative h-[60vh] md:h-[70vh]">
-        <NeshanMap
-          mapKey="web.83f98a280c4149e0a6493b8095d33a75"
-          center={{ latitude: location.lat, longitude: location.lng }}
-          zoom={13}
-          onInit={setMap}
-          style={{ width: '100%', height: '100%' }}
+        <Image
+          src={mapImage.imageUrl}
+          alt={mapImage.description}
+          data-ai-hint={mapImage.imageHint}
+          fill
+          style={{ objectFit: 'cover' }}
         />
         
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-transparent pointer-events-none" />
@@ -111,12 +92,6 @@ export function MapView() {
               </form>
             </CardContent>
           </Card>
-           {map && <Card className="shadow-lg max-w-sm mx-auto">
-             <CardContent className="p-2 text-center">
-                <p className="text-xs text-muted-foreground">مختصات مرکز نقشه</p>
-                <p className="text-sm font-mono tracking-wider">{map.getCenter().lat.toFixed(4)}, {map.getCenter().lng.toFixed(4)}</p>
-             </CardContent>
-           </Card>}
         </div>
 
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+24px)] z-[1000] text-center pointer-events-none">
