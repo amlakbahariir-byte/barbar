@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Palette } from 'lucide-react';
@@ -9,69 +10,247 @@ import {
 } from '@/components/ui/popover';
 import { useEffect, useState } from 'react';
 
-const themes = [
-  { name: 'Rose', color: '347 80% 63%' },
-  { name: 'Blue', color: '221 83% 53%' },
-  { name: 'Green', color: '142 76% 36%' },
-  { name: 'Orange', color: '25 95% 53%' },
-  { name: 'Violet', color: '262 83% 58%' },
-];
+type Theme = {
+  name: string;
+  palette: {
+    light: Record<string, string>;
+    dark: Record<string, string>;
+  };
+};
 
-const darkThemes = [
-  { name: 'Rose', color: '347 70% 55%' },
-  { name: 'Blue', color: '221 70% 55%' },
-  { name: 'Green', color: '142 60% 40%' },
-  { name: 'Orange', color: '25 85% 55%' },
-  { name: 'Violet', color: '262 70% 60%' },
+const themes: Theme[] = [
+  {
+    name: 'Rose',
+    palette: {
+      light: {
+        background: '350 100% 98%',
+        foreground: '350 10% 20%',
+        card: '0 0% 100%',
+        'card-foreground': '350 10% 20%',
+        popover: '0 0% 100%',
+        'popover-foreground': '350 10% 20%',
+        primary: '347 80% 63%',
+        'primary-foreground': '0 0% 100%',
+        secondary: '350 80% 96%',
+        'secondary-foreground': '347 80% 40%',
+        muted: '350 80% 96%',
+        'muted-foreground': '350 20% 45%',
+        accent: '85 30% 45%',
+        'accent-foreground': '0 0% 100%',
+        border: '350 80% 90%',
+        input: '350 80% 92%',
+        ring: '347 80% 63%',
+      },
+      dark: {
+        background: '350 10% 15%',
+        foreground: '350 10% 85%',
+        card: '350 10% 20%',
+        'card-foreground': '350 10% 85%',
+        popover: '350 10% 15%',
+        'popover-foreground': '350 10% 85%',
+        primary: '347 70% 55%',
+        'primary-foreground': '0 0% 100%',
+        secondary: '350 15% 25%',
+        'secondary-foreground': '350 10% 90%',
+        muted: '350 15% 25%',
+        'muted-foreground': '350 10% 65%',
+        accent: '85 35% 55%',
+        'accent-foreground': '0 0% 100%',
+        border: '350 15% 25%',
+        input: '350 15% 25%',
+        ring: '347 70% 55%',
+      },
+    },
+  },
+  {
+    name: 'Blue',
+    palette: {
+      light: {
+        background: '210 40% 98%',
+        foreground: '222 84% 4%',
+        card: '0 0% 100%',
+        'card-foreground': '222 84% 4%',
+        popover: '0 0% 100%',
+        'popover-foreground': '222 84% 4%',
+        primary: '221 83% 53%',
+        'primary-foreground': '210 40% 98%',
+        secondary: '210 40% 96.1%',
+        'secondary-foreground': '222 47% 11%',
+        muted: '210 40% 96.1%',
+        'muted-foreground': '215 20% 45%',
+        accent: '210 40% 94.1%',
+        'accent-foreground': '222 47% 11%',
+        border: '214.3 31.8% 91.4%',
+        input: '214.3 31.8% 91.4%',
+        ring: '221 83% 53%',
+      },
+      dark: {
+        background: '222 84% 4.9%',
+        foreground: '210 40% 98%',
+        card: '222 84% 4.9%',
+        'card-foreground': '210 40% 98%',
+        popover: '222 84% 4.9%',
+        'popover-foreground': '210 40% 98%',
+        primary: '217 91% 60%',
+        'primary-foreground': '222 47% 11%',
+        secondary: '217 33% 17%',
+        'secondary-foreground': '210 40% 98%',
+        muted: '217 33% 17%',
+        'muted-foreground': '215 20% 65%',
+        accent: '217 33% 17%',
+        'accent-foreground': '210 40% 98%',
+        border: '217 33% 27%',
+        input: '217 33% 27%',
+        ring: '217 91% 60%',
+      },
+    },
+  },
+  {
+    name: 'Green',
+    palette: {
+      light: {
+        background: '150 50% 98%',
+        foreground: '145 60% 10%',
+        card: '0 0% 100%',
+        'card-foreground': '145 60% 10%',
+        popover: '0 0% 100%',
+        'popover-foreground': '145 60% 10%',
+        primary: '142 76% 36%',
+        'primary-foreground': '145 60% 98%',
+        secondary: '150 50% 96%',
+        'secondary-foreground': '142 76% 20%',
+        muted: '150 50% 96%',
+        'muted-foreground': '150 20% 45%',
+        accent: '130 30% 45%',
+        'accent-foreground': '0 0% 100%',
+        border: '150 50% 90%',
+        input: '150 50% 92%',
+        ring: '142 76% 36%',
+      },
+      dark: {
+        background: '145 60% 8%',
+        foreground: '150 50% 90%',
+        card: '145 60% 12%',
+        'card-foreground': '150 50% 90%',
+        popover: '145 60% 8%',
+        'popover-foreground': '150 50% 90%',
+        primary: '142 60% 55%',
+        'primary-foreground': '145 60% 98%',
+        secondary: '145 50% 20%',
+        'secondary-foreground': '145 50% 90%',
+        muted: '145 50% 20%',
+        'muted-foreground': '150 20% 65%',
+        accent: '130 35% 55%',
+        'accent-foreground': '0 0% 100%',
+        border: '145 50% 25%',
+        input: '145 50% 25%',
+        ring: '142 60% 55%',
+      },
+    },
+  },
+  {
+    name: 'Orange',
+    palette: {
+      light: {
+        background: '30 100% 98%',
+        foreground: '25 60% 15%',
+        card: '0 0% 100%',
+        'card-foreground': '25 60% 15%',
+        popover: '0 0% 100%',
+        'popover-foreground': '25 60% 15%',
+        primary: '25 95% 53%',
+        'primary-foreground': '0 0% 100%',
+        secondary: '30 100% 96%',
+        'secondary-foreground': '25 95% 35%',
+        muted: '30 100% 96%',
+        'muted-foreground': '30 20% 45%',
+        accent: '45 80% 50%',
+        'accent-foreground': '0 0% 100%',
+        border: '30 100% 90%',
+        input: '30 100% 92%',
+        ring: '25 95% 53%',
+      },
+      dark: {
+        background: '25 60% 10%',
+        foreground: '30 100% 90%',
+        card: '25 60% 13%',
+        'card-foreground': '30 100% 90%',
+        popover: '25 60% 10%',
+        'popover-foreground': '30 100% 90%',
+        primary: '25 85% 60%',
+        'primary-foreground': '0 0% 100%',
+        secondary: '25 50% 22%',
+        'secondary-foreground': '25 50% 90%',
+        muted: '25 50% 22%',
+        'muted-foreground': '30 20% 65%',
+        accent: '45 85% 60%',
+        'accent-foreground': '0 0% 100%',
+        border: '25 50% 28%',
+        input: '25 50% 28%',
+        ring: '25 85% 60%',
+      },
+    },
+  },
 ];
 
 export function ThemeSwitcher() {
   const [activeTheme, setActiveTheme] = useState('Rose');
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // On mount, check localStorage for a saved theme and apply it
+    setIsClient(true);
     const savedThemeName = localStorage.getItem('app-theme') || 'Rose';
-    handleThemeChange(savedThemeName, true);
+    applyTheme(savedThemeName);
   }, []);
 
-  const handleThemeChange = (themeName: string, isInitial = false) => {
-    const root = document.documentElement;
-    const isDark = root.classList.contains('dark');
-    
-    const themeList = isDark ? darkThemes : themes;
-    const theme = themeList.find(t => t.name === themeName);
-    
+  const applyTheme = (themeName: string) => {
+    const theme = themes.find((t) => t.name === themeName);
     if (!theme) return;
 
-    root.style.setProperty('--primary', theme.color);
-    root.style.setProperty('--ring', theme.color);
-    root.style.setProperty('--sidebar-primary', theme.color);
-    root.style.setProperty('--sidebar-accent', theme.color);
-    root.style.setProperty('--sidebar-ring', theme.color);
-    root.style.setProperty('--chart-1', theme.color);
+    const root = document.documentElement;
+    const isDark = root.classList.contains('dark');
+    const palette = isDark ? theme.palette.dark : theme.palette.light;
+
+    for (const [key, value] of Object.entries(palette)) {
+      root.style.setProperty(`--${key}`, value);
+    }
+    
+    // Also apply sidebar and chart colors based on the primary color
+    root.style.setProperty('--sidebar-primary', palette.primary);
+    root.style.setProperty('--sidebar-accent', palette.primary);
+    root.style.setProperty('--sidebar-ring', palette.ring);
+    root.style.setProperty('--chart-1', palette.primary);
+
 
     setActiveTheme(themeName);
-    if (!isInitial) {
-      localStorage.setItem('app-theme', themeName);
-    }
   };
   
+  const handleThemeChange = (themeName: string) => {
+    applyTheme(themeName);
+    localStorage.setItem('app-theme', themeName);
+  }
+
   useEffect(() => {
     // Re-apply theme when dark mode changes
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.attributeName === 'class') {
-           const savedThemeName = localStorage.getItem('app-theme') || 'Rose';
-           handleThemeChange(savedThemeName, true);
+          const savedThemeName = localStorage.getItem('app-theme') || 'Rose';
+          applyTheme(savedThemeName);
         }
       });
     });
 
-    observer.observe(document.documentElement, { attributes: true });
+    if(isClient) {
+      observer.observe(document.documentElement, { attributes: true });
+    }
 
     return () => observer.disconnect();
-  }, []);
+  }, [isClient]);
 
+  if (!isClient) {
+    return <div className="h-8 w-8" />; // Return a placeholder on the server
+  }
 
   return (
     <Popover>
@@ -86,7 +265,7 @@ export function ThemeSwitcher() {
           <div className="space-y-2">
             <h4 className="font-medium leading-none">انتخاب رنگ تم</h4>
             <p className="text-sm text-muted-foreground">
-              رنگ اصلی برنامه را انتخاب کنید.
+              پالت رنگی برنامه را انتخاب کنید.
             </p>
           </div>
           <div className="flex items-center gap-2 pt-2">
@@ -97,7 +276,7 @@ export function ThemeSwitcher() {
                 className={`flex h-8 w-8 items-center justify-center rounded-full border-2 ${
                   activeTheme === theme.name ? 'border-foreground' : 'border-transparent'
                 }`}
-                style={{ backgroundColor: `hsl(${theme.color})` }}
+                style={{ backgroundColor: `hsl(${theme.palette.light.primary})` }}
                 title={theme.name}
               >
                 <span className="sr-only">{theme.name}</span>
