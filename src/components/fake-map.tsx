@@ -9,7 +9,6 @@ import { cn } from '@/lib/utils';
 export type LngLat = { lng: number; lat: number };
 type Point = { x: number; y: number };
 type Tile = { x: number; y: number; z: number };
-type ViewState = { center: LngLat; zoom: number };
 
 interface FakeMapProps {
   center: LngLat;
