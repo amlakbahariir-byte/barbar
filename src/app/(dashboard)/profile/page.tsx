@@ -106,7 +106,7 @@ export default function ProfilePage() {
         </Button>
       </div>
 
-      <div className="relative">
+      <div className="relative mt-8">
         <Card className="overflow-visible pt-28">
             <CardContent className="text-center">
                 <div className="absolute w-full flex justify-center -top-20">
