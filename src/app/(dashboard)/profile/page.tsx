@@ -17,6 +17,8 @@ import { ThemeSwitcher } from '@/components/theme-switcher';
 import Image from 'next/image';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getTransactions, Transaction } from '@/lib/data';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const documentUploads = [
     "صفحه اول شناسنامه",
@@ -25,6 +27,19 @@ const documentUploads = [
     "کارت ماشین"
 ];
 
+const transactionTypeMap: { [key in Transaction['type']]: { text: string; sign: string } } = {
+  deposit: { text: 'واریز', sign: '+' },
+  withdrawal: { text: 'برداشت', sign: '-' },
+  payment: { text: 'پرداخت', sign: '-' },
+  refund: { text: 'بازگشت وجه', sign: '+' },
+};
+
+const transactionStatusMap: { [key in Transaction['status']]: { text: string; variant: 'default' | 'secondary' | 'destructive' } } = {
+  completed: { text: 'موفق', variant: 'secondary' },
+  pending: { text: 'در انتظار', variant: 'default' },
+  failed: { text: 'ناموفق', variant: 'destructive' },
+};
+
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -32,6 +47,8 @@ export default function ProfilePage() {
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  
+  const transactions = getTransactions();
   
   const [userData, setUserData] = useState({
       name: 'کاربر نمونه',
@@ -58,8 +75,11 @@ export default function ProfilePage() {
         setUserData(prev => ({...prev, name: 'راننده نمونه'}));
     }
     
-    const darkModePreference = document.documentElement.classList.contains('dark');
-    setIsDarkMode(darkModePreference);
+    // This check is to prevent SSR mismatch for dark mode preference
+    if (typeof window !== 'undefined') {
+        const darkModePreference = document.documentElement.classList.contains('dark');
+        setIsDarkMode(darkModePreference);
+    }
 
   }, []);
   
@@ -89,6 +109,20 @@ export default function ProfilePage() {
     router.push('/');
   };
 
+  const getAmountClass = (type: Transaction['type']) => {
+    switch (type) {
+      case 'deposit':
+      case 'refund':
+        return 'text-green-600 dark:text-green-400';
+      case 'withdrawal':
+      case 'payment':
+        return 'text-red-600 dark:text-red-400';
+      default:
+        return '';
+    }
+  };
+
+
   if (!role) {
     return <div>در حال بارگذاری پروفایل...</div>;
   }
@@ -115,6 +149,7 @@ export default function ProfilePage() {
             width={1200}
             height={400}
             className="absolute inset-0 w-full h-full object-cover opacity-20"
+            data-ai-hint="road"
         />
          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
         <CardContent className="relative p-6 flex flex-col items-center text-center">
@@ -244,7 +279,7 @@ export default function ProfilePage() {
             )}
           </TabsContent>
 
-           <TabsContent value="wallet" className="mt-6">
+           <TabsContent value="wallet" className="mt-6 space-y-6">
                 <Card>
                     <CardHeader><CardTitle className="flex items-center gap-2"><CreditCard className='text-primary'/>کیف پول</CardTitle></CardHeader>
                     <CardContent className="space-y-4 text-center">
@@ -255,11 +290,53 @@ export default function ProfilePage() {
                         <Separator />
                          <div className="flex gap-4">
                             <Button className="flex-1" size="lg">افزایش موجودی</Button>
-                            <Button variant="outline" className="flex-1" size="lg" onClick={() => router.push('/dashboard/transactions')}>
+                            <Button variant="outline" className="flex-1" size="lg" onClick={() => toast({ title: 'این بخش در حال ساخت است' })}>
                                 <History className="ml-2 h-5 w-5"/>
-                                تاریخچه تراکنش‌ها
+                                تسویه حساب
                             </Button>
                         </div>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>تراکنش‌های اخیر</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="border rounded-lg overflow-hidden">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                    <TableHead>تاریخ</TableHead>
+                                    <TableHead>نوع تراکنش</TableHead>
+                                    <TableHead>شرح</TableHead>
+                                    <TableHead className="text-left">مبلغ (تومان)</TableHead>
+                                    <TableHead className="text-center">وضعیت</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {transactions.slice(0, 5).map((tx) => (
+                                    <TableRow key={tx.id}>
+                                        <TableCell className="font-medium">{tx.date}</TableCell>
+                                        <TableCell>{transactionTypeMap[tx.type].text}</TableCell>
+                                        <TableCell className="text-muted-foreground">{tx.description}</TableCell>
+                                        <TableCell className={`text-left font-semibold ${getAmountClass(tx.type)}`}>
+                                        {transactionTypeMap[tx.type].sign} {Math.abs(tx.amount).toLocaleString('fa-IR')}
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                        <Badge variant={transactionStatusMap[tx.status].variant}>
+                                            {transactionStatusMap[tx.status].text}
+                                        </Badge>
+                                        </TableCell>
+                                    </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                         {transactions.length > 5 && (
+                             <div className="mt-4 text-center">
+                                 <Button variant="link" onClick={() => router.push('/dashboard/transactions')}>مشاهده همه تراکنش‌ها</Button>
+                             </div>
+                         )}
                     </CardContent>
                 </Card>
            </TabsContent>
@@ -294,4 +371,5 @@ export default function ProfilePage() {
       </div>
     </div>
   );
-}
+
+    
