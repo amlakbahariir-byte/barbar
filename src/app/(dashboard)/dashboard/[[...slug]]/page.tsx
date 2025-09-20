@@ -16,7 +16,6 @@ import NewRequestPage from '../../requests/new/page';
 import RequestDetailsPage from '../../requests/[id]/page';
 import ProfilePage from '../../profile/page';
 import TransactionsPage from '../../transactions/page';
-import { useSound } from '@/hooks/use-sound';
 
 function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
   const myShipments = getMyShipments('shipper', 'all');
@@ -84,14 +83,13 @@ function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
   );
 }
 
-function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
+function DriverDashboard({ navigate, play }: { navigate: (path: string) => void, play: (() => void) | null }) {
   const mapImage = PlaceHolderImages.find(p => p.id === 'map-view');
-  const [play] = useSound('/sounds/pop.mp3');
 
   return (
     <div className="space-y-6">
         <h1 className="text-3xl font-bold animate-in fade-in-0 slide-in-from-top-4 duration-500">درخواست‌های بار نزدیک شما</h1>
-        <Tabs defaultValue="list-view" className="animate-in fade-in-0 slide-in-from-top-8 duration-500 delay-100" onValueChange={play as () => void}>
+        <Tabs defaultValue="list-view" className="animate-in fade-in-0 slide-in-from-top-8 duration-500 delay-100" onValueChange={play || undefined}>
             <div className="flex justify-between items-center">
                 <TabsList>
                     <TabsTrigger value="list-view"><List className="ml-2 h-4 w-4" />نمای لیست</TabsTrigger>
@@ -135,7 +133,7 @@ function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
 }
 
 // A simple component to render the correct page based on the slug
-const PageRenderer = ({ slug, role, navigate }: { slug: string[], role: 'shipper' | 'driver', navigate: (path: string) => void }) => {
+const PageRenderer = ({ slug, role, navigate, play }: { slug: string[], role: 'shipper' | 'driver', navigate: (path: string) => void, play: (() => void) | null }) => {
   const page = slug[0] || 'home';
   const subPage = slug[1];
   const detailId = slug[2];
@@ -159,6 +157,7 @@ const PageRenderer = ({ slug, role, navigate }: { slug: string[], role: 'shipper
         shipments={getMyShipments('shipper', 'all')} 
         role={role} 
         navigate={navigate} 
+        play={play}
       />;
     }
     if (subPage === 'available' && role === 'driver') {
@@ -168,6 +167,7 @@ const PageRenderer = ({ slug, role, navigate }: { slug: string[], role: 'shipper
         shipments={getMyShipments('driver', 'available')} 
         role={role} 
         navigate={navigate} 
+        play={play}
       />;
     }
     if (subPage === 'my-shipments' && role === 'driver') {
@@ -177,6 +177,7 @@ const PageRenderer = ({ slug, role, navigate }: { slug: string[], role: 'shipper
         shipments={getMyShipments('driver', 'accepted')} 
         role={role} 
         navigate={navigate} 
+        play={play}
       />;
     }
     // This handles /requests/[id]
@@ -189,16 +190,14 @@ const PageRenderer = ({ slug, role, navigate }: { slug: string[], role: 'shipper
   if (role === 'shipper') {
     return <ShipperDashboard navigate={navigate} />;
   }
-  return <DriverDashboard navigate={navigate} />;
+  return <DriverDashboard navigate={navigate} play={play} />;
 };
 
 
-export default function DashboardPage() {
-  const router = useRouter();
+export default function DashboardPage({ navigate, play }: { navigate: (path: string) => void, play: (() => void) | null }) {
   const pathname = usePathname();
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
   const [isClient, setIsClient] = useState(false);
-  const [play] = useSound('/sounds/pop.mp3');
   
   // Correctly derive slug from pathname for client components
   const slug = pathname.replace('/dashboard', '').split('/').filter(Boolean);
@@ -211,16 +210,6 @@ export default function DashboardPage() {
       setRole(storedRole);
     }
   }, []);
-
-  const navigate = (newPath: string) => {
-    // A simple way to compare paths, ignoring trailing slashes
-    const currentPath = `/dashboard/${slug.join('/')}`.replace(/\/$/, '');
-    const targetPath = newPath.replace(/\/$/, '');
-
-    if (currentPath === targetPath) return;
-    (play as () => void)();
-    router.push(newPath);
-  };
   
   if (!isClient) {
     // Render a loading state or null on the server and initial client render
@@ -233,5 +222,5 @@ export default function DashboardPage() {
   }
 
   // Pass the necessary props to the renderer
-  return <PageRenderer slug={slug} role={role} navigate={navigate} />;
+  return <PageRenderer slug={slug} role={role} navigate={navigate} play={play} />;
 }

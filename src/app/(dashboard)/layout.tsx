@@ -50,7 +50,7 @@ export default function DashboardLayout({
 
   const navigate = (newPath: string) => {
     if (newPath === pathname) return;
-    (play as () => void)();
+    play?.();
     router.push(newPath);
   };
   
@@ -61,13 +61,21 @@ export default function DashboardLayout({
   }
   
   // If we've passed the loading stage and have a role, render the dashboard.
+  // We need to clone the children to pass down the navigate and play props.
+  const childrenWithProps = React.Children.map(children, child => {
+    if (React.isValidElement(child)) {
+      return React.cloneElement(child, { navigate, play } as any);
+    }
+    return child;
+  });
+
   return (
     <SidebarProvider>
       <AppSidebar navigate={navigate} />
       <SidebarInset>
         <main className="flex-1 p-4 md:p-6 pb-24 md:pb-6 overflow-y-auto">
            <div key={pathname} className="animate-in fade-in-0 slide-in-from-top-4 duration-300">
-              {children}
+              {childrenWithProps}
            </div>
         </main>
         {isMobile && <BottomNavbar navigate={navigate} />}
@@ -75,10 +83,3 @@ export default function DashboardLayout({
     </SidebarProvider>
   );
 }
-
-    
-
-    
-
-
-

@@ -7,7 +7,6 @@ import { Shipment } from "@/lib/data";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { useSound } from "@/hooks/use-sound";
 
 interface ShipmentListPageProps {
     title: string;
@@ -15,6 +14,7 @@ interface ShipmentListPageProps {
     shipments: Shipment[];
     role: 'shipper' | 'driver';
     navigate: (path: string) => void;
+    play: (() => void) | null;
 }
 
 const statusFilters: { value: Shipment['status'] | 'all', label: string }[] = [
@@ -25,16 +25,15 @@ const statusFilters: { value: Shipment['status'] | 'all', label: string }[] = [
 ];
 
 
-export function ShipmentListPage({ title, description, shipments, role, navigate }: ShipmentListPageProps) {
+export function ShipmentListPage({ title, description, shipments, role, navigate, play }: ShipmentListPageProps) {
     const [activeTab, setActiveTab] = useState<'all' | Shipment['status']>('all');
-    const [play] = useSound('/sounds/pop.mp3');
-
+    
     const filteredShipments = activeTab === 'all'
         ? shipments
         : shipments.filter(s => s.status === activeTab);
         
     const handleTabChange = (value: string) => {
-        (play as () => void)();
+        play?.();
         setActiveTab(value as any);
     }
 
