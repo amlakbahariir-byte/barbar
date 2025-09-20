@@ -105,7 +105,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-8">
        <div className="flex items-center gap-4">
          <button onClick={() => router.push('/dashboard')} className="p-2 rounded-md hover:bg-muted">
             <ArrowRight className="h-5 w-5" />
@@ -113,121 +113,117 @@ export default function ProfilePage() {
         <h1 className="text-3xl font-bold">پروفایل کاربری</h1>
       </div>
 
-      <Card className="relative">
-        <CardHeader>
-          <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-right">
-              <Avatar className="w-24 h-24 border-4 border-primary">
-                  <AvatarImage src={`https://i.pravatar.cc/150?u=${role}`} />
-                  <AvatarFallback>{userData.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <div className='flex-1'>
-                  <h2 className="text-3xl font-bold">{userData.name}</h2>
-                  <p className="text-base text-muted-foreground mt-1 capitalize">{role === 'shipper' ? 'صاحب بار' : 'راننده'}</p>
-              </div>
-              <Button variant={isEditing ? "default" : "outline"} size="lg" onClick={() => setIsEditing(!isEditing)} className="md:ml-auto mt-4 md:mt-0">
-                  {isEditing ? <Save className="ml-2"/> : <Edit className="ml-2"/>}
-                  {isEditing ? 'ذخیره' : 'ویرایش پروفایل'}
-              </Button>
-          </div>
-        </CardHeader>
+      <Card>
+        <CardContent className="p-6 flex flex-col md:flex-row items-center gap-6">
+            <Avatar className="w-24 h-24 border-4 border-primary">
+                <AvatarImage src={`https://i.pravatar.cc/150?u=${role}`} />
+                <AvatarFallback>{userData.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div className='flex-1 text-center md:text-right'>
+                <h2 className="text-3xl font-bold">{userData.name}</h2>
+                <p className="text-base text-muted-foreground mt-1 capitalize">{role === 'shipper' ? 'صاحب بار' : 'راننده'}</p>
+            </div>
+            <Button variant={isEditing ? "default" : "outline"} size="lg" onClick={() => setIsEditing(!isEditing)} className="md:ml-auto mt-4 md:mt-0 w-full md:w-auto">
+                {isEditing ? <Save className="ml-2"/> : <Edit className="ml-2"/>}
+                {isEditing ? 'ذخیره' : 'ویرایش پروفایل'}
+            </Button>
+        </CardContent>
       </Card>
       
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card>
-            <CardHeader><CardTitle className="flex items-center gap-2"><UserIcon className='text-primary'/>اطلاعات شخصی</CardTitle></CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <Label htmlFor="name">نام و نام خانوادگی</Label>
-                    <Input id="name" value={userData.name} disabled={!isEditing} />
-                </div>
-                <div>
-                    <Label htmlFor="fatherName">نام پدر</Label>
-                    <Input id="fatherName" value={userData.fatherName} disabled={!isEditing} />
-                </div>
-                <div>
-                    <Label htmlFor="nationalId">کد ملی</Label>
-                    <Input id="nationalId" value={userData.nationalId} disabled />
-                </div>
-                 <div>
-                    <Label htmlFor="phone">شماره تماس</Label>
-                    <Input id="phone" value={userData.phone} disabled />
-                 </div>
-                <div>
-                    <Label htmlFor="birthPlace">محل تولد</Label>
-                    <Input id="birthPlace" value={userData.birthPlace} disabled={!isEditing} />
-                </div>
-                 <div>
-                    <Label htmlFor="age">سن</Label>
-                    <Input id="age" value={userData.age} disabled={!isEditing} />
-                </div>
-                 <div>
-                    <Label htmlFor="maritalStatus">وضعیت تاهل</Label>
-                    <Input id="maritalStatus" value={userData.maritalStatus} disabled={!isEditing} />
-                </div>
-                 <div className="md:col-span-2">
-                    <Label htmlFor="email">ایمیل</Label>
-                    <Input id="email" value={userData.email} disabled={!isEditing} />
-                 </div>
-            </CardContent>
-        </Card>
-        
-        {role === 'driver' && (
-            <div className="space-y-6">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Truck className='text-primary'/>اطلاعات و مدارک خودرو</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <Label htmlFor="vehicleType">نوع وسیله نقلیه</Label>
-                                <Input id="vehicleType" value={userData.vehicleType} disabled={!isEditing} />
-                            </div>
-                             <div>
-                                <Label htmlFor="vehicleModel">مدل</Label>
-                                <Input id="vehicleModel" value={userData.vehicleModel} disabled={!isEditing} />
-                            </div>
-                            <div className="col-span-2">
-                                <Label htmlFor="licensePlate">شماره پلاک</Label>
-                                <Input id="licensePlate" value={userData.licensePlate} disabled={!isEditing} />
-                            </div>
-                        </div>
-                        <Separator />
-                        <FileUploadItem label="کارت ماشین" />
-                        <FileUploadItem label="برگه سبز خودرو" />
-                    </CardContent>
-                </Card>
+      <Card>
+          <CardHeader><CardTitle className="flex items-center gap-2"><UserIcon className='text-primary'/>اطلاعات شخصی</CardTitle></CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+              <div>
+                  <Label htmlFor="name">نام و نام خانوادگی</Label>
+                  <Input id="name" value={userData.name} disabled={!isEditing} />
+              </div>
+              <div>
+                  <Label htmlFor="fatherName">نام پدر</Label>
+                  <Input id="fatherName" value={userData.fatherName} disabled={!isEditing} />
+              </div>
+              <div>
+                  <Label htmlFor="nationalId">کد ملی</Label>
+                  <Input id="nationalId" value={userData.nationalId} disabled />
+              </div>
+               <div>
+                  <Label htmlFor="phone">شماره تماس</Label>
+                  <Input id="phone" value={userData.phone} disabled />
+               </div>
+              <div>
+                  <Label htmlFor="birthPlace">محل تولد</Label>
+                  <Input id="birthPlace" value={userData.birthPlace} disabled={!isEditing} />
+              </div>
+               <div>
+                  <Label htmlFor="age">سن</Label>
+                  <Input id="age" value={userData.age} disabled={!isEditing} />
+              </div>
+               <div>
+                  <Label htmlFor="maritalStatus">وضعیت تاهل</Label>
+                  <Input id="maritalStatus" value={userData.maritalStatus} disabled={!isEditing} />
+              </div>
+               <div className="md:col-span-2">
+                  <Label htmlFor="email">ایمیل</Label>
+                  <Input id="email" value={userData.email} disabled={!isEditing} />
+               </div>
+          </CardContent>
+      </Card>
+      
+      {role === 'driver' && (
+          <>
+              <Card>
+                  <CardHeader>
+                      <CardTitle className="flex items-center gap-2"><Truck className='text-primary'/>اطلاعات و مدارک خودرو</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                          <div>
+                              <Label htmlFor="vehicleType">نوع وسیله نقلیه</Label>
+                              <Input id="vehicleType" value={userData.vehicleType} disabled={!isEditing} />
+                          </div>
+                           <div>
+                              <Label htmlFor="vehicleModel">مدل</Label>
+                              <Input id="vehicleModel" value={userData.vehicleModel} disabled={!isEditing} />
+                          </div>
+                          <div className="col-span-2">
+                              <Label htmlFor="licensePlate">شماره پلاک</Label>
+                              <Input id="licensePlate" value={userData.licensePlate} disabled={!isEditing} />
+                          </div>
+                      </div>
+                      <Separator />
+                      <FileUploadItem label="کارت ماشین" />
+                      <FileUploadItem label="برگه سبز خودرو" />
+                  </CardContent>
+              </Card>
 
-                 <Card>
-                    <CardHeader><CardTitle className="flex items-center gap-2"><FileText className='text-primary'/>مدارک و گواهی‌ها</CardTitle></CardHeader>
-                    <CardContent className="space-y-4">
-                       <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
-                            <div className='flex items-center gap-3'>
-                                <BadgeCheck className="text-muted-foreground"/>
-                                <div>
-                                    <Label className="font-semibold">گواهی عدم سوء پیشینه</Label>
-                                </div>
-                            </div>
-                            <Badge variant={userData.criminalRecord ? "secondary" : "destructive"} className="text-accent-foreground">{userData.criminalRecord ? "تایید شده" : "تایید نشده"}</Badge>
-                        </div>
-                        <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
-                            <div className='flex items-center gap-3'>
-                                <BadgeCheck className="text-muted-foreground"/>
-                                <div>
-                                    <Label className="font-semibold">گواهی عدم اعتیاد</Label>
-                                </div>
-                            </div>
-                            <Badge variant={userData.addictionCertificate ? "secondary" : "destructive"} className="text-accent-foreground">{userData.addictionCertificate ? "تایید شده" : "تایید نشده"}</Badge>
-                        </div>
-                        <Separator />
-                        {documentUploads.map((docLabel) => (
-                           <FileUploadItem key={docLabel} label={docLabel} />
-                        ))}
-                    </CardContent>
-                </Card>
-            </div>
-        )}
-      </div>
+               <Card>
+                  <CardHeader><CardTitle className="flex items-center gap-2"><FileText className='text-primary'/>مدارک و گواهی‌ها</CardTitle></CardHeader>
+                  <CardContent className="space-y-4">
+                     <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
+                          <div className='flex items-center gap-3'>
+                              <BadgeCheck className="text-muted-foreground"/>
+                              <div>
+                                  <Label className="font-semibold">گواهی عدم سوء پیشینه</Label>
+                              </div>
+                          </div>
+                          <Badge variant={userData.criminalRecord ? "secondary" : "destructive"} className="text-accent-foreground">{userData.criminalRecord ? "تایید شده" : "تایید نشده"}</Badge>
+                      </div>
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
+                          <div className='flex items-center gap-3'>
+                              <BadgeCheck className="text-muted-foreground"/>
+                              <div>
+                                  <Label className="font-semibold">گواهی عدم اعتیاد</Label>
+                              </div>
+                          </div>
+                          <Badge variant={userData.addictionCertificate ? "secondary" : "destructive"} className="text-accent-foreground">{userData.addictionCertificate ? "تایید شده" : "تایید نشده"}</Badge>
+                      </div>
+                      <Separator />
+                      {documentUploads.map((docLabel) => (
+                         <FileUploadItem key={docLabel} label={docLabel} />
+                      ))}
+                  </CardContent>
+              </Card>
+          </>
+      )}
 
        <Card>
             <CardHeader><CardTitle>تنظیمات</CardTitle></CardHeader>
@@ -283,7 +279,7 @@ export default function ProfilePage() {
 
       <Separator />
 
-      <div className="flex justify-end gap-4">
+      <div className="flex justify-end gap-4 pb-8">
           <Button variant="destructive" onClick={handleLogout}><LogOut className="ml-2"/>خروج از حساب</Button>
           {isEditing && <Button size="lg" onClick={handleSave} className="bg-accent text-accent-foreground hover:bg-accent/90"><Save className="ml-2"/>ذخیره نهایی</Button>}
       </div>
