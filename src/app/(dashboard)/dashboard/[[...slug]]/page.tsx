@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PackagePlus, List, Map as MapIcon, ArrowLeft, Package, LocateFixed, ArrowRight } from 'lucide-react';
+import { PackagePlus, List, Map as MapIcon, ArrowLeft, Package, LocateFixed, ArrowRight, MapPin } from 'lucide-react';
 import { ShipmentCard } from '@/components/shipment-card';
 import { getMyShipments, shipments } from '@/lib/data';
 import { useEffect, useState } from 'react';
@@ -15,6 +15,7 @@ import RequestDetailsPage from '../../requests/[id]/page';
 import ProfilePage from '../../profile/page';
 import TransactionsPage from '../../transactions/page';
 import { MapView } from '@/components/map-view';
+import { Separator } from '@/components/ui/separator';
 
 function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
   const myShipments = getMyShipments('shipper', 'all');
@@ -83,17 +84,27 @@ function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
 }
 
 function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
+  const [currentLocation, setCurrentLocation] = useState("تهران، میدان آزادی"); // Fake location
+
   return (
     <div className="space-y-6">
         <Card className="bg-accent/50 border-accent animate-in fade-in-0 slide-in-from-top-4 duration-500">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><LocateFixed className="text-primary"/> موقعیت مکانی شما</CardTitle>
-                <CardDescription>موقعیت خود را به‌روز نگه دارید تا بهترین پیشنهادهای بار در نزدیکی شما نمایش داده شود.</CardDescription>
+                <CardDescription>آخرین موقعیت ثبت شده شما برای نمایش به صاحبان بار.</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
+                 <div className="flex items-center gap-3 p-3 rounded-lg bg-background/50">
+                    <MapPin className="h-5 w-5 text-muted-foreground" />
+                    <div className="flex-1">
+                        <p className="text-sm text-muted-foreground">موقعیت فعلی</p>
+                        <p className="font-semibold">{currentLocation}</p>
+                    </div>
+                </div>
+                <Separator />
                 <Button className="w-full" onClick={() => navigate('/dashboard/location')}>
                     <MapIcon className="ml-2 h-5 w-5" />
-                    به‌روزرسانی موقعیت مکانی
+                    تغییر یا به‌روزرسانی موقعیت
                 </Button>
             </CardContent>
         </Card>
@@ -234,4 +245,5 @@ export default function DashboardPage({ _navigate }: { _navigate?: (path: string
   return <PageRenderer slug={slug} role={role} navigate={navigate} />;
 }
 
+    
     
