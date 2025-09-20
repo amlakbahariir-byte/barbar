@@ -19,7 +19,7 @@ export function AnimatedTruckLoader() {
         <h2 className="text-4xl md:text-5xl font-headline font-bold text-foreground mb-4 animate-in fade-in-0 slide-in-from-top-10 duration-1000">
           باربر ایرانی
         </h2>
-        <p className="text-muted-foreground text-lg mb-8 h-8 animate-in fade-in-0 delay-200 duration-1000">
+        <p className="text-muted-foreground text-lg mb-8 min-h-[2rem] animate-in fade-in-0 delay-200 duration-1000">
            {currentSlogan && `"${currentSlogan}"`}
         </p>
         <div className="relative w-full max-w-lg h-32 overflow-hidden">
