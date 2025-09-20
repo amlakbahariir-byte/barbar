@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PackagePlus, List, Map as MapIcon, ArrowLeft, Package, LocateFixed, ArrowRight, MapPin } from 'lucide-react';
+import { PackagePlus, List, Map as MapIcon, ArrowLeft, Package, LocateFixed, ArrowRight, MapPin, RefreshCw, MessageSquareQuote } from 'lucide-react';
 import { ShipmentCard } from '@/components/shipment-card';
 import { getMyShipments, shipments } from '@/lib/data';
 import { useEffect, useState } from 'react';
@@ -16,6 +16,7 @@ import ProfilePage from '../../profile/page';
 import TransactionsPage from '../../transactions/page';
 import { MapView } from '@/components/map-view';
 import { Separator } from '@/components/ui/separator';
+import { slogans } from '@/lib/slogans';
 
 function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
   const myShipments = getMyShipments('shipper', 'all');
@@ -85,21 +86,41 @@ function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
 
 function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
     const [currentLocation, setCurrentLocation] = useState("در حال خواندن موقعیت...");
+    const [slogan, setSlogan] = useState('');
+
+    const getNewSlogan = () => {
+        const randomIndex = Math.floor(Math.random() * slogans.length);
+        setSlogan(slogans[randomIndex]);
+    };
 
     useEffect(() => {
-        // This effect runs on the client and reads the location from localStorage.
+        getNewSlogan();
         const storedLocation = localStorage.getItem('driverLocation');
         if (storedLocation) {
             setCurrentLocation(storedLocation);
         } else {
-            // Fallback to a default location if nothing is stored
             setCurrentLocation("تهران، میدان آزادی");
         }
     }, []);
 
   return (
     <div className="space-y-6">
-        <Card className="bg-accent/50 border-accent animate-in fade-in-0 slide-in-from-top-4 duration-500">
+        <Card className="border-primary/50 bg-gradient-to-tr from-primary/10 via-background to-background animate-in fade-in-0 slide-in-from-top-4 duration-500">
+            <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2"><MessageSquareQuote className="text-primary"/>جملات قصار پشت وانتی</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-center">
+                <p className="font-headline text-2xl h-16 flex items-center justify-center text-foreground/80">
+                    &quot;{slogan}&quot;
+                </p>
+                <Button variant="outline" onClick={getNewSlogan}>
+                    <RefreshCw className="ml-2 h-4 w-4"/>
+                    یکی دیگه!
+                </Button>
+            </CardContent>
+        </Card>
+
+        <Card className="bg-accent/50 border-accent animate-in fade-in-0 slide-in-from-top-4 duration-500 delay-100">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><LocateFixed className="text-primary"/> موقعیت مکانی شما</CardTitle>
                 <CardDescription>آخرین موقعیت ثبت شده شما برای نمایش به صاحبان بار.</CardDescription>
@@ -120,7 +141,7 @@ function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
             </CardContent>
         </Card>
 
-        <div className="animate-in fade-in-0 slide-in-from-top-8 duration-500 delay-100">
+        <div className="animate-in fade-in-0 slide-in-from-top-8 duration-500 delay-200">
             <h1 className="text-3xl font-bold">درخواست‌های بار نزدیک شما</h1>
             <p className="text-muted-foreground mt-1">بر اساس آخرین موقعیت مکانی ثبت شده شما.</p>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-4">
