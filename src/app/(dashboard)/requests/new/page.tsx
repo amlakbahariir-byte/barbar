@@ -8,24 +8,36 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { Package, MapPin, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Package, MapPin, ArrowLeft, ArrowRight, CalendarIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Progress } from '@/components/ui/progress';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { PersianCalendar } from '@/components/persian-calendar';
 
 const steps = [
   { id: 1, title: 'مسیر', icon: MapPin },
   { id: 2, title: 'مشخصات بار', icon: Package },
+  { id: 3, title: 'تاریخ بارگیری', icon: CalendarIcon },
 ];
 
 export default function NewRequestPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const { toast } = useToast();
+  const [date, setDate] = useState<Date>(new Date());
 
   const navigate = (path: string) => {
     router.push(path);
   };
+  
+  const toPersianDate = (date: Date) => {
+      return new Intl.DateTimeFormat('fa-IR', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+      }).format(date);
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +68,7 @@ export default function NewRequestPage() {
         </div>
       
       <Card className="overflow-hidden">
-        <div className="p-6 border-b">
+         <div className="p-6 border-b">
             <div className="relative flex justify-between items-center mb-4 px-4 md:px-8">
                  <Progress value={progressValue} className="absolute h-1 top-1/2 -translate-y-1/2 -z-10 transition-all duration-300" />
                 {steps.map((step, index) => (
@@ -115,6 +127,35 @@ export default function NewRequestPage() {
                             <Label htmlFor="description">توضیحات (اختیاری)</Label>
                             <Textarea id="description" placeholder="اطلاعات تکمیلی مانند نوع بار، حساسیت، نیاز به تجهیزات خاص و ..." />
                         </div>
+                    </div>
+                </div>
+
+                 <div className={cn("transition-all duration-300", currentStep === 3 ? "block" : "hidden")}>
+                    <CardHeader className="p-0 mb-6">
+                        <CardTitle className="text-2xl">مرحله ۳: تاریخ بارگیری</CardTitle>
+                        <CardDescription>تاریخ مورد نظر خود برای شروع حمل را انتخاب کنید.</CardDescription>
+                    </CardHeader>
+                    <div className="flex justify-center">
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                variant={"outline"}
+                                className={cn(
+                                    "w-[280px] justify-start text-right font-normal h-12 text-base",
+                                    !date && "text-muted-foreground"
+                                )}
+                                >
+                                <CalendarIcon className="ml-2 h-5 w-5" />
+                                {date ? toPersianDate(date) : <span>یک تاریخ انتخاب کنید</span>}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                                <PersianCalendar
+                                    selectedDate={date}
+                                    onDateChange={setDate}
+                                />
+                            </PopoverContent>
+                        </Popover>
                     </div>
                 </div>
 
