@@ -111,18 +111,40 @@ export function MapView({ onConfirm }: { onConfirm?: () => void }) {
     };
   }, [toast]);
 
-  const handleConfirmLocation = () => {
+  const handleConfirmLocation = async () => {
     if (leafletMapRef.current) {
       const center = leafletMapRef.current.getCenter();
+      const { lat, lng } = center;
       
-      // In a real app, you would use a reverse geocoding service here.
-      // For this demo, we'll just create a placeholder address and save to localStorage.
-      const simulatedAddress = `موقعیت سفارشی (${center.lat.toFixed(3)}, ${center.lng.toFixed(3)})`;
-      localStorage.setItem('driverLocation', simulatedAddress);
+      let finalAddress = `موقعیت سفارشی (${lat.toFixed(3)}, ${lng.toFixed(3)})`;
+      
+      try {
+          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=fa`);
+          const data = await response.json();
+          if (data && data.display_name) {
+              // Extracting more readable parts of the address
+              const { road, suburb, city, state } = data.address;
+              let addressParts = [road, suburb, city, state].filter(Boolean); // Filter out undefined parts
+              finalAddress = addressParts.join(', ');
+              if (!finalAddress) {
+                  finalAddress = data.display_name.split(',').slice(0,3).join(',');
+              }
+          }
+      } catch (e) {
+          console.error("Reverse geocoding failed", e);
+          toast({
+            variant: 'destructive',
+            title: 'خطا در تبدیل موقعیت به آدرس',
+            description: 'از آدرس پیش‌فرض استفاده خواهد شد.',
+          });
+      }
+
+
+      localStorage.setItem('driverLocation', finalAddress);
 
       toast({
         title: 'موقعیت شما ثبت شد',
-        description: `موقعیت جدید شما برای نمایش به صاحبان بار ذخیره شد.`,
+        description: `موقعیت جدید شما (${finalAddress}) برای نمایش به صاحبان بار ذخیره شد.`,
       });
       // If a callback is provided, call it.
       if (onConfirm) {
