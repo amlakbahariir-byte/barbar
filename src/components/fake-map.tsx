@@ -80,19 +80,12 @@ export function FakeMap({
 
   // Update map center when spring values change (e.g., after drag/zoom)
   useEffect(() => {
-    const handleSpringUpdate = (values: {x: number, y: number, zoom: number}) => {
-      if (isDragging.current) return;
-      const newCenter = pointToLngLat({ x: -values.x, y: -values.y }, values.zoom);
-      onCenterChange(newCenter);
-    };
-    
-    // This is the correct way to listen to multiple spring values in recent versions.
-    const combinedAnimation = to([x, y, zoom], (xVal, yVal, zoomVal) => ({x: xVal, y: yVal, zoom: zoomVal}));
-    const unsubscribe = combinedAnimation.onChange(handleSpringUpdate);
-    
-    return () => {
-        unsubscribe();
-    }
+    // This is a simplified approach using useEffect dependencies.
+    // It triggers on every render where x, y, or zoom change.
+    // This is the correct way to handle side effects from spring changes in React.
+    if (isDragging.current) return;
+    const newCenter = pointToLngLat({ x: -x.get(), y: -y.get() }, zoom.get());
+    onCenterChange(newCenter);
   }, [x, y, zoom, onCenterChange]);
 
   // Update map size on mount and resize
@@ -114,12 +107,12 @@ export function FakeMap({
   useGesture(
     {
       onDrag: ({ offset: [dx, dy] }) => {
+        isDragging.current = true;
         api.start({ x: dx, y: dy });
       },
-      onDragStart: () => { isDragging.current = true; },
       onDragEnd: () => { 
         isDragging.current = false;
-        // Manually trigger onCenterChange at the end of the drag
+        // Manually trigger onCenterChange at the end of the drag to ensure the final position is set.
         const newCenter = pointToLngLat({ x: -x.get(), y: -y.get() }, zoom.get());
         onCenterChange(newCenter);
       },
