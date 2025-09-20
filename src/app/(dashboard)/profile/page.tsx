@@ -95,42 +95,36 @@ export default function ProfilePage() {
       <div className="grid md:grid-cols-2 gap-6">
         <Card>
             <CardHeader><CardTitle className="flex items-center gap-2"><UserIcon className='text-primary'/>اطلاعات شخصی</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-                 <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <Label htmlFor="name">نام و نام خانوادگی</Label>
-                        <Input id="name" value={userData.name} disabled={!isEditing} />
-                    </div>
-                    <div>
-                        <Label htmlFor="fatherName">نام پدر</Label>
-                        <Input id="fatherName" value={userData.fatherName} disabled={!isEditing} />
-                    </div>
-                 </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <Label htmlFor="nationalId">کد ملی</Label>
-                        <Input id="nationalId" value={userData.nationalId} disabled />
-                    </div>
-                     <div>
-                        <Label htmlFor="phone">شماره تماس</Label>
-                        <Input id="phone" value={userData.phone} disabled />
-                     </div>
-                 </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                        <Label htmlFor="birthPlace">محل تولد</Label>
-                        <Input id="birthPlace" value={userData.birthPlace} disabled={!isEditing} />
-                    </div>
-                     <div>
-                        <Label htmlFor="age">سن</Label>
-                        <Input id="age" value={userData.age} disabled={!isEditing} />
-                    </div>
-                     <div>
-                        <Label htmlFor="maritalStatus">وضعیت تاهل</Label>
-                        <Input id="maritalStatus" value={userData.maritalStatus} disabled={!isEditing} />
-                    </div>
-                 </div>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
+                    <Label htmlFor="name">نام و نام خانوادگی</Label>
+                    <Input id="name" value={userData.name} disabled={!isEditing} />
+                </div>
+                <div>
+                    <Label htmlFor="fatherName">نام پدر</Label>
+                    <Input id="fatherName" value={userData.fatherName} disabled={!isEditing} />
+                </div>
+                <div>
+                    <Label htmlFor="nationalId">کد ملی</Label>
+                    <Input id="nationalId" value={userData.nationalId} disabled />
+                </div>
+                 <div>
+                    <Label htmlFor="phone">شماره تماس</Label>
+                    <Input id="phone" value={userData.phone} disabled />
+                 </div>
+                <div>
+                    <Label htmlFor="birthPlace">محل تولد</Label>
+                    <Input id="birthPlace" value={userData.birthPlace} disabled={!isEditing} />
+                </div>
+                 <div>
+                    <Label htmlFor="age">سن</Label>
+                    <Input id="age" value={userData.age} disabled={!isEditing} />
+                </div>
+                 <div>
+                    <Label htmlFor="maritalStatus">وضعیت تاهل</Label>
+                    <Input id="maritalStatus" value={userData.maritalStatus} disabled={!isEditing} />
+                </div>
+                 <div className="md:col-span-2">
                     <Label htmlFor="email">ایمیل</Label>
                     <Input id="email" value={userData.email} disabled={!isEditing} />
                  </div>
