@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { getShipmentById, Shipment } from '@/lib/data';
-import { ArrowRight, Box, Calendar, Check, CircleDollarSign, MapPin, Star, Weight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Box, Calendar, Check, CircleDollarSign, MapPin, Star, Weight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
