@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MapPin, Search, LocateFixed } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { getAddressFromCoordinates } from '@/app/actions';
 
 // Declare Leaflet types for TypeScript
 declare const L: any;
@@ -119,16 +120,9 @@ export function MapView({ onConfirm }: { onConfirm?: () => void }) {
       let finalAddress = `موقعیت سفارشی (${lat.toFixed(3)}, ${lng.toFixed(3)})`;
       
       try {
-          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=fa`);
-          const data = await response.json();
-          if (data && data.display_name) {
-              // Extracting more readable parts of the address
-              const { road, suburb, city, state } = data.address;
-              let addressParts = [road, suburb, city, state].filter(Boolean); // Filter out undefined parts
-              finalAddress = addressParts.join(', ');
-              if (!finalAddress) {
-                  finalAddress = data.display_name.split(',').slice(0,3).join(',');
-              }
+          const address = await getAddressFromCoordinates(lat, lng);
+          if (address) {
+              finalAddress = address;
           }
       } catch (e) {
           console.error("Reverse geocoding failed", e);
