@@ -5,47 +5,77 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PackagePlus, List, Map as MapIcon, ArrowLeft } from 'lucide-react';
+import { PackagePlus, List, Map as MapIcon, ArrowLeft, Package, Truck, CheckCircle2 } from 'lucide-react';
 import Image from 'next/image';
 import { ShipmentCard } from '@/components/shipment-card';
 import { getMyShipments, shipments } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useEffect, useState } from 'react';
 import { ShipmentListPage } from '@/components/shipment-list-page';
+import NewRequestPage from '../../requests/new/page';
+import RequestDetailsPage from '../../requests/[id]/page';
 
 function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
-  const myShipments = shipments.slice(0, 2);
+  const myShipments = getMyShipments('shipper', 'all');
+  const recentShipments = myShipments.slice(0, 2);
+  const pendingCount = myShipments.filter(s => s.status === 'pending').length;
+  const inTransitCount = myShipments.filter(s => s.status === 'in_transit').length;
+  const deliveredCount = myShipments.filter(s => s.status === 'delivered').length;
 
   return (
     <div className="space-y-6">
-      <Card className="bg-primary text-primary-foreground border-primary/20 animate-in fade-in-0 slide-in-from-top-4 duration-500 shadow-lg">
-        <CardHeader>
-          <CardTitle>سفر بار خود را شروع کنید</CardTitle>
-          <CardDescription className="text-primary-foreground/80">یک درخواست حمل بار جدید ایجاد کنید و بهترین پیشنهادها را از رانندگان معتبر دریافت کنید.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button size="lg" variant="secondary" onClick={() => navigate('/dashboard/requests/new')}>
+      <Card className="bg-gradient-to-br from-primary to-accent text-primary-foreground border-primary/20 animate-in fade-in-0 slide-in-from-top-4 duration-500 shadow-lg">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-2xl">داشبورد شما</CardTitle>
+            <CardDescription className="text-primary-foreground/80">خلاصه وضعیت درخواست‌های شما</CardDescription>
+          </div>
+           <Button size="lg" variant="secondary" onClick={() => navigate('/dashboard/requests/new')}>
             <PackagePlus className="ml-2 h-5 w-5" />
             ایجاد درخواست جدید
           </Button>
+        </CardHeader>
+        <CardContent className="grid grid-cols-3 gap-4 text-center">
+            <div className="bg-primary-foreground/10 p-3 rounded-lg">
+                <p className="text-3xl font-bold">{pendingCount.toLocaleString('fa-IR')}</p>
+                <p className="text-sm text-primary-foreground/80">در انتظار</p>
+            </div>
+             <div className="bg-primary-foreground/10 p-3 rounded-lg">
+                <p className="text-3xl font-bold">{inTransitCount.toLocaleString('fa-IR')}</p>
+                <p className="text-sm text-primary-foreground/80">در حال حمل</p>
+            </div>
+             <div className="bg-primary-foreground/10 p-3 rounded-lg">
+                <p className="text-3xl font-bold">{deliveredCount.toLocaleString('fa-IR')}</p>
+                <p className="text-sm text-primary-foreground/80">تحویل شده</p>
+            </div>
         </CardContent>
       </Card>
       
       <div className="animate-in fade-in-0 slide-in-from-top-8 duration-500 delay-200">
         <h2 className="text-2xl font-bold mb-4">درخواست‌های اخیر شما</h2>
-        <div className="grid gap-6 md:grid-cols-2">
-          {myShipments.map((shipment, index) => (
-             <div key={shipment.id} className="animate-in fade-in-0 slide-in-from-top-12 duration-500" style={{ animationDelay: `${index * 150 + 300}ms`, animationFillMode: 'backwards' }}>
-                <ShipmentCard shipment={shipment} role="shipper" navigate={navigate} />
+        {recentShipments.length > 0 ? (
+          <>
+            <div className="grid gap-6 md:grid-cols-2">
+              {recentShipments.map((shipment, index) => (
+                <div key={shipment.id} className="animate-in fade-in-0 slide-in-from-top-12 duration-500" style={{ animationDelay: `${index * 150 + 300}ms`, animationFillMode: 'backwards' }}>
+                  <ShipmentCard shipment={shipment} role="shipper" navigate={navigate} />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-         <div className="mt-4 text-center">
-            <Button variant="link" onClick={() => navigate('/dashboard/requests/my')}>
+            <div className="mt-4 text-center">
+              <Button variant="link" onClick={() => navigate('/dashboard/requests/my')}>
                 مشاهده همه درخواست‌ها
                 <ArrowLeft className="mr-2 h-4 w-4" />
-            </Button>
-        </div>
+              </Button>
+            </div>
+          </>
+        ) : (
+           <div className="text-center py-10 border-2 border-dashed rounded-lg">
+                <Package className="mx-auto h-12 w-12 text-muted-foreground" />
+                <h3 className="mt-4 text-lg font-semibold">هنوز درخواستی ثبت نکرده‌اید</h3>
+                <p className="mt-2 text-sm text-muted-foreground">با کلیک بر روی دکمه "ایجاد درخواست جدید"، اولین بار خود را ارسال کنید.</p>
+            </div>
+        )}
       </div>
     </div>
   );
@@ -100,11 +130,63 @@ function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
   );
 }
 
-export default function DashboardPage() {
+// A simple component to render the correct page based on the slug
+const PageRenderer = ({ slug, role, navigate }: { slug: string[], role: 'shipper' | 'driver', navigate: (path: string) => void }) => {
+  const page = slug[0] || 'home';
+  const subPage = slug[1];
+  const detailId = slug[2];
+
+  if (page === 'requests') {
+    if (subPage === 'new') {
+      return <NewRequestPage />;
+    }
+    if (subPage === 'my' && role === 'shipper') {
+      return <ShipmentListPage 
+        title="درخواست‌های من" 
+        description="در این صفحه تمام درخواست‌های حمل بار خود را مشاهده و مدیریت کنید." 
+        shipments={getMyShipments('shipper', 'all')} 
+        role={role} 
+        navigate={navigate} 
+      />;
+    }
+    if (subPage === 'available' && role === 'driver') {
+      return <ShipmentListPage 
+        title="درخواست‌های بار موجود" 
+        description="در این صفحه بارهای موجود در سراسر کشور را مشاهده کرده و پیشنهاد خود را ثبت کنید." 
+        shipments={getMyShipments('driver', 'available')} 
+        role={role} 
+        navigate={navigate} 
+      />;
+    }
+    if (subPage === 'my-shipments' && role === 'driver') {
+      return <ShipmentListPage 
+        title="بارهای من" 
+        description="در این صفحه بارهایی که پذیرفته‌اید و در حال حمل آن‌ها هستید را مشاهده کنید." 
+        shipments={getMyShipments('driver', 'accepted')} 
+        role={role} 
+        navigate={navigate} 
+      />;
+    }
+    // This handles /requests/[id]
+    if (subPage && !['new', 'my', 'available', 'my-shipments'].includes(subPage)) {
+      return <RequestDetailsPage />;
+    }
+  }
+
+  // Fallback to the main dashboard content
+  if (role === 'shipper') {
+    return <ShipperDashboard navigate={navigate} />;
+  }
+  return <DriverDashboard navigate={navigate} />;
+};
+
+
+export default function DashboardPage({ params }: { params: { slug?: string[] } }) {
   const router = useRouter();
-  const path = usePathname();
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
   const [isClient, setIsClient] = useState(false);
+  
+  const slug = params.slug || [];
 
   useEffect(() => {
     // This effect runs only on the client, ensuring localStorage is available.
@@ -116,7 +198,11 @@ export default function DashboardPage() {
   }, []);
 
   const navigate = (newPath: string) => {
-    if (newPath === path) return;
+    // A simple way to compare paths, ignoring trailing slashes
+    const currentPath = `/dashboard/${slug.join('/')}`.replace(/\/$/, '');
+    const targetPath = newPath.replace(/\/$/, '');
+
+    if (currentPath === targetPath) return;
     router.push(newPath);
   };
   
@@ -125,66 +211,13 @@ export default function DashboardPage() {
     return <div>در حال بارگذاری...</div>;
   }
   
-  const slug = path.replace('/dashboard', '');
-
-  if (slug.startsWith('/requests/new')) {
-    const NewRequestPage = require('../../requests/new/page').default;
-    return <NewRequestPage />;
-  }
-  
-  if (slug.startsWith('/requests/my') && role === 'shipper') {
-     return <ShipmentListPage 
-        title="درخواست‌های من" 
-        description="در این صفحه تمام درخواست‌های حمل بار خود را مشاهده و مدیریت کنید." 
-        shipments={getMyShipments('shipper', 'all')} 
-        role={role} 
-        navigate={navigate} 
-      />;
-  }
-
-  if (slug.startsWith('/requests/available') && role === 'driver') {
-     return <ShipmentListPage 
-        title="درخواست‌های بار موجود" 
-        description="در این صفحه بارهای موجود در سراسر کشور را مشاهده کرده و پیشنهاد خود را ثبت کنید." 
-        shipments={getMyShipments('driver', 'available')} 
-        role={role} 
-        navigate={navigate} 
-      />;
-  }
-  
-  if (slug.startsWith('/requests/my-shipments') && role === 'driver') {
-     return <ShipmentListPage 
-        title="بارهای من" 
-        description="در این صفحه بارهایی که پذیرفته‌اید و در حال حمل آن‌ها هستید را مشاهده کنید." 
-        shipments={getMyShipments('driver', 'accepted')} 
-        role={role} 
-        navigate={navigate} 
-      />;
-  }
-
-  // Handle /requests/[id] - check if the last part of the slug is not a known page
-  const slugParts = slug.split('/');
-  const lastPart = slugParts[slugParts.length - 1];
-  const isDetailsPage = slug.startsWith('/requests/') && !['new', 'my', 'available', 'my-shipments'].includes(lastPart);
-
-  if (isDetailsPage) {
-    const RequestDetailsPage = require('../../requests/[id]/page').default;
-    return <RequestDetailsPage />;
-  }
-  
-  // This check ensures we don't render a dashboard for a role that hasn't been determined yet.
+  // This check ensures we don't render a page for a role that hasn't been determined yet.
   if (!role) {
     return <div>در حال بارگذاری نقش کاربری...</div>;
   }
 
-  if (role === 'shipper') {
-      return <ShipperDashboard navigate={navigate} />;
-  }
-  
-  if (role === 'driver') {
-      return <DriverDashboard navigate={navigate} />;
-  }
-
-  // Fallback, though should ideally not be reached if role is one of the two.
-  return <div>در حال بارگذاری...</div>;
+  // Pass the necessary props to the renderer
+  return <PageRenderer slug={slug} role={role} navigate={navigate} />;
 }
+
+    
