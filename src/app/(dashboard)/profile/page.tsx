@@ -11,8 +11,9 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, Bell, CreditCard, Edit, LogOut, Moon, Palette, Save, User as UserIcon, Truck } from 'lucide-react';
+import { ArrowRight, Bell, CreditCard, Edit, LogOut, Moon, Palette, Save, User as UserIcon, Truck, BadgeCheck, FileText } from 'lucide-react';
 import { auth } from '@/lib/firebase/config';
+import { Badge } from '@/components/ui/badge';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -25,6 +26,14 @@ export default function ProfilePage() {
       name: 'کاربر نمونه',
       phone: '۰۹۱۲۳۴۵۶۷۸۹',
       email: 'user@example.com',
+      // Driver specific
+      nationalId: '۰۰۱۲۳۴۵۶۷۸',
+      fatherName: 'احمد',
+      birthPlace: 'تهران',
+      age: '۳۵',
+      maritalStatus: 'متاهل',
+      criminalRecord: true,
+      addictionCertificate: true,
       vehicleType: 'کامیون تک',
       vehicleModel: 'ولوو FH',
       licensePlate: 'ایران ۴۴ - ۱۲۳ب۵۶'
@@ -87,13 +96,39 @@ export default function ProfilePage() {
         <Card>
             <CardHeader><CardTitle className="flex items-center gap-2"><UserIcon className='text-primary'/>اطلاعات شخصی</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-                 <div>
-                    <Label htmlFor="name">نام و نام خانوادگی</Label>
-                    <Input id="name" value={userData.name} disabled={!isEditing} />
+                 <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <Label htmlFor="name">نام و نام خانوادگی</Label>
+                        <Input id="name" value={userData.name} disabled={!isEditing} />
+                    </div>
+                    <div>
+                        <Label htmlFor="fatherName">نام پدر</Label>
+                        <Input id="fatherName" value={userData.fatherName} disabled={!isEditing} />
+                    </div>
                  </div>
-                 <div>
-                    <Label htmlFor="phone">شماره تماس</Label>
-                    <Input id="phone" value={userData.phone} disabled />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <Label htmlFor="nationalId">کد ملی</Label>
+                        <Input id="nationalId" value={userData.nationalId} disabled />
+                    </div>
+                     <div>
+                        <Label htmlFor="phone">شماره تماس</Label>
+                        <Input id="phone" value={userData.phone} disabled />
+                     </div>
+                 </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                        <Label htmlFor="birthPlace">محل تولد</Label>
+                        <Input id="birthPlace" value={userData.birthPlace} disabled={!isEditing} />
+                    </div>
+                     <div>
+                        <Label htmlFor="age">سن</Label>
+                        <Input id="age" value={userData.age} disabled={!isEditing} />
+                    </div>
+                     <div>
+                        <Label htmlFor="maritalStatus">وضعیت تاهل</Label>
+                        <Input id="maritalStatus" value={userData.maritalStatus} disabled={!isEditing} />
+                    </div>
                  </div>
                  <div>
                     <Label htmlFor="email">ایمیل</Label>
@@ -103,23 +138,49 @@ export default function ProfilePage() {
         </Card>
         
         {role === 'driver' && (
-            <Card>
-                <CardHeader><CardTitle className="flex items-center gap-2"><Truck className='text-primary'/>اطلاعات وسیله نقلیه</CardTitle></CardHeader>
-                <CardContent className="space-y-4">
-                    <div>
-                        <Label htmlFor="vehicleType">نوع وسیله نقلیه</Label>
-                        <Input id="vehicleType" value={userData.vehicleType} disabled={!isEditing} />
-                    </div>
-                     <div>
-                        <Label htmlFor="vehicleModel">مدل</Label>
-                        <Input id="vehicleModel" value={userData.vehicleModel} disabled={!isEditing} />
-                    </div>
-                    <div>
-                        <Label htmlFor="licensePlate">شماره پلاک</Label>
-                        <Input id="licensePlate" value={userData.licensePlate} disabled={!isEditing} />
-                    </div>
-                </CardContent>
-            </Card>
+            <div className="space-y-6">
+                <Card>
+                    <CardHeader><CardTitle className="flex items-center gap-2"><Truck className='text-primary'/>اطلاعات وسیله نقلیه</CardTitle></CardHeader>
+                    <CardContent className="grid grid-cols-2 gap-4">
+                        <div>
+                            <Label htmlFor="vehicleType">نوع وسیله نقلیه</Label>
+                            <Input id="vehicleType" value={userData.vehicleType} disabled={!isEditing} />
+                        </div>
+                         <div>
+                            <Label htmlFor="vehicleModel">مدل</Label>
+                            <Input id="vehicleModel" value={userData.vehicleModel} disabled={!isEditing} />
+                        </div>
+                        <div className="col-span-2">
+                            <Label htmlFor="licensePlate">شماره پلاک</Label>
+                            <Input id="licensePlate" value={userData.licensePlate} disabled={!isEditing} />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                 <Card>
+                    <CardHeader><CardTitle className="flex items-center gap-2"><FileText className='text-primary'/>مدارک و گواهی‌ها</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                       <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
+                            <div className='flex items-center gap-3'>
+                                <BadgeCheck className="text-muted-foreground"/>
+                                <div>
+                                    <Label className="font-semibold">گواهی عدم سوء پیشینه</Label>
+                                </div>
+                            </div>
+                            <Badge variant={userData.criminalRecord ? "secondary" : "destructive"} className="text-accent-foreground">{userData.criminalRecord ? "تایید شده" : "تایید نشده"}</Badge>
+                        </div>
+                        <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
+                            <div className='flex items-center gap-3'>
+                                <BadgeCheck className="text-muted-foreground"/>
+                                <div>
+                                    <Label className="font-semibold">گواهی عدم اعتیاد</Label>
+                                </div>
+                            </div>
+                            <Badge variant={userData.addictionCertificate ? "secondary" : "destructive"} className="text-accent-foreground">{userData.addictionCertificate ? "تایید شده" : "تایید نشده"}</Badge>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
         )}
       </div>
 
