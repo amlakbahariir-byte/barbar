@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/button';
 import type { Shipment } from '@/lib/data';
 import { ArrowLeft, Box, Calendar, MapPin, Weight } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { format } from 'date-fns-jalali';
-import { faIR } from 'date-fns/locale';
 
 const statusMap: { [key in Shipment['status']]: { text: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' } } = {
   pending: { text: 'در انتظار پیشنهاد', variant: 'secondary' },
