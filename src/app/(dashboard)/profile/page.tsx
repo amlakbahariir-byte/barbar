@@ -19,6 +19,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getTransactions, Transaction } from '@/lib/data';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 
 const documentUploads = [
     "صفحه اول شناسنامه",
@@ -180,9 +181,11 @@ export default function ProfilePage() {
       </Card>
       
       <Tabs defaultValue="info" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className={cn("grid w-full", role === 'shipper' ? "grid-cols-3" : "grid-cols-4")}>
               <TabsTrigger value="info"><UserIcon className="ml-2"/>اطلاعات کاربری</TabsTrigger>
-              <TabsTrigger value="docs" disabled={role === 'shipper'}><FileText className="ml-2"/>مدارک</TabsTrigger>
+              {role === 'driver' && (
+                <TabsTrigger value="docs"><FileText className="ml-2"/>مدارک</TabsTrigger>
+              )}
               <TabsTrigger value="wallet"><CreditCard className="ml-2"/>کیف پول</TabsTrigger>
               <TabsTrigger value="settings"><Palette className="ml-2"/>تنظیمات</TabsTrigger>
           </TabsList>
