@@ -71,6 +71,17 @@ export function FakeMap({
         x: -initialPoint.x + size.width / 2,
         y: -initialPoint.y + size.height / 2,
         config: { tension: 250, friction: 30, clamp: true },
+        onRest: ({ value }) => {
+            if (!isDragging.current) {
+                const currentZoom = value.zoom;
+                const worldPoint = {
+                    x: size.width / 2 - value.x,
+                    y: size.height / 2 - value.y,
+                };
+                const newCenter = pointToLngLat(worldPoint, currentZoom);
+                onCenterChange(newCenter);
+            }
+        },
     }
   });
 
@@ -84,29 +95,6 @@ export function FakeMap({
         immediate: true 
     });
   }, [center, api, zoom, size]);
-
-  // Update map center when spring values change (e.g., after drag/zoom)
-  useEffect(() => {
-    const handleSpringUpdate = () => {
-        if (isDragging.current || size.width === 0) return;
-        
-        const currentZoom = zoom.get();
-        const worldPoint = {
-            x: size.width / 2 - x.get(),
-            y: size.height / 2 - y.get()
-        };
-        const newCenter = pointToLngLat(worldPoint, currentZoom);
-        onCenterChange(newCenter);
-    };
-    
-    // This is the correct way to listen to multiple spring values in recent versions.
-    const unsubscribe = to([x, y, zoom]).subscribe(handleSpringUpdate);
-    
-    return () => {
-        unsubscribe();
-    };
-
-  }, [x, y, zoom, onCenterChange, size]);
 
 
   // Update map size on mount and resize
