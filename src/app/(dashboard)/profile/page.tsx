@@ -15,6 +15,7 @@ import { ArrowRight, Bell, CreditCard, Edit, LogOut, Moon, Palette, Save, User a
 import { auth } from '@/lib/firebase/config';
 import { Badge } from '@/components/ui/badge';
 import { FileUploadItem } from '@/components/file-upload-item';
+import { ThemeSwitcher } from '@/components/theme-switcher';
 
 const settingsOptions = [
     {
@@ -100,7 +101,10 @@ export default function ProfilePage() {
         <h1 className="text-3xl font-bold">پروفایل کاربری</h1>
       </div>
 
-      <Card>
+      <Card className="relative">
+        <div className="absolute top-4 left-4">
+            <ThemeSwitcher />
+        </div>
         <CardHeader>
           <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-right">
               <Avatar className="w-24 h-24 border-4 border-primary">
@@ -257,5 +261,7 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    
 
     
