@@ -255,7 +255,3 @@ export default function DashboardPage({ _navigate }: { _navigate?: (path: string
   // Pass the necessary props to the renderer
   return <PageRenderer slug={slug} role={role} navigate={navigate} />;
 }
-
-    
-    
-    
