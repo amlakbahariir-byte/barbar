@@ -94,19 +94,21 @@ export default function ProfilePage() {
       </div>
 
       <Card>
-        <CardHeader className="flex flex-col md:flex-row items-center gap-6">
-            <Avatar className="w-24 h-24 border-4 border-primary">
-                <AvatarImage src={`https://i.pravatar.cc/150?u=${role}`} />
-                <AvatarFallback>{userData.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div className='text-center md:text-right'>
-                <CardTitle className="text-3xl">{userData.name}</CardTitle>
-                <CardDescription className="text-base mt-1 capitalize">{role === 'shipper' ? 'صاحب بار' : 'راننده'}</CardDescription>
-            </div>
-            <Button variant={isEditing ? "default" : "outline"} size="lg" className="mr-auto" onClick={() => setIsEditing(!isEditing)}>
-                {isEditing ? <Save className="ml-2"/> : <Edit className="ml-2"/>}
-                {isEditing ? 'ذخیره' : 'ویرایش پروفایل'}
-            </Button>
+        <CardHeader>
+          <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-right">
+              <Avatar className="w-24 h-24 border-4 border-primary">
+                  <AvatarImage src={`https://i.pravatar.cc/150?u=${role}`} />
+                  <AvatarFallback>{userData.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <div className='flex-1'>
+                  <h2 className="text-3xl font-bold">{userData.name}</h2>
+                  <p className="text-base text-muted-foreground mt-1 capitalize">{role === 'shipper' ? 'صاحب بار' : 'راننده'}</p>
+              </div>
+              <Button variant={isEditing ? "default" : "outline"} size="lg" onClick={() => setIsEditing(!isEditing)} className="md:ml-auto mt-4 md:mt-0">
+                  {isEditing ? <Save className="ml-2"/> : <Edit className="ml-2"/>}
+                  {isEditing ? 'ذخیره' : 'ویرایش پروفایل'}
+              </Button>
+          </div>
         </CardHeader>
       </Card>
       
@@ -248,3 +250,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    
