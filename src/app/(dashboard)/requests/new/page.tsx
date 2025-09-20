@@ -42,6 +42,11 @@ export default function NewRequestPage() {
       }).format(date);
   }
 
+  const toPersianNumber = (n: number | string) => {
+    const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
+    return String(n).replace(/\d/g, (d: any) => persianDigits[d]);
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     toast({
@@ -123,8 +128,8 @@ export default function NewRequestPage() {
                             <Input id="weight" type="number" placeholder="مثال: ۵۰۰" required />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="volume">حجم (متر مکعب)</Label>
-                            <Input id="volume" type="number" placeholder="مثال: ۲" />
+                            <Label htmlFor="cargoType">نوع بار</Label>
+                            <Input id="cargoType" placeholder="مثال: مبلمان" required />
                         </div>
                          <div className="md:col-span-2 space-y-2">
                             <Label htmlFor="description">توضیحات (اختیاری)</Label>
@@ -160,29 +165,31 @@ export default function NewRequestPage() {
                             </PopoverContent>
                         </Popover>
 
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4" dir="rtl">
                             <Clock className="h-6 w-6 text-muted-foreground" />
-                             <Select value={hour} onValueChange={setHour}>
-                                <SelectTrigger className="w-[80px]">
-                                    <SelectValue placeholder="ساعت" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map(h => (
-                                        <SelectItem key={h} value={h}>{h}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <span className="font-bold text-lg">:</span>
-                            <Select value={minute} onValueChange={setMinute}>
-                                <SelectTrigger className="w-[80px]">
-                                    <SelectValue placeholder="دقیقه" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {['00', '15', '30', '45'].map(m => (
-                                        <SelectItem key={m} value={m}>{m}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <div className="flex items-center gap-2" dir="ltr">
+                                <Select value={minute} onValueChange={setMinute}>
+                                    <SelectTrigger className="w-[100px]">
+                                        <SelectValue className="font-headline text-lg" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {['00', '15', '30', '45'].map(m => (
+                                            <SelectItem key={m} value={m} className="font-headline text-lg justify-center">{toPersianNumber(m)}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <span className="font-bold text-xl">:</span>
+                                <Select value={hour} onValueChange={setHour}>
+                                    <SelectTrigger className="w-[100px]">
+                                        <SelectValue className="font-headline text-lg" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map(h => (
+                                            <SelectItem key={h} value={h} className="font-headline text-lg justify-center">{toPersianNumber(h)}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -211,3 +218,5 @@ export default function NewRequestPage() {
     </div>
   );
 }
+
+    
