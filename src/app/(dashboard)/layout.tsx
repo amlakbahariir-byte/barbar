@@ -10,12 +10,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { auth } from '@/lib/firebase/config';
 import { LoaderWithSlogan } from '@/components/ui/loader-with-slogan';
 
-export type DashboardPageProps = {
-  role: 'shipper' | 'driver' | null;
-  navigate: (path: string) => void;
-  path: string;
-};
-
 export default function DashboardLayout({
   children,
 }: {
@@ -61,7 +55,11 @@ export default function DashboardLayout({
   // We need to clone the children to pass down the navigate and play props.
   const childrenWithProps = React.Children.map(children, child => {
     if (React.isValidElement(child)) {
-      return React.cloneElement(child, { navigate } as any);
+      // It's not guaranteed that the child accepts a navigate prop.
+      // So we pass it, but let the child component decide if it uses it.
+      // This is a common pattern in React.
+      // We also rename the prop to avoid potential conflicts with internal component logic.
+      return React.cloneElement(child, { _navigate: navigate } as any);
     }
     return child;
   });
