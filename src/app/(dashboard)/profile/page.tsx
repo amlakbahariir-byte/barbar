@@ -15,6 +15,23 @@ import { ArrowRight, Bell, CreditCard, Edit, LogOut, Moon, Palette, Save, User a
 import { auth } from '@/lib/firebase/config';
 import { Badge } from '@/components/ui/badge';
 
+const settingsOptions = [
+    {
+        id: 'notifications',
+        icon: Bell,
+        title: 'اعلانات',
+        description: 'دریافت اعلان برای پیشنهادها و وضعیت بار',
+        defaultChecked: true,
+    },
+    {
+        id: 'dark-mode',
+        icon: Palette,
+        title: 'حالت تیره',
+        description: 'فعال‌سازی تم تاریک برای مطالعه در شب',
+        defaultChecked: false,
+    },
+];
+
 export default function ProfilePage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -181,26 +198,21 @@ export default function ProfilePage() {
        <Card>
             <CardHeader><CardTitle>تنظیمات</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
-                    <div className='flex items-center gap-3'>
-                        <Bell className="text-muted-foreground"/>
-                        <div>
-                            <Label htmlFor="notifications" className="font-semibold">اعلانات</Label>
-                            <p className='text-xs text-muted-foreground'>دریافت اعلان برای پیشنهادها و وضعیت بار</p>
+                {settingsOptions.map((option) => {
+                    const Icon = option.icon;
+                    return (
+                        <div key={option.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
+                            <div className='flex items-center gap-3'>
+                                <Icon className="text-muted-foreground"/>
+                                <div>
+                                    <Label htmlFor={option.id} className="font-semibold">{option.title}</Label>
+                                    <p className='text-xs text-muted-foreground'>{option.description}</p>
+                                </div>
+                            </div>
+                            <Switch id={option.id} defaultChecked={option.defaultChecked}/>
                         </div>
-                    </div>
-                    <Switch id="notifications" defaultChecked/>
-                </div>
-                 <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
-                    <div className='flex items-center gap-3'>
-                        <Palette className="text-muted-foreground"/>
-                         <div>
-                            <Label htmlFor="dark-mode" className="font-semibold">حالت تیره</Label>
-                            <p className='text-xs text-muted-foreground'>فعال‌سازی تم تاریک برای مطالعه در شب</p>
-                        </div>
-                    </div>
-                    <Switch id="dark-mode" />
-                </div>
+                    );
+                })}
             </CardContent>
         </Card>
 
