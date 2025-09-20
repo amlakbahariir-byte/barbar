@@ -72,14 +72,14 @@ export function FakeMap({
   useEffect(() => {
     const point = lngLatToPoint(center, viewState.zoom.get());
     setViewState.start({ x: -point.x, y: -point.y });
-  }, [center, setViewState]);
+  }, [center, setViewState, viewState.zoom]);
 
 
   useEffect(() => {
-    const { x, y, zoom } = viewState.get();
-    const newCenter = pointToLngLat({ x: -x, y: -y }, zoom);
+    const { x, y, zoom } = viewState;
+    const newCenter = pointToLngLat({ x: -x.get(), y: -y.get() }, zoom.get());
     onCenterChange(newCenter);
-  }, [viewState.x, viewState.y, viewState.zoom, onCenterChange]);
+  }, [viewState, onCenterChange]);
 
   // Update map size on mount and resize
   useEffect(() => {
