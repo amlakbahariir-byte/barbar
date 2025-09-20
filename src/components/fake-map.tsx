@@ -1,7 +1,7 @@
 
 'use client';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useSpring, animated } from '@react-spring/web';
+import { useSpring, animated, to } from '@react-spring/web';
 import { useGesture } from '@use-gesture/react';
 import { cn } from '@/lib/utils';
 
@@ -62,7 +62,7 @@ export function FakeMap({
   const [size, setSize] = useState({ width: 0, height: 0 });
   const isDragging = useRef(false);
 
-  const [{ x, y, zoom }, setViewState] = useSpring(() => {
+  const [{ x, y, zoom }, api] = useSpring(() => {
     const initialPoint = lngLatToPoint(center, controlledZoom);
     return {
         zoom: controlledZoom,
@@ -75,19 +75,20 @@ export function FakeMap({
   // Update spring when controlled center prop changes from outside
   useEffect(() => {
     const point = lngLatToPoint(center, zoom.get());
-    setViewState.start({ x: -point.x, y: -point.y, immediate: true });
-  }, [center, setViewState, zoom]);
+    api.start({ x: -point.x, y: -point.y, immediate: true });
+  }, [center, api, zoom]);
 
   // Update map center when spring values change (e.g., after drag/zoom)
   useEffect(() => {
-    const handleSpringUpdate = () => {
+    const handleSpringUpdate = (values: {x: number, y: number, zoom: number}) => {
       if (isDragging.current) return;
-      const newCenter = pointToLngLat({ x: -x.get(), y: -y.get() }, zoom.get());
+      const newCenter = pointToLngLat({ x: -values.x, y: -values.y }, values.zoom);
       onCenterChange(newCenter);
     };
     
     // This is the correct way to listen to multiple spring values in recent versions.
-    const unsubscribe = animated.controller([x, y, zoom]).on(handleSpringUpdate);
+    const combinedAnimation = to([x, y, zoom], (xVal, yVal, zoomVal) => ({x: xVal, y: yVal, zoom: zoomVal}));
+    const unsubscribe = combinedAnimation.onChange(handleSpringUpdate);
     
     return () => {
         unsubscribe();
@@ -113,7 +114,7 @@ export function FakeMap({
   useGesture(
     {
       onDrag: ({ offset: [dx, dy] }) => {
-        setViewState.start({ x: dx, y: dy });
+        api.start({ x: dx, y: dy });
       },
       onDragStart: () => { isDragging.current = true; },
       onDragEnd: () => { 
@@ -124,7 +125,7 @@ export function FakeMap({
       },
       onPinch: ({ offset: [d] }) => {
           const newZoom = controlledZoom + d/100;
-          setViewState.start({ zoom: newZoom });
+          api.start({ zoom: newZoom });
       },
       onWheel: ({ event, movement: [, dy] }) => {
         event.preventDefault();
@@ -144,7 +145,7 @@ export function FakeMap({
         const newMapX = mousePoint.x - mouseOnMap.x * zoomFactor;
         const newMapY = mousePoint.y - mouseOnMap.y * zoomFactor;
 
-        setViewState.start({ zoom: newZoom, x: newMapX, y: newMapY });
+        api.start({ zoom: newZoom, x: newMapX, y: newMapY });
       },
     },
     {
