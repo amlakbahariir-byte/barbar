@@ -8,17 +8,18 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { Package, MapPin, ArrowLeft, ArrowRight, CalendarIcon } from 'lucide-react';
+import { Package, MapPin, ArrowLeft, ArrowRight, CalendarIcon, Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Progress } from '@/components/ui/progress';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { PersianCalendar } from '@/components/persian-calendar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const steps = [
   { id: 1, title: 'مسیر', icon: MapPin },
   { id: 2, title: 'مشخصات بار', icon: Package },
-  { id: 3, title: 'تاریخ بارگیری', icon: CalendarIcon },
+  { id: 3, title: 'تاریخ و زمان', icon: CalendarIcon },
 ];
 
 export default function NewRequestPage() {
@@ -26,6 +27,8 @@ export default function NewRequestPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const { toast } = useToast();
   const [date, setDate] = useState<Date>(new Date());
+  const [hour, setHour] = useState<string>('09');
+  const [minute, setMinute] = useState<string>('00');
 
   const navigate = (path: string) => {
     router.push(path);
@@ -132,10 +135,10 @@ export default function NewRequestPage() {
 
                  <div className={cn("transition-all duration-300", currentStep === 3 ? "block" : "hidden")}>
                     <CardHeader className="p-0 mb-6">
-                        <CardTitle className="text-2xl">مرحله ۳: تاریخ بارگیری</CardTitle>
-                        <CardDescription>تاریخ مورد نظر خود برای شروع حمل را انتخاب کنید.</CardDescription>
+                        <CardTitle className="text-2xl">مرحله ۳: تاریخ و زمان بارگیری</CardTitle>
+                        <CardDescription>تاریخ و ساعت مورد نظر خود برای شروع حمل را انتخاب کنید.</CardDescription>
                     </CardHeader>
-                    <div className="flex justify-center">
+                    <div className="flex flex-col items-center gap-6">
                         <Popover>
                             <PopoverTrigger asChild>
                                 <Button
@@ -156,6 +159,31 @@ export default function NewRequestPage() {
                                 />
                             </PopoverContent>
                         </Popover>
+
+                        <div className="flex items-center gap-4">
+                            <Clock className="h-6 w-6 text-muted-foreground" />
+                             <Select value={hour} onValueChange={setHour}>
+                                <SelectTrigger className="w-[80px]">
+                                    <SelectValue placeholder="ساعت" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map(h => (
+                                        <SelectItem key={h} value={h}>{h}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <span className="font-bold text-lg">:</span>
+                            <Select value={minute} onValueChange={setMinute}>
+                                <SelectTrigger className="w-[80px]">
+                                    <SelectValue placeholder="دقیقه" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {['00', '15', '30', '45'].map(m => (
+                                        <SelectItem key={m} value={m}>{m}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                 </div>
 
