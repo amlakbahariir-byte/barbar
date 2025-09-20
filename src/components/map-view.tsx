@@ -11,12 +11,26 @@ import { useToast } from '@/hooks/use-toast';
 // Declare Leaflet types for TypeScript
 declare const L: any;
 
+// Placeholder coordinates for cities as we don't have a geocoding service
+const cityCoordinates: { [key: string]: [number, number] } = {
+  'تهران': [35.6892, 51.3890],
+  'اصفهان': [32.6539, 51.6660],
+  'شیراز': [29.5918, 52.5837],
+  'تبریز': [38.08, 46.29],
+  'مشهد': [36.2605, 59.6168],
+  'کرج': [35.8327, 50.9915],
+  'اهواز': [31.3183, 48.6909],
+  'یزد': [31.8974, 54.3675],
+  'کرمان': [30.2832, 57.0788],
+};
+
+
 export function MapView() {
   const { toast } = useToast();
   const mapRef = useRef<HTMLDivElement>(null);
   const leafletMapRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
-  const [searchQuery, setSearchQuery] = useState('تهران، ایران');
+  const [searchQuery, setSearchQuery] = useState('');
   
   useEffect(() => {
     if (typeof window === 'undefined' || !mapRef.current || leafletMapRef.current) return;
@@ -87,8 +101,24 @@ export function MapView() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    toast({ title: 'جستجو', description: `جستجو برای: ${searchQuery}` });
-    // In a real app, you would use a geocoding service here to convert address to lat/lng
+    if (!searchQuery) return;
+    
+    const query = searchQuery.trim();
+    const coordinates = cityCoordinates[query];
+
+    if (coordinates && leafletMapRef.current) {
+        leafletMapRef.current.flyTo(coordinates, 13); // Zoom level 13
+        toast({
+            title: 'مکان پیدا شد',
+            description: `نمایش ${query} روی نقشه.`,
+        });
+    } else {
+        toast({
+            variant: 'destructive',
+            title: 'مکان یافت نشد',
+            description: `مکان "${searchQuery}" پیدا نشد. لطفا نام یک مرکز استان را امتحان کنید.`,
+        });
+    }
   };
 
   const handleFindMyLocation = () => {
@@ -126,7 +156,7 @@ export function MapView() {
       <CardContent className="p-0 relative h-[60vh] md:h-[70vh]">
         <div ref={mapRef} className="w-full h-full bg-muted z-0" />
         
-        <div className="absolute top-4 right-4 left-4 z-[401] space-y-2">
+        <div className="absolute top-4 right-4 left-4 z-[1000]">
             <Card className="shadow-lg">
             <CardContent className="p-2">
                 <form onSubmit={handleSearch}>
@@ -139,7 +169,7 @@ export function MapView() {
                         <Search className="h-5 w-5 text-muted-foreground" />
                     </Button>
                     <Input
-                        placeholder="جستجوی مبدا یا مقصد..."
+                        placeholder="جستجوی نام شهر (مثال: شیراز)"
                         className="pl-10 h-11 text-base bg-background"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -151,7 +181,7 @@ export function MapView() {
             </Card>
         </div>
 
-        <div className="absolute bottom-4 right-4 left-4 z-[401]">
+        <div className="absolute bottom-4 right-4 left-4 z-[1000]">
             <Button size="lg" className="w-full text-lg" onClick={handleConfirmLocation}>
             تایید مکان
             </Button>
