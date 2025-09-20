@@ -12,6 +12,10 @@ import { Calendar as CalendarIcon, Package, MapPin, ArrowLeft, ArrowRight } from
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Progress } from '@/components/ui/progress';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns-jalali';
+import { faIR } from 'date-fns/locale';
 
 const steps = [
   { id: 1, title: 'مسیر', icon: MapPin },
@@ -22,6 +26,7 @@ export default function NewRequestPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const { toast } = useToast();
+  const [date, setDate] = useState<Date>();
 
   const navigate = (path: string) => {
     router.push(path);
@@ -43,14 +48,17 @@ export default function NewRequestPage() {
   const progressValue = ((currentStep - 1) / (steps.length - 1)) * 100;
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="flex items-center gap-4 mb-4">
-         <button onClick={() => navigate('/dashboard')} className="p-2 rounded-md hover:bg-muted">
-            <ArrowRight className="h-5 w-5" />
-        </button>
-        <h1 className="text-3xl font-bold">ایجاد درخواست حمل بار</h1>
-      </div>
-      <p className="text-muted-foreground mb-8">این فرآیند {steps.length} مرحله‌ای را برای ثبت درخواست خود کامل کنید.</p>
+    <div className="max-w-4xl mx-auto space-y-8">
+        <div className="relative flex items-center justify-between p-6 rounded-2xl overflow-hidden bg-card border shadow-sm">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/5 to-transparent"></div>
+            <div className="relative z-10">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">ایجاد درخواست حمل بار</h1>
+            <p className="mt-2 text-muted-foreground max-w-prose">این فرآیند {steps.length} مرحله‌ای را برای ثبت درخواست خود کامل کنید.</p>
+            </div>
+            <button onClick={() => navigate('/dashboard')} className="relative z-10 p-2 rounded-full bg-background/50 hover:bg-background transition-colors">
+                <ArrowLeft className="h-6 w-6" />
+            </button>
+        </div>
       
       <Card className="overflow-hidden">
         <div className="p-6 border-b">
