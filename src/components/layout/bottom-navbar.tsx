@@ -17,7 +17,7 @@ const ShipperMenu = [
 
 const DriverMenu = [
   { href: '/dashboard', label: 'داشبورد', icon: Home },
-  { href: '/dashboard/location', label: 'موقعیت', icon: MapPin },
+  { href: '/dashboard/requests/available', label: 'بارهای موجود', icon: Package },
   { href: '/dashboard/requests/my-shipments', label: 'بارهای من', icon: Truck },
   { href: '/dashboard/profile', label: 'پروفایل', icon: User },
 ];
@@ -43,6 +43,8 @@ export function BottomNavbar({ navigate }: { navigate: (path: string) => void })
   }, []);
 
   const menu = role === 'shipper' ? ShipperMenu : DriverMenu;
+  const gridColsClass = role === 'shipper' ? 'grid-cols-5' : 'grid-cols-5';
+
 
   const handleLogout = async () => {
     await auth.signOut();
@@ -54,7 +56,7 @@ export function BottomNavbar({ navigate }: { navigate: (path: string) => void })
 
   return (
     <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-background border-t border-border">
-      <div className="grid h-full max-w-lg grid-cols-5 mx-auto font-medium">
+      <div className={cn("grid h-full max-w-lg mx-auto font-medium", gridColsClass)}>
         {menu.map((item) => (
           <button
             key={item.href}

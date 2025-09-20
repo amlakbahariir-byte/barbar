@@ -26,7 +26,6 @@ const ShipperMenu = [
 
 const DriverMenu = [
   { href: '/dashboard', label: 'داشبورد', icon: Home },
-  { href: '/dashboard/location', label: 'موقعیت من', icon: MapPin },
   { href: '/dashboard/requests/available', label: 'درخواست‌های موجود', icon: Package },
   { href: '/dashboard/requests/my-shipments', label: 'بارهای من', icon: Truck },
   { href: '/dashboard/transactions', label: 'تراکنش‌ها', icon: CreditCard },
