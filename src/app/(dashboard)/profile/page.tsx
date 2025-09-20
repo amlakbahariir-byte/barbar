@@ -193,39 +193,37 @@ export default function ProfilePage() {
              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
                     <CardHeader><CardTitle className="flex items-center gap-2"><UserIcon className='text-primary'/>اطلاعات شخصی</CardTitle></CardHeader>
-                    <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                         <div className="space-y-1">
-                            <Label htmlFor="name">نام و نام خانوادگی</Label>
-                            <Input id="name" value={userData.name} disabled={!isEditing} />
-                        </div>
-                         <div className="space-y-1">
-                            <Label htmlFor="fatherName">نام پدر</Label>
-                            <Input id="fatherName" value={userData.fatherName} disabled={!isEditing} />
-                        </div>
-                        <div className="space-y-1">
-                            <Label htmlFor="birthPlace">محل تولد</Label>
-                            <Input id="birthPlace" value={userData.birthPlace} disabled={!isEditing} />
-                        </div>
-                         <div className="space-y-1">
-                            <Label htmlFor="age">سن</Label>
-                            <Input id="age" value={userData.age} disabled={!isEditing} />
-                        </div>
-                        <div className="space-y-1">
-                            <Label htmlFor="maritalStatus">وضعیت تاهل</Label>
-                            <Input id="maritalStatus" value={userData.maritalStatus} disabled={!isEditing} />
-                        </div>
-                        <div className="space-y-1">
-                            <Label htmlFor="email">ایمیل</Label>
-                            <Input id="email" value={userData.email} disabled={!isEditing} />
-                        </div>
-                         <div className="space-y-1">
-                            <Label htmlFor="phone">شماره تماس</Label>
-                            <Input id="phone" value={userData.phone} disabled />
-                        </div>
-                         <div className="space-y-1">
-                            <Label htmlFor="nationalId">کد ملی</Label>
-                            <Input id="nationalId" value={userData.nationalId} disabled />
-                        </div>
+                    <CardContent className="space-y-3">
+                        {Object.entries({
+                            name: { label: 'نام و نام خانوادگی', icon: UserIcon, editable: true },
+                            fatherName: { label: 'نام پدر', icon: UserIcon, editable: true },
+                            birthPlace: { label: 'محل تولد', icon: MapPin, editable: true },
+                            age: { label: 'سن', icon: Calendar, editable: true },
+                            maritalStatus: { label: 'وضعیت تاهل', icon: Heart, editable: true },
+                            email: { label: 'ایمیل', icon: Mail, editable: true },
+                            phone: { label: 'شماره تماس', icon: Phone, editable: false },
+                            nationalId: { label: 'کد ملی', icon: Fingerprint, editable: false },
+                        }).map(([key, { label, icon: Icon, editable }]) => (
+                            <div key={key} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
+                                <div className="flex items-center gap-3">
+                                    <Icon className="w-5 h-5 text-muted-foreground" />
+                                    <Label className="font-semibold">{label}</Label>
+                                </div>
+                                {isEditing && editable ? (
+                                    <Input
+                                        id={key}
+                                        value={userData[key as keyof typeof userData] as string}
+                                        onChange={(e) => setUserData(prev => ({...prev, [key]: e.target.value}))}
+                                        className="max-w-xs text-left"
+                                        dir="ltr"
+                                    />
+                                ) : (
+                                    <span className="font-medium text-muted-foreground">
+                                        {userData[key as keyof typeof userData]}
+                                    </span>
+                                )}
+                            </div>
+                        ))}
                     </CardContent>
                 </Card>
 
@@ -371,5 +369,7 @@ export default function ProfilePage() {
       </div>
     </div>
   );
+
+    
 
     
