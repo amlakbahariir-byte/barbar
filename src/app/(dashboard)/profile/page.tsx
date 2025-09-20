@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, Bell, CreditCard, Edit, LogOut, Moon, Palette, Save, User as UserIcon, Truck, BadgeCheck, FileText } from 'lucide-react';
+import { ArrowRight, Bell, CreditCard, Edit, LogOut, Moon, Palette, Save, User as UserIcon, Truck, BadgeCheck, FileText, Fingerprint, Phone, Mail, MapPin, Calendar, Heart } from 'lucide-react';
 import { auth } from '@/lib/firebase/config';
 import { Badge } from '@/components/ui/badge';
 import { FileUploadItem } from '@/components/file-upload-item';
@@ -130,38 +130,46 @@ export default function ProfilePage() {
         <div className="lg:col-span-2 space-y-8">
             <Card>
                 <CardHeader><CardTitle className="flex items-center gap-2"><UserIcon className='text-primary'/>اطلاعات شخصی</CardTitle></CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                    <div>
-                        <Label htmlFor="name">نام و نام خانوادگی</Label>
-                        <Input id="name" value={userData.name} disabled={!isEditing} />
+                <CardContent className="space-y-4">
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
+                        <UserIcon className="w-5 h-5 text-muted-foreground" />
+                        <Label className="w-28">نام و نام خانوادگی</Label>
+                        <Input id="name" value={userData.name} disabled={!isEditing} className="bg-transparent disabled:border-none disabled:p-0 h-auto" />
                     </div>
-                    <div>
-                        <Label htmlFor="fatherName">نام پدر</Label>
-                        <Input id="fatherName" value={userData.fatherName} disabled={!isEditing} />
+                     <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
+                        <UserIcon className="w-5 h-5 text-muted-foreground" />
+                        <Label className="w-28">نام پدر</Label>
+                        <Input id="fatherName" value={userData.fatherName} disabled={!isEditing} className="bg-transparent disabled:border-none disabled:p-0 h-auto"/>
                     </div>
-                    <div>
-                        <Label htmlFor="nationalId">کد ملی</Label>
-                        <Input id="nationalId" value={userData.nationalId} disabled />
+                     <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
+                        <Fingerprint className="w-5 h-5 text-muted-foreground" />
+                        <Label className="w-28">کد ملی</Label>
+                        <Input id="nationalId" value={userData.nationalId} disabled className="bg-transparent disabled:border-none disabled:p-0 h-auto"/>
                     </div>
-                    <div>
-                        <Label htmlFor="phone">شماره تماس</Label>
-                        <Input id="phone" value={userData.phone} disabled />
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
+                        <Phone className="w-5 h-5 text-muted-foreground" />
+                        <Label className="w-28">شماره تماس</Label>
+                        <Input id="phone" value={userData.phone} disabled className="bg-transparent disabled:border-none disabled:p-0 h-auto"/>
                     </div>
-                    <div>
-                        <Label htmlFor="birthPlace">محل تولد</Label>
-                        <Input id="birthPlace" value={userData.birthPlace} disabled={!isEditing} />
+                     <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
+                        <MapPin className="w-5 h-5 text-muted-foreground" />
+                        <Label className="w-28">محل تولد</Label>
+                        <Input id="birthPlace" value={userData.birthPlace} disabled={!isEditing} className="bg-transparent disabled:border-none disabled:p-0 h-auto"/>
                     </div>
-                    <div>
-                        <Label htmlFor="age">سن</Label>
-                        <Input id="age" value={userData.age} disabled={!isEditing} />
+                     <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
+                        <Calendar className="w-5 h-5 text-muted-foreground" />
+                        <Label className="w-28">سن</Label>
+                        <Input id="age" value={userData.age} disabled={!isEditing} className="bg-transparent disabled:border-none disabled:p-0 h-auto"/>
                     </div>
-                    <div>
-                        <Label htmlFor="maritalStatus">وضعیت تاهل</Label>
-                        <Input id="maritalStatus" value={userData.maritalStatus} disabled={!isEditing} />
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
+                        <Heart className="w-5 h-5 text-muted-foreground" />
+                        <Label className="w-28">وضعیت تاهل</Label>
+                        <Input id="maritalStatus" value={userData.maritalStatus} disabled={!isEditing} className="bg-transparent disabled:border-none disabled:p-0 h-auto"/>
                     </div>
-                    <div className="md:col-span-2">
-                        <Label htmlFor="email">ایمیل</Label>
-                        <Input id="email" value={userData.email} disabled={!isEditing} />
+                     <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
+                        <Mail className="w-5 h-5 text-muted-foreground" />
+                        <Label className="w-28">ایمیل</Label>
+                        <Input id="email" value={userData.email} disabled={!isEditing} className="bg-transparent disabled:border-none disabled:p-0 h-auto"/>
                     </div>
                 </CardContent>
             </Card>
