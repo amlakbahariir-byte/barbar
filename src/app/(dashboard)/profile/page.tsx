@@ -136,10 +136,6 @@ export default function ProfilePage() {
           </button>
           <h1 className="text-3xl font-bold">پروفایل کاربری</h1>
         </div>
-        <Button variant={isEditing ? "default" : "outline"} onClick={() => setIsEditing(!isEditing)} >
-            {isEditing ? <Save className="ml-2 h-4 w-4"/> : <Edit className="ml-2 h-4 w-4"/>}
-            {isEditing ? 'ذخیره' : 'ویرایش'}
-        </Button>
       </div>
 
       <Card className="relative overflow-hidden shadow-lg">
@@ -249,6 +245,15 @@ export default function ProfilePage() {
                     </Card>
                 )}
              </div>
+             <div className="flex justify-end mt-4">
+                 <Button variant={isEditing ? "default" : "outline"} onClick={() => {
+                     if (isEditing) handleSave();
+                     else setIsEditing(true);
+                 }}>
+                    {isEditing ? <Save className="ml-2 h-4 w-4"/> : <Edit className="ml-2 h-4 w-4"/>}
+                    {isEditing ? 'ذخیره' : 'ویرایش پروفایل'}
+                </Button>
+            </div>
           </TabsContent>
           
           <TabsContent value="docs" className="mt-6">
@@ -364,7 +369,6 @@ export default function ProfilePage() {
       <Separator />
 
       <div className="flex justify-end gap-4 pb-8">
-          {isEditing && <Button size="lg" onClick={handleSave}><Save className="ml-2"/>ذخیره تغییرات</Button>}
           <Button variant="destructive" onClick={handleLogout}><LogOut className="ml-2"/>خروج از حساب</Button>
       </div>
     </div>
