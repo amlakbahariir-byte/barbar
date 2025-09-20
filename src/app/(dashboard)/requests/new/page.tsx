@@ -203,39 +203,42 @@ export default function NewRequestPage() {
                     <CardTitle className="flex items-center gap-2 text-2xl"><CalendarIcon/>تاریخ و زمان بارگیری</CardTitle>
                     <CardDescription>تاریخ و ساعت مورد نظر خود برای شروع حمل را انتخاب کنید.</CardDescription>
                 </CardHeader>
-                <CardContent className="flex flex-col md:flex-row items-center justify-center gap-6 pt-6">
-                     <FormField
-                        control={form.control}
-                        name="date"
-                        render={({ field }) => (
-                            <FormItem className="flex flex-col items-center">
-                               <Popover>
-                                   <PopoverTrigger asChild>
-                                        <FormControl>
-                                            <Button
-                                            variant={"outline"}
-                                            className={cn(
-                                                "w-[280px] justify-start text-right font-normal h-12 text-base",
-                                                !field.value && "text-muted-foreground"
-                                            )}
-                                            >
-                                                <CalendarIcon className="ml-2 h-5 w-5" />
-                                                {toPersianDate(field.value)}
-                                            </Button>
-                                        </FormControl>
-                                   </PopoverTrigger>
-                                   <PopoverContent className="w-auto p-0">
-                                       <PersianCalendar
-                                           selectedDate={field.value}
-                                           onDateChange={field.onChange}
-                                       />
-                                   </PopoverContent>
-                               </Popover>
-                               <FormMessage className="mt-2" />
-                            </FormItem>
-                        )}
-                        />
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center pt-6">
+                    <div className="flex justify-center">
+                         <FormField
+                            control={form.control}
+                            name="date"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-col items-center">
+                                   <Popover>
+                                       <PopoverTrigger asChild>
+                                            <FormControl>
+                                                <Button
+                                                variant={"outline"}
+                                                className={cn(
+                                                    "w-[280px] justify-start text-right font-normal h-12 text-base",
+                                                    !field.value && "text-muted-foreground"
+                                                )}
+                                                >
+                                                    <CalendarIcon className="ml-2 h-5 w-5" />
+                                                    {toPersianDate(field.value)}
+                                                </Button>
+                                            </FormControl>
+                                       </PopoverTrigger>
+                                       <PopoverContent className="w-auto p-0">
+                                           <PersianCalendar
+                                               selectedDate={field.value}
+                                               onDateChange={field.onChange}
+                                           />
+                                       </PopoverContent>
+                                   </Popover>
+                                   <FormMessage className="mt-2" />
+                                </FormItem>
+                            )}
+                            />
+                    </div>
 
+                    <div className="flex justify-center">
                         <div className="flex items-center gap-4" dir="rtl">
                             <Clock className="h-6 w-6 text-muted-foreground" />
                             <div className="flex items-center gap-2" dir="ltr">
@@ -282,6 +285,7 @@ export default function NewRequestPage() {
                                 />
                             </div>
                         </div>
+                    </div>
                 </CardContent>
             </Card>
 
