@@ -191,17 +191,6 @@ export default function NewRequestPage() {
                         <div className="flex items-center gap-4" dir="rtl">
                             <Clock className="h-6 w-6 text-muted-foreground" />
                             <div className="flex items-center gap-2" dir="ltr">
-                                <Select value={hour} onValueChange={setHour}>
-                                    <SelectTrigger className="w-[100px]">
-                                        <SelectValue className="font-headline text-lg" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map(h => (
-                                            <SelectItem key={h} value={h} className="font-headline text-lg justify-center">{toPersianNumber(h)}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <span className="font-bold text-xl">:</span>
                                 <Select value={minute} onValueChange={setMinute}>
                                     <SelectTrigger className="w-[100px]">
                                         <SelectValue className="font-headline text-lg" />
@@ -209,6 +198,17 @@ export default function NewRequestPage() {
                                     <SelectContent>
                                         {['00', '15', '30', '45'].map(m => (
                                             <SelectItem key={m} value={m} className="font-headline text-lg justify-center">{toPersianNumber(m)}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <span className="font-bold text-xl">:</span>
+                                <Select value={hour} onValueChange={setHour}>
+                                    <SelectTrigger className="w-[100px]">
+                                        <SelectValue className="font-headline text-lg" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map(h => (
+                                            <SelectItem key={h} value={h} className="font-headline text-lg justify-center">{toPersianNumber(h)}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
