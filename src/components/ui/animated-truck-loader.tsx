@@ -16,7 +16,7 @@ export function AnimatedTruckLoader({ slogan }: { slogan?: string }) {
         <div className="relative w-full max-w-lg h-32 overflow-hidden">
           <div className="absolute inset-x-0 bottom-8 h-1 road-lines animate-[move-road_1s_linear_infinite]"></div>
           <div className="absolute inset-0 flex items-center justify-center animate-[move-truck_4s_ease-in-out_infinite]">
-            <Truck className="w-20 h-20 text-primary -scale-x-100" />
+            <Truck className="w-20 h-20 -scale-x-100" stroke="hsl(var(--primary))" />
           </div>
         </div>
       </div>
