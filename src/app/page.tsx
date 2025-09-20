@@ -10,6 +10,7 @@ import { Truck, ChevronRight, User, Building, LogIn } from 'lucide-react';
 import type { RecaptchaVerifier, ConfirmationResult } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
 import { LoaderWithSlogan } from '@/components/ui/loader-with-slogan';
+import { cn } from '@/lib/utils';
 
 // Extend window type to include our custom properties
 declare global {
@@ -51,7 +52,24 @@ function AuthChecker({ children }: { children: React.ReactNode }) {
 export default function Home() {
   return (
     <AuthChecker>
-      <main className="h-screen w-full flex items-center justify-center bg-background overflow-hidden relative p-4">
+      <main className="h-screen w-full flex flex-col items-center justify-center bg-background overflow-hidden relative p-4">
+          <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+             <div 
+                className="absolute -top-1/4 -left-1/4 w-[150%] h-[150%] bg-primary/20 rounded-full"
+                style={{
+                  clipPath: 'polygon(0% 0%, 100% 0%, 100% 50%, 0% 100%)',
+                  transform: 'rotate(-15deg) scale(1.2)',
+                  opacity: 0.5,
+                }}
+            />
+             <div 
+                className="absolute top-0 left-0 w-full h-full bg-primary"
+                style={{
+                    clipPath: 'polygon(0% 0%, 100% 0%, 100% 40%, 0% 70%)',
+                    transform: 'rotate(10deg) scale(1.5)',
+                }}
+            />
+          </div>
           <HomePageContent />
       </main>
     </AuthChecker>
@@ -172,96 +190,109 @@ function HomePageContent() {
 
 
   return (
-      <div className="w-full max-w-md space-y-8 animate-in fade-in-0 slide-in-from-bottom-10 duration-700 text-center z-10">
-        <div className="bg-card p-8 rounded-lg shadow-sm border">
-            <div>
-              <Truck className="mx-auto h-12 w-auto text-primary" />
-              <h2 className="mt-6 text-3xl font-bold tracking-tight text-foreground">
-                ورود به باربر ایرانی
-              </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {step === 1 && 'شماره موبایل خود را برای ورود یا ثبت‌نام وارد کنید.'}
-                {step === 2 && 'کد ۶ رقمی ارسال شده به موبایل خود را وارد کنید.'}
-                {step === 3 && 'نقش خود را برای ورود به پنل کاربری انتخاب کنید.'}
-              </p>
-            </div>
-
-            {step === 1 && (
-              <form className="space-y-6 mt-8" onSubmit={handlePhoneSubmit}>
-                <div className="relative">
-                  <Input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    autoComplete="tel"
-                    required
-                    className="text-center text-lg tracking-[.2em] h-14 bg-background"
-                    placeholder="0912 345 6789"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    dir="ltr"
-                  />
+      <div className="w-full max-w-md flex flex-col justify-between h-full py-12 z-10">
+        
+        <div className="text-center text-primary-foreground animate-in fade-in-0 slide-in-from-top-10 duration-700">
+           <h1 className="text-5xl font-bold tracking-tight" style={{textShadow: '0 2px 10px rgba(0,0,0,0.2)'}}>
+              باربر ایرانی
+           </h1>
+           <p className="mt-2 text-lg text-primary-foreground/80">
+              سریع، امن، مطمئن
+           </p>
+        </div>
+        
+        <div className={cn("transition-opacity duration-500", isSubmitting && "opacity-50 pointer-events-none")}>
+            <div className="bg-card p-6 rounded-3xl shadow-2xl space-y-6 animate-in fade-in-0 slide-in-from-bottom-10 duration-700">
+                <div className='text-center'>
+                  <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                    {step === 1 && 'ورود یا ثبت‌نام'}
+                    {step === 2 && 'کد تایید را وارد کنید'}
+                    {step === 3 && 'نقش خود را انتخاب کنید'}
+                  </h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {step === 1 && 'با شماره موبایل خود وارد شوید.'}
+                    {step === 2 && `کد ۶ رقمی به شماره ${phone} ارسال شد.`}
+                    {step === 3 && 'برای ورود به پنل کاربری نقش خود را مشخص کنید.'}
+                  </p>
                 </div>
-                <Button type="submit" className="w-full !mt-8 h-12 text-lg" disabled={isSubmitting}>
-                  {isSubmitting ? 'در حال ارسال...' : 'ارسال کد تایید'}
-                  <LogIn className="mr-2"/>
-                </Button>
-                <div id="recaptcha-container"></div>
-              </form>
-            )}
 
-            {step === 2 && (
-               <form onSubmit={handleOtpSubmit} className="space-y-6 mt-8">
-                    <div className="flex justify-center gap-2" dir="ltr">
-                      {[...Array(6)].map((_, i) => (
-                        <Input
-                          key={i}
-                          ref={el => otpInputs.current[i] = el}
-                          type="text"
-                          maxLength={1}
-                          className="size-12 text-2xl text-center font-bold bg-background"
-                          value={otp[i] || ''}
-                          onChange={(e) => handleOtpInputChange(e, i)}
-                          onKeyDown={(e) => handleOtpKeyDown(e, i)}
-                        />
-                      ))}
+                {step === 1 && (
+                  <form className="space-y-4" onSubmit={handlePhoneSubmit}>
+                    <div className="relative">
+                      <Input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        autoComplete="tel"
+                        required
+                        className="text-center text-lg tracking-[.2em] h-14 bg-input"
+                        placeholder="0912 345 6789"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        dir="ltr"
+                      />
                     </div>
-                    <Button type="submit" className="w-full !mt-8 h-12 text-lg" disabled={isSubmitting || otp.length < 6}>
-                       {isSubmitting ? 'در حال تایید...' : 'تایید و ادامه'}
-                       <ChevronRight className="mr-2"/>
+                    <Button type="submit" className="w-full h-12 text-lg" disabled={isSubmitting}>
+                      {isSubmitting ? 'در حال ارسال...' : 'ارسال کد'}
+                      <LogIn className="mr-2"/>
                     </Button>
-                     <Button variant="link" size="sm" onClick={() => { setStep(1); setOtp(''); }}>
-                        ویرایش شماره موبایل
-                    </Button>
-              </form>
-            )}
+                    <div id="recaptcha-container"></div>
+                  </form>
+                )}
 
-            {step === 3 && (
-              <div className="space-y-4 !mt-10">
-                <Button
-                  variant="outline"
-                  className="w-full h-20 text-xl justify-between"
-                  onClick={() => handleRoleSelect('shipper')}
-                >
-                  <div className='flex items-center gap-4'>
-                    <Building className="size-8 text-primary" />
-                    <span>صاحب بار هستم</span>
+                {step === 2 && (
+                   <form onSubmit={handleOtpSubmit} className="space-y-4">
+                        <div className="flex justify-center gap-2" dir="ltr">
+                          {[...Array(6)].map((_, i) => (
+                            <Input
+                              key={i}
+                              ref={el => otpInputs.current[i] = el}
+                              type="text"
+                              maxLength={1}
+                              className="size-12 md:size-14 text-2xl text-center font-bold bg-input"
+                              value={otp[i] || ''}
+                              onChange={(e) => handleOtpInputChange(e, i)}
+                              onKeyDown={(e) => handleOtpKeyDown(e, i)}
+                            />
+                          ))}
+                        </div>
+                        <Button type="submit" className="w-full h-12 text-lg" disabled={isSubmitting || otp.length < 6}>
+                           {isSubmitting ? 'در حال تایید...' : 'تایید و ادامه'}
+                           <ChevronRight className="mr-2"/>
+                        </Button>
+                         <Button variant="link" size="sm" onClick={() => { setStep(1); setOtp(''); }}>
+                            ویرایش شماره موبایل
+                        </Button>
+                  </form>
+                )}
+
+                {step === 3 && (
+                  <div className="space-y-4">
+                    <Button
+                      variant="outline"
+                      className="w-full h-16 text-lg justify-between"
+                      onClick={() => handleRoleSelect('shipper')}
+                    >
+                      <div className='flex items-center gap-4'>
+                        <Building className="size-7 text-primary" />
+                        <span>صاحب بار هستم</span>
+                      </div>
+                      <ChevronRight />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full h-16 text-lg justify-between"
+                      onClick={() => handleRoleSelect('driver')}
+                    >
+                       <div className='flex items-center gap-4'>
+                        <User className="size-7 text-primary" />
+                        <span>راننده هستم</span>
+                      </div>
+                      <ChevronRight />
+                    </Button>
                   </div>
-                  <ChevronRight />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full h-20 text-xl justify-between"
-                  onClick={() => handleRoleSelect('driver')}
-                >
-                   <div className='flex items-center gap-4'>
-                    <User className="size-8 text-primary" />
-                    <span>راننده هستم</span>
-                  </div>
-                  <ChevronRight />
-                </Button>
-              </div>
-            )}
+                )}
+            </div>
         </div>
       </div>
   );
