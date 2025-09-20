@@ -12,15 +12,21 @@ import { Calendar as CalendarIcon, Package, MapPin, ArrowLeft, ArrowRight } from
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Progress } from '@/components/ui/progress';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns-jalali';
+import { faIR } from 'date-fns/locale';
 
 const steps = [
   { id: 1, title: 'مسیر', icon: MapPin },
   { id: 2, title: 'مشخصات بار', icon: Package },
+  { id: 3, title: 'تاریخ', icon: CalendarIcon },
 ];
 
 export default function NewRequestPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
+  const [date, setDate] = useState<Date | undefined>(new Date());
   const { toast } = useToast();
 
   const navigate = (path: string) => {
@@ -37,7 +43,7 @@ export default function NewRequestPage() {
     navigate('/dashboard');
   };
 
-  const nextStep = () => setCurrentStep((prev) => (prev < 2 ? prev + 1 : prev));
+  const nextStep = () => setCurrentStep((prev) => (prev < steps.length ? prev + 1 : prev));
   const prevStep = () => setCurrentStep((prev) => (prev > 1 ? prev - 1 : prev));
 
   const progressValue = ((currentStep - 1) / (steps.length - 1)) * 100;
@@ -50,7 +56,7 @@ export default function NewRequestPage() {
         </button>
         <h1 className="text-3xl font-bold">ایجاد درخواست حمل بار</h1>
       </div>
-      <p className="text-muted-foreground mb-8">این فرآیند ۲ مرحله‌ای را برای ثبت درخواست خود کامل کنید.</p>
+      <p className="text-muted-foreground mb-8">این فرآیند {steps.length} مرحله‌ای را برای ثبت درخواست خود کامل کنید.</p>
       
       <Card className="overflow-hidden">
         <div className="p-6 border-b">
@@ -115,6 +121,38 @@ export default function NewRequestPage() {
                     </div>
                 </div>
 
+                <div className={cn("transition-all duration-300", currentStep === 3 ? "block" : "hidden")}>
+                    <CardHeader className="p-0 mb-6">
+                        <CardTitle className="text-2xl">مرحله ۳: تاریخ بارگیری</CardTitle>
+                        <CardDescription>تاریخ مورد نظر برای شروع حمل را انتخاب کنید.</CardDescription>
+                    </CardHeader>
+                     <div className="flex justify-center">
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                variant={"outline"}
+                                className={cn(
+                                    "w-[280px] justify-start text-right font-normal h-12 text-base",
+                                    !date && "text-muted-foreground"
+                                )}
+                                >
+                                <CalendarIcon className="ml-2 h-4 w-4" />
+                                {date ? format(date, 'PPP', { locale: faIR }) : <span>یک تاریخ انتخاب کنید</span>}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                mode="single"
+                                selected={date}
+                                onSelect={setDate}
+                                initialFocus
+                                locale={faIR}
+                                />
+                            </PopoverContent>
+                        </Popover>
+                     </div>
+                </div>
+
             </CardContent>
 
             <div className="flex items-center justify-between p-6 bg-muted/50 border-t">
@@ -122,13 +160,13 @@ export default function NewRequestPage() {
                     <ArrowRight className="ml-2 h-4 w-4" />
                     قبلی
                 </Button>
-                {currentStep < 2 && (
+                {currentStep < steps.length && (
                     <Button type="button" onClick={nextStep}>
                         بعدی
                         <ArrowLeft className="mr-2 h-4 w-4" />
                     </Button>
                 )}
-                {currentStep === 2 && (
+                {currentStep === steps.length && (
                     <Button type="submit" size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
                         ثبت نهایی درخواست
                     </Button>
