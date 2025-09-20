@@ -181,12 +181,14 @@ const PageRenderer = ({ slug, role, navigate }: { slug: string[], role: 'shipper
 };
 
 
-export default function DashboardPage({ params }: { params: { slug?: string[] } }) {
+export default function DashboardPage() {
   const router = useRouter();
+  const pathname = usePathname();
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
   const [isClient, setIsClient] = useState(false);
   
-  const slug = params.slug || [];
+  // Correctly derive slug from pathname for client components
+  const slug = pathname.replace('/dashboard', '').split('/').filter(Boolean);
 
   useEffect(() => {
     // This effect runs only on the client, ensuring localStorage is available.
