@@ -137,7 +137,7 @@ export default function NewRequestPage() {
                                 )}
                                 >
                                 <CalendarIcon className="ml-2 h-4 w-4" />
-                                {date ? format(date, 'PPP', { locale: faIR }) : <span>یک تاریخ انتخاب کنید</span>}
+                                {date ? format(date, 'd MMMM yyyy', { locale: faIR }) : <span>یک تاریخ انتخاب کنید</span>}
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0">
