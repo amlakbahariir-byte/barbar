@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Truck, ChevronRight, User, Building, LogIn } from 'lucide-react';
-import type { RecaptchaVerifier, ConfirmationResult } from 'firebase/auth';
+import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
 import { LoaderWithSlogan } from '@/components/ui/loader-with-slogan';
 import { cn } from '@/lib/utils';
@@ -79,25 +79,19 @@ function HomePageContent() {
   useEffect(() => {
     if (step === 1 && !window.recaptchaVerifier) {
       try {
-        // This is a fake verifier for the demo.
-        window.recaptchaVerifier = {
-          verify: () => Promise.resolve('fake-recaptcha-token')
-        } as unknown as RecaptchaVerifier;
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+            'size': 'invisible',
+            'callback': (response: any) => {
+                // reCAPTCHA solved, allow signInWithPhoneNumber.
+            }
+        });
       } catch (e) {
         console.error("RecaptchaVerifier error", e)
+        toast({ title: 'خطا در راه‌اندازی reCAPTCHA', description: 'لطفا صفحه را دوباره بارگذاری کنید.', variant: 'destructive'});
       }
     }
-  }, [step]);
+  }, [step, toast]);
   
-  // Auto-fill OTP for demo purposes
-  useEffect(() => {
-    if (step === 2) {
-      setTimeout(() => {
-        const fakeOtp = '123456';
-        setOtp(fakeOtp);
-      }, 1500);
-    }
-  }, [step]);
   
   // Auto-submit OTP for demo when it's fully entered
   useEffect(() => {
@@ -126,34 +120,43 @@ function HomePageContent() {
 
   const handlePhoneSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
+    if (!window.recaptchaVerifier) {
+        toast({ title: 'reCAPTCHA در حال بارگذاری است', description: 'لطفا چند لحظه صبر کنید و دوباره تلاش کنید.', variant: 'destructive' });
+        return;
+    }
+
     setIsSubmitting(true);
     toast({ title: 'در حال ارسال کد تایید...' });
-    
-    // SIMULATION: Bypass actual Firebase call to avoid configuration errors in demo.
-    setTimeout(() => {
-      // Fake confirmation object for the next step.
-      window.confirmationResult = {
-        confirm: async (code: string) => { 
-          // In a real app, this would verify the code. Here we just pretend it's successful.
-          return Promise.resolve({} as any); // Return a fake user credential
-        }
-      } as ConfirmationResult;
 
-      setIsSubmitting(false);
-      setStep(2);
-      toast({ title: 'کد تایید ارسال شد', description: 'کد تایید ۱۲۳۴۵۶ است' });
-    }, 1000);
+    try {
+        const formattedPhone = `+98${phone.slice(1)}`;
+        const confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier);
+        window.confirmationResult = confirmationResult;
+        setIsSubmitting(false);
+        setStep(2);
+        toast({ title: 'کد تایید ارسال شد', description: 'لطفا کد ارسال شده به موبایل خود را وارد کنید.' });
+    } catch (error) {
+        console.error("Error sending OTP:", error);
+        toast({ title: 'خطا در ارسال کد', description: 'لطفا شماره موبایل خود را بررسی کرده و دوباره تلاش کنید.', variant: 'destructive' });
+        setIsSubmitting(false);
+        // Reset reCAPTCHA
+        if(window.recaptchaVerifier) {
+            window.recaptchaVerifier.render().then((widgetId) => {
+                // @ts-ignore
+                grecaptcha.reset(widgetId);
+            });
+        }
+    }
   };
   
   const handleOtpSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (isSubmitting || otp.length < 6) return;
+    if (isSubmitting || otp.length < 6 || !window.confirmationResult) return;
     setIsSubmitting(true);
     toast({ title: 'در حال تایید کد...' });
 
     try {
-      // We use our fake confirmation object from the previous step.
-      await window.confirmationResult?.confirm(otp);
+      await window.confirmationResult.confirm(otp);
       
       setIsSubmitting(false);
       setStep(3); // Move to role selection on successful confirmation
@@ -242,7 +245,7 @@ function HomePageContent() {
                         autoComplete="tel"
                         required
                         className="text-center text-lg tracking-[.2em] h-14 bg-input"
-                        placeholder="09100910995"
+                        placeholder="09123456789"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         dir="ltr"
