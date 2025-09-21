@@ -1,4 +1,7 @@
 
+import { collection, getDocs, doc, getDoc, addDoc, query, where } from "firebase/firestore"; 
+import { db } from "./firebase/config";
+
 export type Driver = {
   id: string;
   name: string;
@@ -44,7 +47,7 @@ const drivers: Driver[] = [
   { id: 'd4', name: 'سارا محمدی', avatar: 'https://i.pravatar.cc/150?u=d4', vehicle: 'خاور', rating: 5.0 },
 ];
 
-export const shipments: Shipment[] = [
+export let shipments: Shipment[] = [
   {
     id: 'shp1001',
     origin: 'تهران',
@@ -118,48 +121,39 @@ export const shipments: Shipment[] = [
   },
 ];
 
-export const transactions: Transaction[] = [
-    { id: 'txn1', date: '۱۴۰۳/۰۵/۰۱', type: 'deposit', amount: 5000000, status: 'completed', description: 'افزایش موجودی' },
-    { id: 'txn2', date: '۱۴۰۳/۰۵/۰۳', type: 'payment', amount: -1200000, status: 'completed', description: 'پرداخت هزینه بار #shp1001' },
-    { id: 'txn3', date: '۱۴۰۳/۰۵/۰۵', type: 'withdrawal', amount: -2000000, status: 'completed', description: 'برداشت از حساب' },
-    { id: 'txn4', date: '۱۴۰۳/۰۵/۰۸', type: 'deposit', amount: 10000000, status: 'completed', description: 'افزایش موجودی' },
-    { id: 'txn5', date: '۱۴۰۳/۰۵/۰۹', type: 'payment', amount: -850000, status: 'pending', description: 'بیعانه بار #shp1002' },
-    { id: 'txn6', date: '۱۴۰۳/۰۵/۱۰', type: 'refund', amount: 100000, status: 'completed', description: 'بازگشت وجه - کنسلی' },
-    { id: 'txn7', date: '۱۴۰۳/۰۵/۱۱', type: 'deposit', amount: 1500000, status: 'failed', description: 'تراکنش ناموفق' },
-];
+export const getTransactions = async (): Promise<Transaction[]> => {
+    const transactionsCol = collection(db, 'transactions');
+    const transactionSnapshot = await getDocs(transactionsCol);
+    const transactionList = transactionSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Transaction));
+    return transactionList;
+};
 
 
 export const getShipmentById = (id: string) => {
+    // This function will need to be updated to fetch from Firestore
     return shipments.find(s => s.id === id);
 }
 
-export const addShipment = (shipment: Shipment) => {
-    shipments.unshift(shipment);
+export const addShipment = (shipment: Omit<Shipment, 'id'>) => {
+    // This function will need to be updated to add to Firestore
+    const newShipment = { ...shipment, id: `shp${Date.now()}` } as Shipment;
+    shipments.unshift(newShipment);
+    return newShipment;
 }
 
 export const getMyShipments = (role: 'shipper' | 'driver', type: 'all' | 'available' | 'accepted') => {
+    // This function will also need a Firestore implementation
     if (role === 'shipper') {
-        // Shippers see all their own shipments regardless of status
         return shipments;
     }
     
-    // For drivers
     if (type === 'available') {
-        // Drivers see pending shipments they haven't bid on yet. For this demo, we show all pending.
         return shipments.filter(s => s.status === 'pending');
     }
 
     if (type === 'accepted') {
-        // Drivers see shipments they have accepted (or are in transit/delivered for them).
-        // Hardcoded to driver d1 for demo
         return shipments.filter(s => s.acceptedDriver?.id === 'd1' || s.id === 'shp1003' || s.id === 'shp1006');
     }
     
     return [];
 }
-
-export const getTransactions = () => {
-    return transactions;
-}
-
-    

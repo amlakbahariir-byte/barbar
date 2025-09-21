@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getTransactions, Transaction } from '@/lib/data';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const documentUploads = [
     "صفحه اول شناسنامه",
@@ -49,7 +50,8 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   
-  const transactions = getTransactions();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoadingTransactions, setIsLoadingTransactions] = useState(true);
   
   const [userData, setUserData] = useState({
       name: 'کاربر نمونه',
@@ -82,7 +84,25 @@ export default function ProfilePage() {
         setIsDarkMode(darkModePreference);
     }
 
-  }, []);
+    const fetchTransactions = async () => {
+      setIsLoadingTransactions(true);
+      try {
+        const data = await getTransactions();
+        setTransactions(data);
+      } catch (error) {
+        console.error("Failed to fetch transactions:", error);
+        toast({
+          title: 'خطا در بارگذاری تراکنش‌ها',
+          description: 'لطفا اتصال اینترنت خود را بررسی کنید.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoadingTransactions(false);
+      }
+    };
+    fetchTransactions();
+
+  }, [toast]);
   
   const handleDarkModeToggle = (checked: boolean) => {
     setIsDarkMode(checked);
@@ -336,21 +356,39 @@ export default function ProfilePage() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {transactions.slice(0, 5).map((tx) => (
-                                        <TableRow key={tx.id}>
-                                            <TableCell className="font-medium whitespace-nowrap">{tx.date}</TableCell>
-                                            <TableCell className="whitespace-nowrap">{transactionTypeMap[tx.type].text}</TableCell>
-                                            <TableCell className="text-muted-foreground whitespace-nowrap">{tx.description}</TableCell>
-                                            <TableCell className={`text-left font-semibold whitespace-nowrap ${getAmountClass(tx.type)}`}>
-                                            {transactionTypeMap[tx.type].sign} {Math.abs(tx.amount).toLocaleString('fa-IR')}
-                                            </TableCell>
-                                            <TableCell className="text-center whitespace-nowrap">
-                                            <Badge variant={transactionStatusMap[tx.status].variant}>
-                                                {transactionStatusMap[tx.status].text}
-                                            </Badge>
-                                            </TableCell>
-                                        </TableRow>
-                                        ))}
+                                        {isLoadingTransactions ? (
+                                            Array.from({ length: 3 }).map((_, index) => (
+                                                <TableRow key={index}>
+                                                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                                                    <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                                                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                                                    <TableCell className="text-left"><Skeleton className="h-5 w-20 ml-auto" /></TableCell>
+                                                    <TableCell className="text-center"><Skeleton className="h-6 w-16 mx-auto" /></TableCell>
+                                                </TableRow>
+                                            ))
+                                        ) : transactions.length > 0 ? (
+                                            transactions.slice(0, 5).map((tx) => (
+                                            <TableRow key={tx.id}>
+                                                <TableCell className="font-medium whitespace-nowrap">{tx.date}</TableCell>
+                                                <TableCell className="whitespace-nowrap">{transactionTypeMap[tx.type].text}</TableCell>
+                                                <TableCell className="text-muted-foreground whitespace-nowrap">{tx.description}</TableCell>
+                                                <TableCell className={`text-left font-semibold whitespace-nowrap ${getAmountClass(tx.type)}`}>
+                                                {transactionTypeMap[tx.type].sign} {Math.abs(tx.amount).toLocaleString('fa-IR')}
+                                                </TableCell>
+                                                <TableCell className="text-center whitespace-nowrap">
+                                                <Badge variant={transactionStatusMap[tx.status].variant}>
+                                                    {transactionStatusMap[tx.status].text}
+                                                </Badge>
+                                                </TableCell>
+                                            </TableRow>
+                                            ))
+                                        ) : (
+                                             <TableRow>
+                                                <TableCell colSpan={5} className="h-24 text-center">
+                                                    تراکنشی یافت نشد.
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
                                     </TableBody>
                                 </Table>
                             </div>
@@ -394,7 +432,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-    
-
-    

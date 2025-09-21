@@ -15,6 +15,8 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useEffect, useState } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const transactionTypeMap: { [key in Transaction['type']]: { text: string; sign: string } } = {
   deposit: { text: 'واریز', sign: '+' },
@@ -31,7 +33,24 @@ const statusMap: { [key in Transaction['status']]: { text: string; variant: 'def
 
 export default function TransactionsPage() {
   const router = useRouter();
-  const transactions = getTransactions();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getTransactions();
+        setTransactions(data);
+      } catch (error) {
+        console.error("Failed to fetch transactions:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchTransactions();
+  }, []);
+
 
   const getAmountClass = (type: Transaction['type']) => {
     switch (type) {
@@ -72,21 +91,39 @@ export default function TransactionsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {transactions.map((tx) => (
-                  <TableRow key={tx.id}>
-                    <TableCell className="font-medium">{tx.date}</TableCell>
-                    <TableCell>{transactionTypeMap[tx.type].text}</TableCell>
-                    <TableCell className="text-muted-foreground">{tx.description}</TableCell>
-                    <TableCell className={`text-left font-semibold ${getAmountClass(tx.type)}`}>
-                      {transactionTypeMap[tx.type].sign} {Math.abs(tx.amount).toLocaleString('fa-IR')}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant={statusMap[tx.status].variant}>
-                        {statusMap[tx.status].text}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {isLoading ? (
+                  Array.from({ length: 5 }).map((_, index) => (
+                    <TableRow key={index}>
+                      <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-20 ml-auto" /></TableCell>
+                      <TableCell className="text-center"><Skeleton className="h-6 w-16 mx-auto" /></TableCell>
+                    </TableRow>
+                  ))
+                ) : transactions.length > 0 ? (
+                  transactions.map((tx) => (
+                    <TableRow key={tx.id}>
+                      <TableCell className="font-medium">{tx.date}</TableCell>
+                      <TableCell>{transactionTypeMap[tx.type].text}</TableCell>
+                      <TableCell className="text-muted-foreground">{tx.description}</TableCell>
+                      <TableCell className={`text-left font-semibold ${getAmountClass(tx.type)}`}>
+                        {transactionTypeMap[tx.type].sign} {Math.abs(tx.amount).toLocaleString('fa-IR')}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant={statusMap[tx.status].variant}>
+                          {statusMap[tx.status].text}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                    <TableRow>
+                        <TableCell colSpan={5} className="h-24 text-center">
+                            تراکنشی یافت نشد.
+                        </TableCell>
+                    </TableRow>
+                )}
               </TableBody>
             </Table>
           </div>
@@ -101,5 +138,3 @@ export default function TransactionsPage() {
     </div>
   );
 }
-
-    
