@@ -333,5 +333,3 @@ function HomePageContent() {
       </div>
   );
 }
-
-    
