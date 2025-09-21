@@ -4,7 +4,6 @@
 import * as React from 'react';
 import { useEffect, useState, useRef } from 'react';
 import { slogans } from '@/lib/slogans';
-import { AnimatedTruckLoader } from './animated-truck-loader';
 import { applyTheme } from '../theme-switcher';
 import { cn } from '@/lib/utils';
 
@@ -40,7 +39,6 @@ export function LoaderWithSlogan() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background overflow-hidden p-4">
       <div className="flex-grow flex flex-col items-center justify-center w-full">
-        <AnimatedTruckLoader />
         <div className="mt-12 h-16 flex items-center justify-center w-full max-w-2xl text-center">
             <p className={cn(
                 "text-muted-foreground text-lg transition-opacity duration-500",

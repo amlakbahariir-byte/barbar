@@ -12,6 +12,7 @@ import { auth } from '@/lib/firebase/config';
 import { LoaderWithSlogan } from '@/components/ui/loader-with-slogan';
 import { cn } from '@/lib/utils';
 import { slogans } from '@/lib/slogans';
+import { AnimatedTruckLoader } from '@/components/ui/animated-truck-loader';
 
 // Extend window type to include our custom properties
 declare global {
@@ -20,28 +21,6 @@ declare global {
     confirmationResult?: ConfirmationResult;
   }
 }
-
-function AuthChecker({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const [authChecked, setAuthChecked] = useState(false);
-  
-  useEffect(() => {
-    const userRole = localStorage.getItem('userRole');
-    
-    if (userRole) {
-      router.replace('/dashboard');
-    } else {
-      setAuthChecked(true);
-    }
-  }, [router]);
-
-  if (!authChecked) {
-    return <LoaderWithSlogan />;
-  }
-
-  return <>{children}</>;
-}
-
 
 export default function Home() {
   const router = useRouter();
@@ -221,8 +200,8 @@ function HomePageContent() {
         
         <div className="text-center text-primary-foreground animate-in fade-in-0 slide-in-from-top-10 duration-700">
            <div className="flex flex-col items-center justify-center">
-                <Truck className="w-16 h-16 text-primary" />
-                <h1 className="text-5xl font-headline tracking-tight text-foreground mt-2">
+                <AnimatedTruckLoader />
+                <h1 className="text-5xl font-headline tracking-tight text-foreground -mt-4">
                     باربر ایرانی
                 </h1>
             </div>
