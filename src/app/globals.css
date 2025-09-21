@@ -93,37 +93,9 @@ body {
 }
 
 @layer utilities {
-  .road-lines {
-    background-image: linear-gradient(
-      90deg,
-      hsl(var(--muted-foreground)) 50%,
-      transparent 50%
-    );
-    background-size: 40px 2px;
-    opacity: 0.5;
-  }
 }
 
 @layer base {
-  @keyframes move-truck {
-    0% {
-      transform: translateX(120px) scaleX(-1);
-    }
-    45%, 55% {
-      transform: translateX(0) scaleX(-1);
-    }
-    100% {
-      transform: translateX(-120px) scaleX(1);
-    }
-  }
-  @keyframes move-road {
-    0% {
-      background-position-x: 0;
-    }
-    100% {
-      background-position-x: -40px;
-    }
-  }
   @keyframes fade-in-up {
     0% {
       opacity: 0;
@@ -143,3 +115,5 @@ body {
     }
   }
 }
+
+    

@@ -11,7 +11,7 @@ import type { RecaptchaVerifier, ConfirmationResult } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
 import { LoaderWithSlogan } from '@/components/ui/loader-with-slogan';
 import { cn } from '@/lib/utils';
-import { AnimatedTruckLoader } from '@/components/ui/animated-truck-loader';
+import { slogans } from '@/lib/slogans';
 
 // Extend window type to include our custom properties
 declare global {
@@ -24,49 +24,42 @@ declare global {
 function AuthChecker({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
-  const [isInitialVisit, setIsInitialVisit] = useState(true);
-
+  
   useEffect(() => {
-    // This effect runs on the client after hydration.
-    const hasVisited = localStorage.getItem('hasVisited');
-
-    if (hasVisited) {
-      // If the user has visited before, we don't need the initial 5-second wait.
-      setIsInitialVisit(false);
-    } else {
-      // First visit: Show loader for 5 seconds then allow content to show.
-      setTimeout(() => {
-        localStorage.setItem('hasVisited', 'true');
-        setIsInitialVisit(false);
-      }, 5000);
-    }
-
     const userRole = localStorage.getItem('userRole');
     
-    // If a role is set in localStorage, it means the user is fully logged in. 
-    // Redirect them to the dashboard.
     if (userRole) {
       router.replace('/dashboard');
     } else {
-      // If there's no role, it's safe to show the login page.
-      // We mark auth as checked to unmount the loader.
       setAuthChecked(true);
     }
   }, [router]);
 
-  // While checking auth state OR during the initial 5-second visit, show a full-screen loader.
-  if (!authChecked || isInitialVisit) {
+  if (!authChecked) {
     return <LoaderWithSlogan />;
   }
 
-  // If auth state is checked and the user isn't logged in, render the children (the login page).
   return <>{children}</>;
 }
 
 
 export default function Home() {
+  const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    const userRole = localStorage.getItem('userRole');
+    if (userRole) {
+      router.replace('/dashboard');
+    }
+  }, [router]);
+
+  if (!isClient) {
+    return <LoaderWithSlogan />;
+  }
+
   return (
-    <AuthChecker>
       <main className="h-screen w-full flex flex-col items-center justify-center bg-background overflow-hidden relative p-4">
           <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
              <div 
@@ -87,7 +80,6 @@ export default function Home() {
           </div>
           <HomePageContent />
       </main>
-    </AuthChecker>
   );
 }
 
@@ -100,6 +92,9 @@ function HomePageContent() {
   const router = useRouter();
   const { toast } = useToast();
   const otpInputs = useRef<(HTMLInputElement | null)[]>([]);
+  const [slogan, setSlogan] = useState('');
+  const [isSloganVisible, setIsSloganVisible] = useState(false);
+
 
   // Setup reCAPTCHA
   useEffect(() => {
@@ -131,6 +126,23 @@ function HomePageContent() {
       handleOtpSubmit();
     }
   }, [otp]);
+  
+    // Effect to cycle through slogans
+  useEffect(() => {
+    const pickSlogan = () => {
+      setIsSloganVisible(false);
+      setTimeout(() => {
+        const randomIndex = Math.floor(Math.random() * slogans.length);
+        setSlogan(slogans[randomIndex]);
+        setIsSloganVisible(true);
+      }, 500); // Wait for fade-out
+    };
+
+    pickSlogan(); // Initial slogan
+    const intervalId = setInterval(pickSlogan, 4000); // Change slogan every 4 seconds
+
+    return () => clearInterval(intervalId);
+  }, []);
 
 
   const handlePhoneSubmit = async (e?: React.FormEvent) => {
@@ -208,10 +220,23 @@ function HomePageContent() {
       <div className="w-full max-w-md flex flex-col justify-between h-full py-12 z-10">
         
         <div className="text-center text-primary-foreground animate-in fade-in-0 slide-in-from-top-10 duration-700">
-           <AnimatedTruckLoader />
+           <div className="flex flex-col items-center justify-center">
+                <Truck className="w-16 h-16 text-primary" />
+                <h1 className="text-5xl font-headline tracking-tight text-foreground mt-2">
+                    باربر ایرانی
+                </h1>
+            </div>
+             <div className="mt-8 h-12 flex items-center justify-center w-full text-center">
+                 <p className={cn(
+                    "text-muted-foreground text-lg transition-opacity duration-500",
+                    isSloganVisible ? "opacity-100" : "opacity-0"
+                )}>
+                  &quot;{slogan}&quot;
+                </p>
+            </div>
         </div>
         
-        <div className={cn("transition-opacity duration-500 mb-[30px]", isSubmitting && "opacity-50 pointer-events-none")}>
+        <div className={cn("transition-opacity duration-500 mb-8", isSubmitting && "opacity-50 pointer-events-none")}>
             <div className="bg-card p-6 rounded-3xl shadow-2xl space-y-6 animate-in fade-in-0 slide-in-from-bottom-10 duration-700">
                 <div className='text-center'>
                   <h2 className="text-2xl font-bold tracking-tight text-foreground">
@@ -304,6 +329,9 @@ function HomePageContent() {
                 )}
             </div>
         </div>
+        <div className="h-8"></div>
       </div>
   );
 }
+
+    
