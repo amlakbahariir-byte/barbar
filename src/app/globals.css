@@ -107,10 +107,13 @@ body {
 @layer base {
   @keyframes move-truck {
     0% {
-      transform: translateX(250px);
+      transform: translateX(120px) scaleX(-1);
+    }
+    45%, 55% {
+      transform: translateX(0) scaleX(-1);
     }
     100% {
-      transform: translateX(-250px);
+      transform: translateX(-120px) scaleX(1);
     }
   }
   @keyframes move-road {
