@@ -28,6 +28,7 @@ export default function RequestDetailsPage() {
   const path = usePathname();
   const [shipment, setShipment] = useState<Shipment | null>(null);
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
+  const [bidAmount, setBidAmount] = useState('');
   const { toast } = useToast();
   const [distance, setDistance] = useState(0);
   
@@ -66,6 +67,23 @@ export default function RequestDetailsPage() {
     });
     navigate('/dashboard');
   }
+
+  const formatNumber = (value: string) => {
+    const number = parseInt(value.replace(/,/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d).toString()), 10);
+    if (isNaN(number)) return '';
+    return new Intl.NumberFormat('fa-IR').format(number);
+  };
+
+  const handleBidChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/[^۰-۹0-9]/g, '');
+    if (rawValue === '') {
+        setBidAmount('');
+        return;
+    }
+    const formattedValue = formatNumber(rawValue);
+    setBidAmount(formattedValue);
+  };
+
 
   if (!shipment || !role) {
     return <div className="flex items-center justify-center h-full">در حال بارگذاری جزئیات...</div>;
@@ -158,7 +176,16 @@ export default function RequestDetailsPage() {
                         <CardContent className="space-y-3">
                             <Label htmlFor="bid-amount">مبلغ پیشنهادی شما (تومان)</Label>
                             <div className="relative">
-                                <Input id="bid-amount" type="number" dir="ltr" className="pr-8 text-lg font-bold tracking-wider" placeholder="1,200,000" required/>
+                                <Input 
+                                    id="bid-amount" 
+                                    type="text" 
+                                    dir="ltr" 
+                                    className="pr-8 text-lg font-bold tracking-wider text-right" 
+                                    placeholder="۱,۲۰۰,۰۰۰" 
+                                    value={bidAmount}
+                                    onChange={handleBidChange}
+                                    required
+                                />
                                 <CircleDollarSign className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground"/>
                             </div>
                         </CardContent>
@@ -174,7 +201,7 @@ export default function RequestDetailsPage() {
                     <CardContent>
                         <p className="text-sm">این محموله با موفقیت در تاریخ {shipment.date} تحویل داده شد.</p>
                         <div className="mt-4 flex items-center gap-3 border-t pt-4">
-                            <Image src={shipment.acceptedDriver?.avatar || ''} alt={shipment.acceptedDriver?.name || 'driver'} width={40} height={40} className="rounded-full" />
+                            <Image src={shipment.acceptedDriver?.avatar || ''} alt={ship.acceptedDriver?.name || 'driver'} width={40} height={40} className="rounded-full" />
                             <div>
                                 <p className="font-semibold">{shipment.acceptedDriver?.name}</p>
                                 <p className="text-xs text-muted-foreground">راننده</p>
@@ -188,6 +215,3 @@ export default function RequestDetailsPage() {
     </div>
   );
 }
-
-
-    
