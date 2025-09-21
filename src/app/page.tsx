@@ -226,13 +226,15 @@ function HomePageContent() {
                     باربر ایرانی
                 </h1>
             </div>
-             <div className="mt-8 h-12 flex items-center justify-center w-full text-center">
-                 <p className={cn(
-                    "text-muted-foreground text-lg transition-opacity duration-500",
+            <div className="mt-8 h-12 flex items-center justify-center w-full text-center">
+              <div className="bg-card/50 backdrop-blur-sm rounded-xl px-6 py-3 shadow-lg">
+                <p className={cn(
+                    "text-foreground text-lg transition-opacity duration-500",
                     isSloganVisible ? "opacity-100" : "opacity-0"
                 )}>
                   &quot;{slogan}&quot;
                 </p>
+              </div>
             </div>
         </div>
         
