@@ -10,7 +10,8 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowRight, LogOut, Edit, Save, User as UserIcon, Truck, Star, FileText, Fingerprint, Phone, Mail, MapPin, Calendar, Heart, CreditCard, Bell, Moon, Palette, Check, History, Car, Shield } from 'lucide-react';
-import { auth } from '@/lib/firebase/config';
+import { auth, app } from '@/lib/firebase/config';
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
 import { Badge } from '@/components/ui/badge';
 import { FileUploadItem } from '@/components/file-upload-item';
 import { ThemeSwitcher } from '@/components/theme-switcher';
@@ -49,6 +50,7 @@ export default function ProfilePage() {
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [notificationPermission, setNotificationPermission] = useState(false);
   
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(true);
@@ -82,6 +84,9 @@ export default function ProfilePage() {
     if (typeof window !== 'undefined') {
         const darkModePreference = document.documentElement.classList.contains('dark');
         setIsDarkMode(darkModePreference);
+        if ("Notification" in window) {
+          setNotificationPermission(Notification.permission === 'granted');
+        }
     }
 
     const fetchTransactions = async () => {
@@ -114,6 +119,46 @@ export default function ProfilePage() {
       localStorage.setItem('dark-mode', 'false');
     }
   };
+
+  const handleNotificationToggle = async (checked: boolean) => {
+    if (typeof window === 'undefined' || !("Notification" in window)) {
+        toast({ title: 'مرورگر شما از اعلانات پشتیبانی نمی‌کند', variant: 'destructive'});
+        return;
+    }
+    
+    if(checked) {
+        const permission = await Notification.requestPermission();
+        if(permission === 'granted') {
+            setNotificationPermission(true);
+            toast({ title: 'دسترسی به اعلانات موفقیت آمیز بود.' });
+            // Get token
+             const messaging = getMessaging(app);
+             getToken(messaging, { vapidKey: 'YOUR_VAPID_KEY_FROM_FIREBASE_CONSOLE' }).then((currentToken) => {
+              if (currentToken) {
+                console.log('FCM Token:', currentToken);
+                // TODO: Send this token to your server and store it.
+                toast({ title: 'توکن با موفقیت دریافت شد', description: 'برای ارسال نوتیفیکیشن آماده است.' });
+              } else {
+                console.log('No registration token available. Request permission to generate one.');
+                 toast({ title: 'دریافت توکن ناموفق بود', description: 'لطفا مجددا تلاش کنید', variant: 'destructive' });
+                 setNotificationPermission(false);
+              }
+            }).catch((err) => {
+              console.log('An error occurred while retrieving token. ', err);
+              toast({ title: 'خطا در دریافت توکن', description: err.message, variant: 'destructive' });
+              setNotificationPermission(false);
+            });
+        } else {
+            setNotificationPermission(false);
+            toast({ title: 'شما دسترسی به اعلانات را رد کردید.', variant: 'destructive' });
+        }
+    } else {
+       setNotificationPermission(false);
+       // Here you might want to remove the token from your server
+       console.log('Notifications disabled by user.');
+    }
+  };
+
 
   const handleSave = () => {
     setIsEditing(false);
@@ -408,7 +453,7 @@ export default function ProfilePage() {
                     <CardContent className="space-y-2">
                         <div className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50">
                             <Label htmlFor="notifications" className="font-semibold cursor-pointer flex items-center gap-3"><Bell className="text-muted-foreground"/>اعلانات</Label>
-                            <Switch id="notifications" defaultChecked/>
+                            <Switch id="notifications" checked={notificationPermission} onCheckedChange={handleNotificationToggle}/>
                         </div>
                          <div className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50">
                             <Label htmlFor="dark-mode" className="font-semibold cursor-pointer flex items-center gap-3"><Moon className="text-muted-foreground"/>حالت تیره</Label>
