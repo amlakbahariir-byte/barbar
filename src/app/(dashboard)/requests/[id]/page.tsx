@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ShipmentTracking } from '@/components/shipment-tracking';
 import Image from 'next/image';
 import { ShipmentRouteMap } from '@/components/shipment-route-map';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const statusMap: { [key in Shipment['status']]: { text: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' } } = {
   pending: { text: 'در انتظار پیشنهاد', variant: 'secondary' },
@@ -27,6 +28,7 @@ export default function RequestDetailsPage() {
   const router = useRouter();
   const path = usePathname();
   const [shipment, setShipment] = useState<Shipment | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [role, setRole] = useState<'shipper' | 'driver' | null>(null);
   const [bidAmount, setBidAmount] = useState('');
   const { toast } = useToast();
@@ -35,16 +37,22 @@ export default function RequestDetailsPage() {
   const id = path.split('/').pop() || '';
 
   useEffect(() => {
-    if (id) {
-      const data = getShipmentById(id);
-      if (data) {
-        setShipment(data as Shipment);
-      }
-    }
     const storedRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
     setRole(storedRole);
     // Simulate distance calculation
     setDistance(Math.floor(Math.random() * 800) + 100);
+
+    if (id) {
+        const fetchShipment = async () => {
+            setIsLoading(true);
+            const data = await getShipmentById(id);
+            if (data) {
+                setShipment(data);
+            }
+            setIsLoading(false);
+        }
+        fetchShipment();
+    }
   }, [id]);
 
   const navigate = (newPath: string) => {
@@ -84,9 +92,12 @@ export default function RequestDetailsPage() {
     setBidAmount(formattedValue);
   };
 
+  if (isLoading) {
+    return <RequestDetailsSkeleton />;
+  }
 
   if (!shipment || !role) {
-    return <div className="flex items-center justify-center h-full">در حال بارگذاری جزئیات...</div>;
+    return <div className="flex items-center justify-center h-full">جزئیات بار یافت نشد.</div>;
   }
 
   const isShipper = role === 'shipper';
@@ -201,7 +212,7 @@ export default function RequestDetailsPage() {
                     <CardContent>
                         <p className="text-sm">این محموله با موفقیت در تاریخ {shipment.date} تحویل داده شد.</p>
                         <div className="mt-4 flex items-center gap-3 border-t pt-4">
-                            <Image src={shipment.acceptedDriver?.avatar || ''} alt={ship.acceptedDriver?.name || 'driver'} width={40} height={40} className="rounded-full" />
+                            <Image src={shipment.acceptedDriver?.avatar || ''} alt={shipment.acceptedDriver?.name || 'driver'} width={40} height={40} className="rounded-full" />
                             <div>
                                 <p className="font-semibold">{shipment.acceptedDriver?.name}</p>
                                 <p className="text-xs text-muted-foreground">راننده</p>
@@ -210,6 +221,54 @@ export default function RequestDetailsPage() {
                     </CardContent>
                  </Card>
             )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RequestDetailsSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="relative flex items-center justify-between p-6 rounded-2xl overflow-hidden bg-card border shadow-sm">
+        <div className="relative z-10 space-y-2">
+          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-5 w-48" />
+        </div>
+        <Skeleton className="h-10 w-10 rounded-full" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="overflow-hidden border-2 shadow-md">
+            <Skeleton className="w-full h-64 md:h-80" />
+          </Card>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-8 w-40" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Skeleton className="h-6 w-full" />
+              <Separator />
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <Skeleton className="h-5 w-24" />
+                <Skeleton className="h-5 w-28" />
+                <Skeleton className="h-5 w-20" />
+                <Skeleton className="h-5 w-32" />
+              </div>
+              <Skeleton className="h-12 w-full" />
+            </CardContent>
+          </Card>
+        </div>
+        <div className="space-y-4 lg:col-span-1">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-8 w-48" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-24 w-full" />
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PackagePlus, List, Map as MapIcon, ArrowLeft, Package, LocateFixed, ArrowRight, MapPin, RefreshCw, MessageSquareQuote } from 'lucide-react';
 import { ShipmentCard } from '@/components/shipment-card';
-import { getMyShipments, shipments } from '@/lib/data';
+import { getMyShipments, Shipment } from '@/lib/data';
 import { useEffect, useState } from 'react';
 import { ShipmentListPage } from '@/components/shipment-list-page';
 import NewRequestPage from '../../requests/new/page';
@@ -17,13 +17,13 @@ import TransactionsPage from '../../transactions/page';
 import { MapView } from '@/components/map-view';
 import { Separator } from '@/components/ui/separator';
 import { slogans } from '@/lib/slogans';
+import { Skeleton } from '@/components/ui/skeleton';
 
-function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
-  const myShipments = getMyShipments('shipper', 'all');
-  const recentShipments = myShipments.slice(0, 2);
-  const pendingCount = myShipments.filter(s => s.status === 'pending').length;
-  const inTransitCount = myShipments.filter(s => s.status === 'in_transit').length;
-  const deliveredCount = myShipments.filter(s => s.status === 'delivered').length;
+function ShipperDashboard({ navigate, shipments, isLoading }: { navigate: (path: string) => void, shipments: Shipment[], isLoading: boolean }) {
+  const recentShipments = shipments.slice(0, 2);
+  const pendingCount = shipments.filter(s => s.status === 'pending').length;
+  const inTransitCount = shipments.filter(s => s.status === 'in_transit').length;
+  const deliveredCount = shipments.filter(s => s.status === 'delivered').length;
 
   return (
     <div className="space-y-6">
@@ -56,7 +56,12 @@ function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
       
       <div className="animate-in fade-in-0 slide-in-from-top-8 duration-500 delay-200">
         <h2 className="text-2xl font-bold mb-4">درخواست‌های اخیر شما</h2>
-        {recentShipments.length > 0 ? (
+        {isLoading ? (
+          <div className="grid gap-4 md:grid-cols-2">
+            <Skeleton className="h-64 w-full" />
+            <Skeleton className="h-64 w-full" />
+          </div>
+        ) : recentShipments.length > 0 ? (
           <>
             <div className="grid gap-4 md:grid-cols-2">
               {recentShipments.map((shipment, index) => (
@@ -84,7 +89,7 @@ function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
   );
 }
 
-function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
+function DriverDashboard({ navigate, shipments, isLoading }: { navigate: (path: string) => void, shipments: Shipment[], isLoading: boolean }) {
     const [currentLocation, setCurrentLocation] = useState("در حال خواندن موقعیت...");
     const [slogan, setSlogan] = useState('');
 
@@ -145,7 +150,9 @@ function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
             <h1 className="text-3xl font-bold">درخواست‌های بار نزدیک شما</h1>
             <p className="text-muted-foreground mt-1">بر اساس آخرین موقعیت مکانی ثبت شده شما.</p>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-4">
-                {shipments.filter(s => s.status === 'pending').slice(0, 3).map((shipment, index) => (
+                {isLoading ? (
+                    Array.from({length: 3}).map((_, index) => <Skeleton key={index} className="h-64 w-full" />)
+                ) : shipments.filter(s => s.status === 'pending').slice(0, 3).map((shipment, index) => (
                     <div key={shipment.id} className="animate-in fade-in-0 slide-in-from-top-12 duration-500" style={{ animationDelay: `${index * 100 + 200}ms`, animationFillMode: 'backwards' }}>
                         <ShipmentCard shipment={shipment} role="driver" navigate={navigate} />
                     </div>
@@ -168,6 +175,26 @@ function DriverDashboard({ navigate }: { navigate: (path: string) => void }) {
 const PageRenderer = ({ slug, role, navigate }: { slug: string[], role: 'shipper' | 'driver', navigate: (path: string) => void }) => {
   const page = slug[0] || 'home';
   const subPage = slug[1];
+  const [shipments, setShipments] = useState<Shipment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (role) {
+      const fetchShipments = async () => {
+        setIsLoading(true);
+        let shipmentType: 'all' | 'available' | 'accepted' = 'all';
+        if (role === 'driver') {
+          if (page === 'home' || subPage === 'available') shipmentType = 'available';
+          else if (subPage === 'my-shipments') shipmentType = 'accepted';
+        }
+        
+        const data = await getMyShipments(role, shipmentType);
+        setShipments(data);
+        setIsLoading(false);
+      };
+      fetchShipments();
+    }
+  }, [role, page, subPage]);
 
   if (page === 'profile') {
     return <ProfilePage />;
@@ -202,7 +229,8 @@ const PageRenderer = ({ slug, role, navigate }: { slug: string[], role: 'shipper
       return <ShipmentListPage 
         title="درخواست‌های من" 
         description="در این صفحه تمام درخواست‌های حمل بار خود را مشاهده و مدیریت کنید." 
-        shipments={getMyShipments('shipper', 'all')} 
+        shipments={shipments} 
+        isLoading={isLoading}
         role={role} 
         navigate={navigate} 
       />;
@@ -211,7 +239,8 @@ const PageRenderer = ({ slug, role, navigate }: { slug: string[], role: 'shipper
       return <ShipmentListPage 
         title="درخواست‌های بار موجود" 
         description="در این صفحه بارهای موجود در سراسر کشور را مشاهده کرده و پیشنهاد خود را ثبت کنید." 
-        shipments={getMyShipments('driver', 'available')} 
+        shipments={shipments}
+        isLoading={isLoading} 
         role={role} 
         navigate={navigate} 
       />;
@@ -220,7 +249,8 @@ const PageRenderer = ({ slug, role, navigate }: { slug: string[], role: 'shipper
       return <ShipmentListPage 
         title="بارهای من" 
         description="در این صفحه بارهایی که پذیرفته‌اید و در حال حمل آن‌ها هستید را مشاهده کنید." 
-        shipments={getMyShipments('driver', 'accepted')} 
+        shipments={shipments}
+        isLoading={isLoading} 
         role={role} 
         navigate={navigate} 
       />;
@@ -233,9 +263,9 @@ const PageRenderer = ({ slug, role, navigate }: { slug: string[], role: 'shipper
 
   // Fallback to the main dashboard content
   if (role === 'shipper') {
-    return <ShipperDashboard navigate={navigate} />;
+    return <ShipperDashboard navigate={navigate} shipments={shipments} isLoading={isLoading} />;
   }
-  return <DriverDashboard navigate={navigate} />;
+  return <DriverDashboard navigate={navigate} shipments={shipments} isLoading={isLoading} />;
 };
 
 
@@ -276,5 +306,3 @@ export default function DashboardPage({ _navigate }: { _navigate?: (path: string
   // Pass the necessary props to the renderer
   return <PageRenderer slug={slug} role={role} navigate={navigate} />;
 }
-
-    

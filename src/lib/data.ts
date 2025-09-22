@@ -47,80 +47,6 @@ const drivers: Driver[] = [
   { id: 'd4', name: 'سارا محمدی', avatar: 'https://i.pravatar.cc/150?u=d4', vehicle: 'خاور', rating: 5.0 },
 ];
 
-export let shipments: Shipment[] = [
-  {
-    id: 'shp1001',
-    origin: 'تهران',
-    destination: 'اصفهان',
-    weight: 2000,
-    cargoType: 'مبلمان',
-    date: '۱۴۰۳/۰۵/۱۰',
-    description: 'مبلمان منزل، شکستنی و حساس',
-    status: 'pending',
-    bids: [
-      { id: 'b1', driver: drivers[0], amount: 1200000, timestamp: '2 ساعت پیش' },
-      { id: 'b2', driver: drivers[3], amount: 1350000, timestamp: '1 ساعت پیش' },
-    ],
-  },
-  {
-    id: 'shp1002',
-    origin: 'شیراز',
-    destination: 'تبریز',
-    weight: 500,
-    cargoType: 'لوازم الکترونیکی',
-    date: '۱۴۰۳/۰۵/۱۲',
-    description: 'کارتن‌های حاوی قطعات کامپیوتری',
-    status: 'pending',
-    bids: [
-        { id: 'b3', driver: drivers[1], amount: 850000, timestamp: '۳۰ دقیقه پیش' },
-    ]
-  },
-  {
-    id: 'shp1003',
-    origin: 'مشهد',
-    destination: 'کرج',
-    weight: 10000,
-    cargoType: 'مصالح ساختمانی',
-    date: '۱۴۰۳/۰۵/۱۱',
-    description: 'کیسه‌های سیمان',
-    status: 'accepted',
-    acceptedDriver: drivers[2],
-  },
-  {
-    id: 'shp1004',
-    origin: 'اهواز',
-    destination: 'تهران',
-    weight: 800,
-    cargoType: 'مواد غذایی',
-    date: '۱۴۰۳/۰۵/۰۹',
-    description: 'کارتن‌های مواد غذایی خشک و کنسروی',
-    status: 'in_transit',
-    acceptedDriver: drivers[0],
-  },
-    {
-    id: 'shp1005',
-    origin: 'اصفهان',
-    destination: 'شیراز',
-    weight: 1200,
-    cargoType: 'اثاثیه اداری',
-    date: '۱۴۰۳/۰۵/۱۵',
-    description: 'شامل میز، صندلی و فایل‌های اداری',
-    status: 'pending',
-    bids: []
-  },
-  {
-    id: 'shp1006',
-    origin: 'یزد',
-    destination: 'کرمان',
-    weight: 300,
-    cargoType: 'بسته‌های پستی',
-    date: '۱۴۰۳/۰۵/۱۳',
-    description: 'تعداد ۲۰ بسته کوچک',
-    status: 'delivered',
-    acceptedDriver: drivers[1],
-  },
-];
-
 export const getTransactions = async (): Promise<Transaction[]> => {
     const transactionsCol = collection(db, 'transactions');
     const transactionSnapshot = await getDocs(transactionsCol);
@@ -129,31 +55,53 @@ export const getTransactions = async (): Promise<Transaction[]> => {
 };
 
 
-export const getShipmentById = (id: string) => {
-    // This function will need to be updated to fetch from Firestore
-    return shipments.find(s => s.id === id);
+export const getShipmentById = async (id: string): Promise<Shipment | null> => {
+    const docRef = doc(db, "shipments", id);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+        return { id: docSnap.id, ...docSnap.data() } as Shipment;
+    } else {
+        console.log("No such document!");
+        return null;
+    }
 }
 
-export const addShipment = (shipment: Omit<Shipment, 'id'>) => {
-    // This function will need to be updated to add to Firestore
-    const newShipment = { ...shipment, id: `shp${Date.now()}` } as Shipment;
-    shipments.unshift(newShipment);
-    return newShipment;
+export const addShipment = async (shipment: Omit<Shipment, 'id'>) => {
+    try {
+        const docRef = await addDoc(collection(db, "shipments"), shipment);
+        console.log("Document written with ID: ", docRef.id);
+        return { ...shipment, id: docRef.id }
+    } catch (e) {
+        console.error("Error adding document: ", e);
+        return null;
+    }
 }
 
-export const getMyShipments = (role: 'shipper' | 'driver', type: 'all' | 'available' | 'accepted') => {
-    // This function will also need a Firestore implementation
+export const getMyShipments = async (role: 'shipper' | 'driver', type: 'all' | 'available' | 'accepted'): Promise<Shipment[]> => {
+    const shipmentsCol = collection(db, 'shipments');
+    let q;
+
     if (role === 'shipper') {
-        return shipments;
-    }
-    
-    if (type === 'available') {
-        return shipments.filter(s => s.status === 'pending');
+        if (type === 'all') {
+            q = query(shipmentsCol);
+        } else {
+            // Placeholder for shipper-specific filters like 'pending', 'in_transit'
+            // For now, returning all as an example
+            q = query(shipmentsCol);
+        }
+    } else { // role === 'driver'
+        if (type === 'available') {
+            q = query(shipmentsCol, where("status", "==", "pending"));
+        } else if (type === 'accepted') {
+            // This needs a proper user ID check in a real app
+            q = query(shipmentsCol, where("status", "in", ["accepted", "in_transit"]));
+        } else {
+             q = query(shipmentsCol);
+        }
     }
 
-    if (type === 'accepted') {
-        return shipments.filter(s => s.acceptedDriver?.id === 'd1' || s.id === 'shp1003' || s.id === 'shp1006');
-    }
-    
-    return [];
+    const shipmentSnapshot = await getDocs(q);
+    const shipmentList = shipmentSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Shipment));
+    return shipmentList;
 }

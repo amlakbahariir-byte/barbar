@@ -7,11 +7,13 @@ import { Shipment } from "@/lib/data";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "./ui/skeleton";
 
 interface ShipmentListPageProps {
     title: string;
     description: string;
     shipments: Shipment[];
+    isLoading: boolean;
     role: 'shipper' | 'driver';
     navigate: (path: string) => void;
 }
@@ -24,7 +26,7 @@ const statusFilters: { value: Shipment['status'] | 'all', label: string }[] = [
 ];
 
 
-export function ShipmentListPage({ title, description, shipments, role, navigate }: ShipmentListPageProps) {
+export function ShipmentListPage({ title, description, shipments, isLoading, role, navigate }: ShipmentListPageProps) {
     const [activeTab, setActiveTab] = useState<'all' | Shipment['status']>('all');
     
     const filteredShipments = activeTab === 'all'
@@ -60,7 +62,13 @@ export function ShipmentListPage({ title, description, shipments, role, navigate
                 </div>
                 
                 <TabsContent value={activeTab} className="mt-6 animate-in fade-in-0 slide-in-from-top-2 duration-300">
-                     {filteredShipments.length > 0 ? (
+                     {isLoading ? (
+                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                            {Array.from({ length: 6 }).map((_, index) => (
+                                <Skeleton key={index} className="h-64 w-full" />
+                            ))}
+                        </div>
+                     ) : filteredShipments.length > 0 ? (
                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {filteredShipments.map((shipment, index) => (
                                 <div key={shipment.id} className="animate-in fade-in-0 slide-in-from-top-12 duration-500" style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'backwards' }}>
