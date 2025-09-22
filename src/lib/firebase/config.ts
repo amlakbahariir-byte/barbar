@@ -5,12 +5,12 @@ import { getAuth, type Auth } from 'firebase/auth';
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  "projectId": "barbarv2-77183437-30c60",
-  "appId": "1:1071435216491:web:ff4af89f38fdae3142232e",
-  "apiKey": "AIzaSyAS6jOtuO4_nQ9EcNxb6aPy5QnNTV1OHNI",
-  "authDomain": "barbarv2-77183437-30c60.firebaseapp.com",
-  "measurementId": "",
-  "messagingSenderId": "1071435216491"
+  apiKey: "AIzaSyBZYb0gopPOsLs6SO8sJkG_El7NA-7rvZM",
+  authDomain: "studio-5365383067-a1636.firebaseapp.com",
+  projectId: "studio-5365383067-a1636",
+  storageBucket: "studio-5365383067-a1636.firebasestorage.app",
+  messagingSenderId: "537281434402",
+  appId: "1:537281434402:web:2e22089562af4a80008b7b"
 };
 
 
