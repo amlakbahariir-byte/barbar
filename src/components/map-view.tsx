@@ -84,7 +84,7 @@ export function MapView({ onConfirm }: { onConfirm?: () => void }) {
       if (address) {
         setCurrentAddress(address);
       } else {
-        setCurrentAddress('آدرس پیدا نشد. لطفا کمی جابجا شوید.');
+        setCurrentAddress('خطا در دریافت آدرس');
       }
     } catch (e) {
       console.error("Reverse geocoding failed", e);
@@ -287,5 +287,7 @@ export function MapView({ onConfirm }: { onConfirm?: () => void }) {
     </Card>
   );
 }
+
+    
 
     
