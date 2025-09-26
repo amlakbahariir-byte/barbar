@@ -20,6 +20,7 @@ import { getTransactions, Transaction } from '@/lib/data';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ImageUpload } from '@/components/image-upload';
 
 const documentUploads = [
     "صفحه اول شناسنامه",
@@ -71,11 +72,19 @@ export default function ProfilePage() {
       totalTrips: 124,
   });
 
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+  const [vehicleImageUrl, setVehicleImageUrl] = useState<string | null>(null);
+
+
   useEffect(() => {
     const storedRole = localStorage.getItem('userRole') as 'shipper' | 'driver' | null;
     setRole(storedRole);
+    const initialProfileUrl = `https://i.pravatar.cc/300?u=${storedRole}`;
+    setProfileImageUrl(initialProfileUrl);
+
     if(storedRole === 'driver') {
         setUserData(prev => ({...prev, name: 'راننده نمونه'}));
+        setVehicleImageUrl('https://picsum.photos/seed/truck/600/400');
     }
     
     // This check is to prevent SSR mismatch for dark mode preference
@@ -199,16 +208,15 @@ export default function ProfilePage() {
         />
          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
         <CardContent className="relative p-6 flex flex-col items-center text-center">
-            <div className="relative mb-4">
-                <Image 
-                    src={`https://i.pravatar.cc/300?u=${role}`} 
-                    alt="User avatar"
-                    width={120}
-                    height={120}
-                    className="rounded-full object-cover shadow-lg border-4 border-background"
-                />
-            </div>
-            <h2 className="text-3xl font-bold tracking-tight">{userData.name}</h2>
+             <ImageUpload
+                id="profile-picture"
+                currentImage={profileImageUrl}
+                onImageChange={setProfileImageUrl}
+                placeholderIcon={<UserIcon className="size-16 text-muted-foreground" />}
+                className="size-32"
+                isAvatar
+             />
+            <h2 className="text-3xl font-bold tracking-tight mt-4">{userData.name}</h2>
             <p className="text-base text-muted-foreground mt-1 capitalize">{role === 'shipper' ? 'صاحب بار' : 'راننده'}</p>
 
             {role === 'driver' && (
@@ -289,32 +297,42 @@ export default function ProfilePage() {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2"><Truck className='text-primary'/>اطلاعات خودرو</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-3">
-                            {Object.entries({
-                                vehicleType: { label: 'نوع وسیله نقلیه', icon: Truck, editable: true },
-                                vehicleModel: { label: 'مدل', icon: Car, editable: true },
-                                licensePlate: { label: 'شماره پلاک', icon: Shield, editable: true },
-                            }).map(([key, { label, icon: Icon, editable }]) => (
-                                <div key={key} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
-                                    <div className="flex items-center gap-3">
-                                        <Icon className="w-5 h-5 text-muted-foreground" />
-                                        <Label className="font-semibold">{label}</Label>
+                        <CardContent className="space-y-6">
+                            <ImageUpload
+                                id="vehicle-image"
+                                currentImage={vehicleImageUrl}
+                                onImageChange={setVehicleImageUrl}
+                                placeholderIcon={<Truck className="size-16 text-muted-foreground" />}
+                                className="w-full aspect-[16/9]"
+                             />
+
+                            <div className="space-y-3">
+                                {Object.entries({
+                                    vehicleType: { label: 'نوع وسیله نقلیه', icon: Truck, editable: true },
+                                    vehicleModel: { label: 'مدل', icon: Car, editable: true },
+                                    licensePlate: { label: 'شماره پلاک', icon: Shield, editable: true },
+                                }).map(([key, { label, icon: Icon, editable }]) => (
+                                    <div key={key} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
+                                        <div className="flex items-center gap-3">
+                                            <Icon className="w-5 h-5 text-muted-foreground" />
+                                            <Label className="font-semibold">{label}</Label>
+                                        </div>
+                                        {isEditing && editable ? (
+                                            <Input
+                                                id={key}
+                                                value={userData[key as keyof typeof userData] as string}
+                                                onChange={(e) => setUserData(prev => ({...prev, [key]: e.target.value}))}
+                                                className="max-w-xs text-left"
+                                                dir="ltr"
+                                            />
+                                        ) : (
+                                            <span className="font-medium text-muted-foreground">
+                                                {userData[key as keyof typeof userData]}
+                                            </span>
+                                        )}
                                     </div>
-                                    {isEditing && editable ? (
-                                        <Input
-                                            id={key}
-                                            value={userData[key as keyof typeof userData] as string}
-                                            onChange={(e) => setUserData(prev => ({...prev, [key]: e.target.value}))}
-                                            className="max-w-xs text-left"
-                                            dir="ltr"
-                                        />
-                                    ) : (
-                                        <span className="font-medium text-muted-foreground">
-                                            {userData[key as keyof typeof userData]}
-                                        </span>
-                                    )}
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </CardContent>
                     </Card>
                 )}
