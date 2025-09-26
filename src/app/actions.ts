@@ -38,13 +38,15 @@ export async function getAddressFromCoordinates(lat: number, lng: number): Promi
       // Prioritize more specific location types
       const cityOrTown = city || town || village;
       const addressParts = [road, suburb, cityOrTown, state].filter(Boolean);
+      
       if (addressParts.length > 0) {
         return addressParts.join(', ');
       }
     }
     
-    // Fallback to display_name if detailed parts are not enough
+    // Fallback to display_name only if detailed parts are not available at all.
     if (data && data.display_name) {
+      // Split and take the most relevant parts of the display name
       return data.display_name.split(',').slice(0, 4).join(',');
     }
 
@@ -55,3 +57,4 @@ export async function getAddressFromCoordinates(lat: number, lng: number): Promi
     return "خطا در دریافت آدرس";
   }
 }
+
