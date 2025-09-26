@@ -1,16 +1,30 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MapPin, Search, LocateFixed } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { getAddressFromCoordinates } from '@/app/actions';
+import { Skeleton } from './ui/skeleton';
 
 // Declare Leaflet types for TypeScript
 declare const L: any;
+
+// A simple debounce function
+function debounce<F extends (...args: any[]) => any>(func: F, waitFor: number) {
+  let timeout: NodeJS.Timeout | null = null;
+
+  return (...args: Parameters<F>): void => {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+    timeout = setTimeout(() => func(...args), waitFor);
+  };
+}
+
 
 // Placeholder coordinates for cities as we don't have a geocoding service
 const cityCoordinates: { [key: string]: [number, number] } = {
@@ -54,7 +68,33 @@ export function MapView({ onConfirm }: { onConfirm?: () => void }) {
   const leafletMapRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentAddress, setCurrentAddress] = useState<string | null>('در حال دریافت آدرس...');
+  const [isGeocoding, setIsGeocoding] = useState(true);
+
   
+  const updateAddress = useCallback(async () => {
+    if (!leafletMapRef.current) return;
+    
+    setIsGeocoding(true);
+    const center = leafletMapRef.current.getCenter();
+    const { lat, lng } = center;
+
+    try {
+      const address = await getAddressFromCoordinates(lat, lng);
+      if (address) {
+        setCurrentAddress(address);
+      } else {
+        setCurrentAddress(`موقعیت سفارشی (${lat.toFixed(3)}, ${lng.toFixed(3)})`);
+      }
+    } catch (e) {
+      console.error("Reverse geocoding failed", e);
+      setCurrentAddress('خطا در دریافت آدرس');
+    } finally {
+        setIsGeocoding(false);
+    }
+  }, []);
+
+
   useEffect(() => {
     if (typeof window === 'undefined' || !mapRef.current || leafletMapRef.current) return;
 
@@ -93,6 +133,14 @@ export function MapView({ onConfirm }: { onConfirm?: () => void }) {
       map.on('move', function() {
         marker.setLatLng(map.getCenter());
       });
+      
+      const debouncedUpdateAddress = debounce(updateAddress, 500);
+
+      map.on('movestart', () => setIsGeocoding(true));
+      map.on('moveend', debouncedUpdateAddress);
+      
+      // Initial address fetch
+      updateAddress();
 
     } catch (error) {
       console.error('Error initializing Leaflet map:', error);
@@ -110,40 +158,28 @@ export function MapView({ onConfirm }: { onConfirm?: () => void }) {
         leafletMapRef.current = null;
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toast]);
 
   const handleConfirmLocation = async () => {
-    if (leafletMapRef.current) {
-      const center = leafletMapRef.current.getCenter();
-      const { lat, lng } = center;
+    if (leafletMapRef.current && currentAddress && !isGeocoding) {
       
-      let finalAddress = `موقعیت سفارشی (${lat.toFixed(3)}, ${lng.toFixed(3)})`;
-      
-      try {
-          const address = await getAddressFromCoordinates(lat, lng);
-          if (address) {
-              finalAddress = address;
-          }
-      } catch (e) {
-          console.error("Reverse geocoding failed", e);
-          toast({
-            variant: 'destructive',
-            title: 'خطا در تبدیل موقعیت به آدرس',
-            description: 'از آدرس پیش‌فرض استفاده خواهد شد.',
-          });
-      }
-
-
-      localStorage.setItem('driverLocation', finalAddress);
+      localStorage.setItem('driverLocation', currentAddress);
 
       toast({
         title: 'موقعیت شما ثبت شد',
-        description: `موقعیت جدید شما (${finalAddress}) برای نمایش به صاحبان بار ذخیره شد.`,
+        description: `موقعیت جدید شما (${currentAddress}) برای نمایش به صاحبان بار ذخیره شد.`,
       });
       // If a callback is provided, call it.
       if (onConfirm) {
         onConfirm();
       }
+    } else {
+        toast({
+            variant: 'destructive',
+            title: 'لطفا صبر کنید',
+            description: 'هنوز در حال دریافت آدرس هستیم. لطفا چند لحظه دیگر دوباره امتحان کنید.',
+        })
     }
   };
 
@@ -229,9 +265,22 @@ export function MapView({ onConfirm }: { onConfirm?: () => void }) {
             </Card>
         </div>
 
+        <div className="absolute bottom-16 right-4 left-4 z-[1000]">
+           <Card className="shadow-lg animate-in fade-in duration-300">
+             <CardContent className="p-3 flex items-center gap-3">
+                <MapPin className="size-5 text-primary flex-shrink-0" />
+                 {isGeocoding ? (
+                    <Skeleton className="h-5 w-48" />
+                 ) : (
+                    <p className="text-sm font-semibold text-foreground truncate">{currentAddress}</p>
+                 )}
+             </CardContent>
+           </Card>
+        </div>
+
         <div className="absolute bottom-4 right-4 left-4 z-[1000]">
-            <Button size="lg" className="w-full text-lg" onClick={handleConfirmLocation}>
-            تایید و ثبت نهایی موقعیت
+            <Button size="lg" className="w-full text-lg" onClick={handleConfirmLocation} disabled={isGeocoding}>
+            {isGeocoding ? 'کمی صبر کنید...' : 'تایید و ثبت نهایی موقعیت'}
             </Button>
         </div>
       </CardContent>
