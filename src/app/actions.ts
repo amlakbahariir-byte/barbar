@@ -29,28 +29,29 @@ export async function getAddressFromCoordinates(lat: number, lng: number): Promi
 
     if (!response.ok) {
       console.error('Nominatim API request failed with status:', response.status, await response.text());
-      return null;
+      return "خطا در ارتباط با سرویس نقشه";
     }
     const data = await response.json();
 
     if (data && data.address) {
-      const { road, suburb, city, state } = data.address;
-      const addressParts = [road, suburb, city, state].filter(Boolean);
+      const { road, suburb, city, state, town, village } = data.address;
+      // Prioritize more specific location types
+      const cityOrTown = city || town || village;
+      const addressParts = [road, suburb, cityOrTown, state].filter(Boolean);
       if (addressParts.length > 0) {
         return addressParts.join(', ');
       }
     }
     
+    // Fallback to display_name if detailed parts are not enough
     if (data && data.display_name) {
-      return data.display_name.split(',').slice(0, 3).join(',');
+      return data.display_name.split(',').slice(0, 4).join(',');
     }
 
-    return null;
+    return "آدرس یافت نشد. لطفا کمی جابجا شوید.";
     
   } catch (error) {
     console.error('Error fetching address from Nominatim:', error);
-    return null;
+    return "خطا در دریافت آدرس";
   }
 }
-
-    
