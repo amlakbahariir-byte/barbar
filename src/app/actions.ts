@@ -27,6 +27,7 @@ export async function getAddressFromCoordinates(lat: number, lng: number): Promi
       return null;
     }
     const data = await response.json();
+
     if (data && data.address) {
       const { road, suburb, city, state } = data.address;
       const addressParts = [road, suburb, city, state].filter(Boolean);
@@ -34,11 +35,15 @@ export async function getAddressFromCoordinates(lat: number, lng: number): Promi
         return addressParts.join(', ');
       }
     }
+    
     // Fallback for when address details are not available, but a display_name is.
     if (data && data.display_name) {
       return data.display_name.split(',').slice(0, 3).join(',');
     }
+
+    // If all else fails, return null
     return null;
+    
   } catch (error) {
     console.error('Error fetching address from Nominatim:', error);
     return null;
