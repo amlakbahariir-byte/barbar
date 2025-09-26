@@ -135,9 +135,9 @@ export function ShipmentTracking({ shipment }: { shipment: Shipment }) {
         setStatusText('راننده از مسیر خارج شده است! در حال ارسال هشدار...');
         setDeviationTriggered(true);
 
-        const message = await handleDeviationAlert(shipment.acceptedDriver.id, shipment.id);
-        setAlertMessage(message);
-        setIsAlertOpen(true);
+        // const message = await handleDeviationAlert(shipment.acceptedDriver.id, shipment.id);
+        // setAlertMessage(message);
+        // setIsAlertOpen(true);
       }
     }, DEVIATION_TIME);
 
