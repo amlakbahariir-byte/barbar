@@ -29,10 +29,11 @@ export async function getAddressFromCoordinates(lat: number, lng: number): Promi
     const data = await response.json();
     if (data && data.display_name) {
       const { road, suburb, city, state } = data.address || {};
-      let addressParts = [road, suburb, city, state].filter(Boolean);
+      const addressParts = [road, suburb, city, state].filter(Boolean);
       if (addressParts.length > 0) {
         return addressParts.join(', ');
       }
+      // Fallback to display_name if specific parts are not available
       return data.display_name.split(',').slice(0, 3).join(',');
     }
     return null;

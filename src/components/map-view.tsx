@@ -84,7 +84,7 @@ export function MapView({ onConfirm }: { onConfirm?: () => void }) {
       if (address) {
         setCurrentAddress(address);
       } else {
-        setCurrentAddress(`موقعیت سفارشی (${lat.toFixed(3)}, ${lng.toFixed(3)})`);
+        setCurrentAddress('آدرس پیدا نشد. لطفا کمی جابجا شوید.');
       }
     } catch (e) {
       console.error("Reverse geocoding failed", e);
