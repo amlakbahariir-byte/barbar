@@ -65,43 +65,16 @@ export default function Home() {
 
 function HomePageContent() {
   const [step, setStep] = useState(1); // 1: phone, 2: otp, 3: role
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState('09123456789');
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isRecaptchaVerified, setIsRecaptchaVerified] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
   const otpInputs = useRef<(HTMLInputElement | null)[]>([]);
   const [slogan, setSlogan] = useState('');
   const [isSloganVisible, setIsSloganVisible] = useState(false);
-
-
-  // Setup reCAPTCHA
-  useEffect(() => {
-    if (step === 1 && !window.recaptchaVerifier) {
-      try {
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-            'size': 'normal',
-            'callback': (response: any) => {
-                // reCAPTCHA solved, allow signInWithPhoneNumber.
-                setIsRecaptchaVerified(true);
-            },
-            'expired-callback': () => {
-                // Response expired. Ask user to solve reCAPTCHA again.
-                setIsRecaptchaVerified(false);
-                toast({ title: 'اعتبار reCAPTCHA تمام شد', description: 'لطفا دوباره تیک "من ربات نیستم" را بزنید.', variant: 'destructive'});
-            }
-        });
-        window.recaptchaVerifier.render();
-      } catch (e) {
-        console.error("RecaptchaVerifier error", e)
-        toast({ title: 'خطا در راه‌اندازی reCAPTCHA', description: 'لطفا صفحه را دوباره بارگذاری کنید.', variant: 'destructive'});
-      }
-    }
-  }, [step, toast]);
   
-  
-    // Effect to cycle through slogans
+  // Effect to cycle through slogans
   useEffect(() => {
     const pickSlogan = () => {
       setIsSloganVisible(false);
@@ -121,60 +94,34 @@ function HomePageContent() {
 
   const handlePhoneSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!isRecaptchaVerified || !window.recaptchaVerifier) {
-        toast({ title: 'تایید reCAPTCHA الزامی است', description: 'لطفا تیک "من ربات نیستم" را بزنید.', variant: 'destructive' });
-        return;
-    }
-
     setIsSubmitting(true);
     toast({ title: 'در حال ارسال کد تایید...' });
 
-    try {
-        let cleanPhone = phone.trim().replace(/[^0-9+]/g, ''); 
-
-        if (cleanPhone.startsWith('0')) {
-            cleanPhone = `+98${cleanPhone.substring(1)}`;
-        } else if (!cleanPhone.startsWith('+')) {
-             cleanPhone = `+98${cleanPhone}`;
-        }
-        
-        const confirmationResult = await signInWithPhoneNumber(auth, cleanPhone, window.recaptchaVerifier);
-        window.confirmationResult = confirmationResult;
+    // --- SIMULATION ---
+    setTimeout(() => {
         setIsSubmitting(false);
         setStep(2);
-        toast({ title: 'کد تایید ارسال شد', description: `کد ۶ رقمی به شماره ${phone} ارسال شد.` });
-    } catch (error) {
-        console.error("Error sending OTP:", error);
-        toast({ title: 'خطا در ارسال کد', description: 'لطفا شماره موبایل خود را بررسی کرده و دوباره تلاش کنید.', variant: 'destructive' });
-        setIsSubmitting(false);
-        // Reset reCAPTCHA
-        window.recaptchaVerifier.render().then((widgetId) => {
-            // @ts-ignore
-            if (window.grecaptcha) {
-                window.grecaptcha.reset(widgetId);
-            }
-        });
-        setIsRecaptchaVerified(false);
-    }
+        toast({ title: 'کد تایید ارسال شد (شبیه‌سازی)', description: `کد ۱۲۳۴۵۶ را وارد کنید.` });
+    }, 1000);
   };
   
   const handleOtpSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (isSubmitting || otp.length < 6 || !window.confirmationResult) return;
+    if (isSubmitting || otp.length < 6) return;
     setIsSubmitting(true);
     toast({ title: 'در حال تایید کد...' });
-
-    try {
-      await window.confirmationResult.confirm(otp);
-      
-      setIsSubmitting(false);
-      setStep(3); // Move to role selection on successful confirmation
-      toast({ title: 'ورود موفقیت‌آمیز بود', description: 'لطفا نقش خود را انتخاب کنید.' });
-    } catch (error) {
-      console.error("Error during OTP confirmation:", error);
-      toast({ title: 'کد تایید نامعتبر است', variant: 'destructive' });
-      setIsSubmitting(false);
-    }
+    
+    // --- SIMULATION ---
+    setTimeout(() => {
+        if (otp === '123456') {
+            setIsSubmitting(false);
+            setStep(3); // Move to role selection on successful confirmation
+            toast({ title: 'ورود موفقیت‌آمیز بود', description: 'لطفا نقش خود را انتخاب کنید.' });
+        } else {
+            toast({ title: 'کد تایید نامعتبر است', variant: 'destructive' });
+            setIsSubmitting(false);
+        }
+    }, 1000);
   };
 
   const handleRoleSelect = (role: 'shipper' | 'driver') => {
@@ -260,8 +207,7 @@ function HomePageContent() {
                         dir="ltr"
                       />
                     </div>
-                    <div id="recaptcha-container" className="flex justify-center"></div>
-                    <Button type="submit" className="w-full h-12 text-lg" disabled={!isRecaptchaVerified || isSubmitting}>
+                    <Button type="submit" className="w-full h-12 text-lg" disabled={isSubmitting}>
                       {isSubmitting ? 'در حال ارسال...' : 'ارسال کد'}
                       <LogIn className="mr-2"/>
                     </Button>
@@ -326,5 +272,3 @@ function HomePageContent() {
       </div>
   );
 }
-
-    
