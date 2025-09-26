@@ -68,6 +68,7 @@ function HomePageContent() {
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRecaptchaVerified, setIsRecaptchaVerified] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
   const otpInputs = useRef<(HTMLInputElement | null)[]>([]);
@@ -80,11 +81,18 @@ function HomePageContent() {
     if (step === 1 && !window.recaptchaVerifier) {
       try {
         window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-            'size': 'invisible',
+            'size': 'normal',
             'callback': (response: any) => {
                 // reCAPTCHA solved, allow signInWithPhoneNumber.
+                setIsRecaptchaVerified(true);
+            },
+            'expired-callback': () => {
+                // Response expired. Ask user to solve reCAPTCHA again.
+                setIsRecaptchaVerified(false);
+                toast({ title: 'اعتبار reCAPTCHA تمام شد', description: 'لطفا دوباره تیک "من ربات نیستم" را بزنید.', variant: 'destructive'});
             }
         });
+        window.recaptchaVerifier.render();
       } catch (e) {
         console.error("RecaptchaVerifier error", e)
         toast({ title: 'خطا در راه‌اندازی reCAPTCHA', description: 'لطفا صفحه را دوباره بارگذاری کنید.', variant: 'destructive'});
@@ -113,8 +121,8 @@ function HomePageContent() {
 
   const handlePhoneSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!window.recaptchaVerifier) {
-        toast({ title: 'reCAPTCHA در حال بارگذاری است', description: 'لطفا چند لحظه صبر کنید و دوباره تلاش کنید.', variant: 'destructive' });
+    if (!isRecaptchaVerified || !window.recaptchaVerifier) {
+        toast({ title: 'تایید reCAPTCHA الزامی است', description: 'لطفا تیک "من ربات نیستم" را بزنید.', variant: 'destructive' });
         return;
     }
 
@@ -122,18 +130,12 @@ function HomePageContent() {
     toast({ title: 'در حال ارسال کد تایید...' });
 
     try {
-        // More robust phone number normalization to E.164 format
-        let cleanPhone = phone.trim().replace(/[^0-9]/g, ''); // Remove all non-numeric characters
+        let cleanPhone = phone.trim().replace(/[^0-9+]/g, ''); 
 
-        if (cleanPhone.startsWith('98')) {
-            // Already has country code, just add +
-            cleanPhone = `+${cleanPhone}`;
-        } else if (cleanPhone.startsWith('0')) {
-            // Starts with 0, replace it with +98
+        if (cleanPhone.startsWith('0')) {
             cleanPhone = `+98${cleanPhone.substring(1)}`;
-        } else {
-            // Assumed to be without country code or 0
-            cleanPhone = `+98${cleanPhone}`;
+        } else if (!cleanPhone.startsWith('+')) {
+             cleanPhone = `+98${cleanPhone}`;
         }
         
         const confirmationResult = await signInWithPhoneNumber(auth, cleanPhone, window.recaptchaVerifier);
@@ -146,12 +148,13 @@ function HomePageContent() {
         toast({ title: 'خطا در ارسال کد', description: 'لطفا شماره موبایل خود را بررسی کرده و دوباره تلاش کنید.', variant: 'destructive' });
         setIsSubmitting(false);
         // Reset reCAPTCHA
-        if(window.recaptchaVerifier) {
-            window.recaptchaVerifier.render().then((widgetId) => {
-                // @ts-ignore
-                grecaptcha.reset(widgetId);
-            });
-        }
+        window.recaptchaVerifier.render().then((widgetId) => {
+            // @ts-ignore
+            if (window.grecaptcha) {
+                window.grecaptcha.reset(widgetId);
+            }
+        });
+        setIsRecaptchaVerified(false);
     }
   };
   
@@ -257,11 +260,11 @@ function HomePageContent() {
                         dir="ltr"
                       />
                     </div>
-                    <Button type="submit" className="w-full h-12 text-lg" disabled={isSubmitting}>
+                    <div id="recaptcha-container" className="flex justify-center"></div>
+                    <Button type="submit" className="w-full h-12 text-lg" disabled={!isRecaptchaVerified || isSubmitting}>
                       {isSubmitting ? 'در حال ارسال...' : 'ارسال کد'}
                       <LogIn className="mr-2"/>
                     </Button>
-                    <div id="recaptcha-container"></div>
                   </form>
                 )}
 
