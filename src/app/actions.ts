@@ -21,9 +21,14 @@ export async function handleDeviationAlert(driverId: string, shipmentId: string)
 
 export async function getAddressFromCoordinates(lat: number, lng: number): Promise<string | null> {
   try {
-    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=fa`);
+    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=fa`, {
+        headers: {
+            'User-Agent': 'BarbarIraniApp/1.0'
+        }
+    });
+
     if (!response.ok) {
-      console.error('Nominatim API request failed with status:', response.status);
+      console.error('Nominatim API request failed with status:', response.status, await response.text());
       return null;
     }
     const data = await response.json();
@@ -36,12 +41,10 @@ export async function getAddressFromCoordinates(lat: number, lng: number): Promi
       }
     }
     
-    // Fallback for when address details are not available, but a display_name is.
     if (data && data.display_name) {
       return data.display_name.split(',').slice(0, 3).join(',');
     }
 
-    // If all else fails, return null
     return null;
     
   } catch (error) {
