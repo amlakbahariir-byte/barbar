@@ -5,7 +5,6 @@ import { Home, Package, Truck, User, LogOut, PackagePlus, CreditCard, MapPin } f
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { auth } from '@/lib/firebase/config';
 
 
 const ShipperMenu = [
@@ -47,7 +46,6 @@ export function BottomNavbar({ navigate }: { navigate: (path: string) => void })
 
 
   const handleLogout = async () => {
-    await auth.signOut();
     localStorage.removeItem('userRole');
     router.push('/');
   };

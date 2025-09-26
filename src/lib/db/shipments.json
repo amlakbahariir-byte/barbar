@@ -1,0 +1,83 @@
+
+{
+    "shipments": [
+      {
+        "id": "shp1001",
+        "origin": "تهران",
+        "destination": "اصفهان",
+        "weight": 1200,
+        "cargoType": "لوازم خانگی",
+        "date": "۱۴۰۳/۰۵/۱۵ - ۰۹:۰۰",
+        "description": "بسیار شکننده، لطفا با احتیاط حمل شود.",
+        "status": "pending",
+        "bids": [
+          {
+            "id": "bid1",
+            "driver": { "id": "d1", "name": "رضا احمدی", "avatar": "https://i.pravatar.cc/150?u=d1", "vehicle": "کامیون تک", "rating": 4.8 },
+            "amount": 2500000,
+            "timestamp": "2024-07-28T10:00:00Z"
+          },
+          {
+            "id": "bid2",
+            "driver": { "id": "d3", "name": "علی کریمی", "avatar": "https://i.pravatar.cc/150?u=d3", "vehicle": "تریلی", "rating": 4.7 },
+            "amount": 2350000,
+            "timestamp": "2024-07-28T10:15:00Z"
+          }
+        ]
+      },
+      {
+        "id": "shp1002",
+        "origin": "مشهد",
+        "destination": "شیراز",
+        "weight": 5000,
+        "cargoType": "مواد غذایی",
+        "date": "۱۴۰۳/۰۵/۱۶ - ۱۱:۳۰",
+        "description": "نیاز به ماشین یخچال‌دار دارد.",
+        "status": "pending",
+        "bids": []
+      },
+      {
+        "id": "shp1003",
+        "origin": "کرج",
+        "destination": "تبریز",
+        "weight": 800,
+        "cargoType": "مبلمان",
+        "date": "۱۴۰۳/۰۵/۱۴ - ۱۴:۰۰",
+        "description": "",
+        "status": "in_transit",
+        "acceptedDriver": { "id": "d4", "name": "سارا محمدی", "avatar": "https://i.pravatar.cc/150?u=d4", "vehicle": "خاور", "rating": 5.0 }
+      },
+      {
+        "id": "shp1004",
+        "origin": "اهواز",
+        "destination": "تهران",
+        "weight": 300,
+        "cargoType": "قطعات صنعتی",
+        "date": "۱۴۰۳/۰۵/۱۲ - ۱۸:۰۰",
+        "description": "بسته‌ها کوچک اما سنگین هستند.",
+        "status": "delivered"
+      },
+      {
+        "id": "shp1005",
+        "origin": "اصفهان",
+        "destination": "یزد",
+        "weight": 250,
+        "cargoType": "فرش دستباف",
+        "date": "۱۴۰۳/۰۵/۲۰ - ۰۸:۰۰",
+        "description": "فوق العاده ارزشمند",
+        "status": "pending",
+        "bids": []
+      },
+      {
+        "id": "shp1006",
+        "origin": "تهران",
+        "destination": "کرمان",
+        "weight": 1500,
+        "cargoType": "کاشی و سرامیک",
+        "date": "۱۴۰۳/۰۵/۱۸ - ۱۲:۰۰",
+        "description": "احتیاط در حمل.",
+        "status": "accepted",
+        "acceptedDriver": { "id": "d2", "name": "مریم حسینی", "avatar": "https://i.pravatar.cc/150?u=d2", "vehicle": "وانت نیسان", "rating": 4.9 }
+      }
+    ]
+}

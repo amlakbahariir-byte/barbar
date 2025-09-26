@@ -5,7 +5,6 @@ import { AppSidebar } from '@/components/layout/sidebar';
 import { BottomNavbar } from '@/components/layout/bottom-navbar';
 import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { auth } from '@/lib/firebase/config';
 import { LoaderWithSlogan } from '@/components/ui/loader-with-slogan';
 
 export default function DashboardLayout({
@@ -26,9 +25,7 @@ export default function DashboardLayout({
     // If no role is stored in localStorage,
     // then the user is not properly logged in. Redirect to the login page.
     if (!storedRole) {
-        auth.signOut().finally(() => {
-            router.replace('/');
-        });
+        router.replace('/');
     } else {
       // If a role is stored, set it in the component's state and finish checking.
       setRole(storedRole);

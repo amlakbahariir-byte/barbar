@@ -1,0 +1,53 @@
+
+{
+    "transactions": [
+        {
+            "id": "txn001",
+            "date": "۱۴۰۳/۰۵/۱۲",
+            "type": "payment",
+            "amount": -2500000,
+            "status": "completed",
+            "description": "پرداخت هزینه حمل بار ش. shp1004"
+        },
+        {
+            "id": "txn002",
+            "date": "۱۴۰۳/۰۵/۱۰",
+            "type": "deposit",
+            "amount": 5000000,
+            "status": "completed",
+            "description": "افزایش موجودی کیف پول"
+        },
+        {
+            "id": "txn003",
+            "date": "۱۴۰۳/۰۵/۰۸",
+            "type": "payment",
+            "amount": -1800000,
+            "status": "completed",
+            "description": "پرداخت هزینه حمل بار ش. shp0956"
+        },
+        {
+            "id": "txn004",
+            "date": "۱۴۰۳/۰۵/۰۵",
+            "type": "withdrawal",
+            "amount": -10000000,
+            "status": "pending",
+            "description": "درخواست تسویه حساب"
+        },
+        {
+            "id": "txn005",
+            "date": "۱۴۰۳/۰۵/۰۲",
+            "type": "deposit",
+            "amount": 2000000,
+            "status": "failed",
+            "description": "تراکنش ناموفق افزایش موجودی"
+        },
+        {
+            "id": "txn006",
+            "date": "۱۴۰۳/۰۵/۰۱",
+            "type": "refund",
+            "amount": 500000,
+            "status": "completed",
+            "description": "بازگشت وجه بابت لغو بار"
+        }
+    ]
+}

@@ -7,20 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Truck, ChevronRight, User, Building, LogIn } from 'lucide-react';
-import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth';
-import { auth } from '@/lib/firebase/config';
 import { LoaderWithSlogan } from '@/components/ui/loader-with-slogan';
 import { cn } from '@/lib/utils';
 import { slogans } from '@/lib/slogans';
 import { AnimatedTruckLoader } from '@/components/ui/animated-truck-loader';
 
-// Extend window type to include our custom properties
-declare global {
-  interface Window {
-    recaptchaVerifier?: RecaptchaVerifier;
-    confirmationResult?: ConfirmationResult;
-  }
-}
 
 export default function Home() {
   const router = useRouter();
@@ -101,7 +92,7 @@ function HomePageContent() {
     setTimeout(() => {
         setIsSubmitting(false);
         setStep(2);
-        toast({ title: 'کد تایید ارسال شد (شبیه‌سازی)', description: `کد ۱۲۳۴۵۶ را وارد کنید.` });
+        toast({ title: 'کد تایید ارسال شد (شبیه‌سازی)', description: `هر کد ۶ رقمی را وارد کنید.` });
     }, 1000);
   };
   
@@ -113,14 +104,10 @@ function HomePageContent() {
     
     // --- SIMULATION ---
     setTimeout(() => {
-        if (otp === '123456') {
-            setIsSubmitting(false);
-            setStep(3); // Move to role selection on successful confirmation
-            toast({ title: 'ورود موفقیت‌آمیز بود', description: 'لطفا نقش خود را انتخاب کنید.' });
-        } else {
-            toast({ title: 'کد تایید نامعتبر است', variant: 'destructive' });
-            setIsSubmitting(false);
-        }
+        // Accept any 6-digit code for the simulation
+        setIsSubmitting(false);
+        setStep(3); // Move to role selection
+        toast({ title: 'ورود موفقیت‌آمیز بود', description: 'لطفا نقش خود را انتخاب کنید.' });
     }, 1000);
   };
 

@@ -1,6 +1,6 @@
 
-import { collection, getDocs, doc, getDoc, addDoc, query, where } from "firebase/firestore"; 
-import { db } from "./firebase/config";
+import shipmentsData from '@/lib/db/shipments.json';
+import transactionsData from '@/lib/db/transactions.json';
 
 export type Driver = {
   id: string;
@@ -40,68 +40,63 @@ export type Transaction = {
 };
 
 
-const drivers: Driver[] = [
-  { id: 'd1', name: 'رضا احمدی', avatar: 'https://i.pravatar.cc/150?u=d1', vehicle: 'کامیون تک', rating: 4.8 },
-  { id: 'd2', name: 'مریم حسینی', avatar: 'https://i.pravatar.cc/150?u=d2', vehicle: 'وانت نیسان', rating: 4.9 },
-  { id: 'd3', name: 'علی کریمی', avatar: 'https://i.pravatar.cc/150?u=d3', vehicle: 'تریلی', rating: 4.7 },
-  { id: 'd4', name: 'سارا محمدی', avatar: 'https://i.pravatar.cc/150?u=d4', vehicle: 'خاور', rating: 5.0 },
-];
+// In-memory representation of the database for simulation purposes.
+let localShipments: Shipment[] = shipmentsData.shipments as Shipment[];
+const localTransactions: Transaction[] = transactionsData.transactions as Transaction[];
+
 
 export const getTransactions = async (): Promise<Transaction[]> => {
-    const transactionsCol = collection(db, 'transactions');
-    const transactionSnapshot = await getDocs(transactionsCol);
-    const transactionList = transactionSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Transaction));
-    return transactionList;
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return Promise.resolve(localTransactions);
 };
 
 
 export const getShipmentById = async (id: string): Promise<Shipment | null> => {
-    const docRef = doc(db, "shipments", id);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-        return { id: docSnap.id, ...docSnap.data() } as Shipment;
-    } else {
-        console.log("No such document!");
-        return null;
-    }
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const shipment = localShipments.find(s => s.id === id) || null;
+    return Promise.resolve(shipment);
 }
 
 export const addShipment = async (shipment: Omit<Shipment, 'id'>) => {
-    try {
-        const docRef = await addDoc(collection(db, "shipments"), shipment);
-        console.log("Document written with ID: ", docRef.id);
-        return { ...shipment, id: docRef.id }
-    } catch (e) {
-        console.error("Error adding document: ", e);
-        return null;
-    }
+    // Simulate network delay and adding to the database
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    const newShipment: Shipment = {
+        ...shipment,
+        id: `shp${Math.floor(Math.random() * 1000) + 1007}`,
+    };
+    
+    // Note: This only adds to the in-memory array for the current session.
+    // It does not persist to the shipments.json file.
+    localShipments.unshift(newShipment);
+    
+    console.log("Shipment added to in-memory store: ", newShipment.id);
+    return Promise.resolve(newShipment);
 }
 
 export const getMyShipments = async (role: 'shipper' | 'driver', type: 'all' | 'available' | 'accepted'): Promise<Shipment[]> => {
-    const shipmentsCol = collection(db, 'shipments');
-    let q;
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    let results: Shipment[] = [];
 
     if (role === 'shipper') {
-        if (type === 'all') {
-            q = query(shipmentsCol);
-        } else {
-            // Placeholder for shipper-specific filters like 'pending', 'in_transit'
-            // For now, returning all as an example
-            q = query(shipmentsCol);
-        }
+        // For shippers, return all shipments as they 'own' them all in this simulation
+         results = localShipments;
     } else { // role === 'driver'
         if (type === 'available') {
-            q = query(shipmentsCol, where("status", "==", "pending"));
+            results = localShipments.filter(s => s.status === 'pending');
         } else if (type === 'accepted') {
-            // This needs a proper user ID check in a real app
-            q = query(shipmentsCol, where("status", "in", ["accepted", "in_transit"]));
+            // In a real app, you'd filter by driverId. Here, we simulate by grabbing
+            // shipments that are accepted or in transit and assigning them to the current driver.
+            results = localShipments.filter(s => ["accepted", "in_transit"].includes(s.status));
         } else {
-             q = query(shipmentsCol);
+             results = localShipments;
         }
     }
-
-    const shipmentSnapshot = await getDocs(q);
-    const shipmentList = shipmentSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Shipment));
-    return shipmentList;
+    
+    // Return a copy to prevent mutation of the original data
+    return Promise.resolve([...results]);
 }

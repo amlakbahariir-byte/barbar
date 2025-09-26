@@ -10,8 +10,6 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowRight, LogOut, Edit, Save, User as UserIcon, Truck, Star, FileText, Fingerprint, Phone, Mail, MapPin, Calendar, Heart, CreditCard, Bell, Moon, Palette, Check, History, Car, Shield } from 'lucide-react';
-import { auth, app } from '@/lib/firebase/config';
-import { getMessaging, getToken, onMessage } from "firebase/messaging";
 import { Badge } from '@/components/ui/badge';
 import { FileUploadItem } from '@/components/file-upload-item';
 import { ThemeSwitcher } from '@/components/theme-switcher';
@@ -131,23 +129,8 @@ export default function ProfilePage() {
         if(permission === 'granted') {
             setNotificationPermission(true);
             toast({ title: 'دسترسی به اعلانات موفقیت آمیز بود.' });
-            // Get token
-             const messaging = getMessaging(app);
-             getToken(messaging, { vapidKey: 'YOUR_VAPID_KEY_FROM_FIREBASE_CONSOLE' }).then((currentToken) => {
-              if (currentToken) {
-                console.log('FCM Token:', currentToken);
-                // TODO: Send this token to your server and store it.
-                toast({ title: 'توکن با موفقیت دریافت شد', description: 'برای ارسال نوتیفیکیشن آماده است.' });
-              } else {
-                console.log('No registration token available. Request permission to generate one.');
-                 toast({ title: 'دریافت توکن ناموفق بود', description: 'لطفا مجددا تلاش کنید', variant: 'destructive' });
-                 setNotificationPermission(false);
-              }
-            }).catch((err) => {
-              console.log('An error occurred while retrieving token. ', err);
-              toast({ title: 'خطا در دریافت توکن', description: err.message, variant: 'destructive' });
-              setNotificationPermission(false);
-            });
+            // In a real app, you would get the FCM token here and send to your server.
+            console.log("Notification permission granted. Ready to get FCM token.");
         } else {
             setNotificationPermission(false);
             toast({ title: 'شما دسترسی به اعلانات را رد کردید.', variant: 'destructive' });
@@ -169,7 +152,6 @@ export default function ProfilePage() {
   };
 
   const handleLogout = async () => {
-    await auth.signOut();
     localStorage.removeItem('userRole');
     toast({ title: 'از حساب کاربری خود خارج شدید.'});
     router.push('/');
