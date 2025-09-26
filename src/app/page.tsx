@@ -122,20 +122,21 @@ function HomePageContent() {
     toast({ title: 'در حال ارسال کد تایید...' });
 
     try {
-        // Normalize the phone number to E.164 format
-        let formattedPhone = phone.trim();
-        // Remove all non-digit characters except for a leading '+'
-        formattedPhone = formattedPhone.replace(/[^0-9+]/g, '');
-        
-        if (formattedPhone.startsWith('0')) {
-            // Replace leading 0 with +98
-            formattedPhone = `+98${formattedPhone.substring(1)}`;
-        } else if (!formattedPhone.startsWith('+')) {
-            // If it doesn't start with 0 or +, assume it's a local number and add +98
-             formattedPhone = `+98${formattedPhone}`;
+        // More robust phone number normalization to E.164 format
+        let cleanPhone = phone.trim().replace(/[^0-9]/g, ''); // Remove all non-numeric characters
+
+        if (cleanPhone.startsWith('98')) {
+            // Already has country code, just add +
+            cleanPhone = `+${cleanPhone}`;
+        } else if (cleanPhone.startsWith('0')) {
+            // Starts with 0, replace it with +98
+            cleanPhone = `+98${cleanPhone.substring(1)}`;
+        } else {
+            // Assumed to be without country code or 0
+            cleanPhone = `+98${cleanPhone}`;
         }
         
-        const confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier);
+        const confirmationResult = await signInWithPhoneNumber(auth, cleanPhone, window.recaptchaVerifier);
         window.confirmationResult = confirmationResult;
         setIsSubmitting(false);
         setStep(2);
