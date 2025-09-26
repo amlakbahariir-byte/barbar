@@ -122,12 +122,24 @@ function HomePageContent() {
     toast({ title: 'در حال ارسال کد تایید...' });
 
     try {
-        const formattedPhone = `+98${phone.slice(1)}`;
+        // Normalize the phone number to E.164 format
+        let formattedPhone = phone.trim();
+        // Remove all non-digit characters except for a leading '+'
+        formattedPhone = formattedPhone.replace(/[^0-9+]/g, '');
+        
+        if (formattedPhone.startsWith('0')) {
+            // Replace leading 0 with +98
+            formattedPhone = `+98${formattedPhone.substring(1)}`;
+        } else if (!formattedPhone.startsWith('+')) {
+            // If it doesn't start with 0 or +, assume it's a local number and add +98
+             formattedPhone = `+98${formattedPhone}`;
+        }
+        
         const confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier);
         window.confirmationResult = confirmationResult;
         setIsSubmitting(false);
         setStep(2);
-        toast({ title: 'کد تایید ارسال شد', description: 'لطفا کد ارسال شده به موبایل خود را وارد کنید.' });
+        toast({ title: 'کد تایید ارسال شد', description: `کد ۶ رقمی به شماره ${phone} ارسال شد.` });
     } catch (error) {
         console.error("Error sending OTP:", error);
         toast({ title: 'خطا در ارسال کد', description: 'لطفا شماره موبایل خود را بررسی کرده و دوباره تلاش کنید.', variant: 'destructive' });
