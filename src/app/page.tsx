@@ -93,13 +93,6 @@ function HomePageContent() {
   }, [step, toast]);
   
   
-  // Auto-submit OTP for demo when it's fully entered
-  useEffect(() => {
-    if (otp.length === 6) {
-      handleOtpSubmit();
-    }
-  }, [otp]);
-  
     // Effect to cycle through slogans
   useEffect(() => {
     const pickSlogan = () => {
@@ -317,3 +310,5 @@ function HomePageContent() {
       </div>
   );
 }
+
+    
