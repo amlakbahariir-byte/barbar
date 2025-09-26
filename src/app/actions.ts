@@ -27,13 +27,15 @@ export async function getAddressFromCoordinates(lat: number, lng: number): Promi
       return null;
     }
     const data = await response.json();
-    if (data && data.display_name) {
-      const { road, suburb, city, state } = data.address || {};
+    if (data && data.address) {
+      const { road, suburb, city, state } = data.address;
       const addressParts = [road, suburb, city, state].filter(Boolean);
       if (addressParts.length > 0) {
         return addressParts.join(', ');
       }
-      // Fallback to display_name if specific parts are not available
+    }
+    // Fallback for when address details are not available, but a display_name is.
+    if (data && data.display_name) {
       return data.display_name.split(',').slice(0, 3).join(',');
     }
     return null;
