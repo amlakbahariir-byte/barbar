@@ -4,9 +4,8 @@
 import { generateAlertMessage } from '@/ai/flows/generate-alert-message-for-route-deviation';
 import { config } from 'dotenv';
 
-config();
-
 export async function handleDeviationAlert(driverId: string, shipmentId: string) {
+  config();
   try {
     const result = await generateAlertMessage({
       driverId,
@@ -60,6 +59,7 @@ export async function getAddressFromCoordinates(lat: number, lng: number): Promi
 }
 
 export async function sendOtp(phone: string): Promise<{ success: boolean; message: string }> {
+  config();
   try {
     const fetch = (await import('node-fetch')).default;
     const apiKey = process.env.MELIPAYAMAK_API_KEY;
@@ -78,18 +78,18 @@ export async function sendOtp(phone: string): Promise<{ success: boolean; messag
       }),
     });
 
-    const responseBody = await response.text();
+    const responseBodyText = await response.text();
     console.log('MeliPayamak API Response Status:', response.status);
-    console.log('MeliPayamak API Response Body:', responseBody);
+    console.log('MeliPayamak API Response Body:', responseBodyText);
 
     if (response.ok) {
       return { success: true, message: 'کد تایید با موفقیت ارسال شد.' };
     } else {
        try {
-         const errorResult = JSON.parse(responseBody);
+         const errorResult = JSON.parse(responseBodyText);
          return { success: false, message: errorResult.message || `خطا: ${response.status}` };
        } catch (e) {
-         return { success: false, message: responseBody || `سرور پیامک با خطا مواجه شد: ${response.status}` };
+         return { success: false, message: responseBodyText || `سرور پیامک با خطا مواجه شد: ${response.status}` };
        }
     }
   } catch (error) {
@@ -103,6 +103,7 @@ export async function sendOtp(phone: string): Promise<{ success: boolean; messag
 
 
 export async function sendTestSms(): Promise<{ success: boolean; message: string }> {
+  config();
   const apiKey = process.env.MELIPAYAMAK_API_KEY;
   const from = process.env.MELIPAYAMAK_SENDER_NUMBER;
   const to = '09125486083'; // Test number
