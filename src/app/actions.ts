@@ -1,4 +1,3 @@
-
 'use server';
 
 import { generateAlertMessage } from '@/ai/flows/generate-alert-message-for-route-deviation';
@@ -35,7 +34,6 @@ export async function getAddressFromCoordinates(lat: number, lng: number): Promi
 
     if (data && data.address) {
       const { road, suburb, city, state, town, village } = data.address;
-      // Prioritize more specific location types
       const cityOrTown = city || town || village;
       const addressParts = [road, suburb, cityOrTown, state].filter(Boolean);
       
@@ -58,3 +56,35 @@ export async function getAddressFromCoordinates(lat: number, lng: number): Promi
   }
 }
 
+export async function sendOtp(phone: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const response = await fetch('https://console.melipayamak.com/api/send/otp/96059e3c6273414c9e6c6985b652d615', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        to: phone,
+      }),
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      console.log('MeliPayamak API Response:', result);
+      // Assuming a successful response has a specific structure.
+      // Adjust this based on the actual API response.
+      if (result.success) {
+         return { success: true, message: 'کد تایید با موفقیت ارسال شد.' };
+      } else {
+         return { success: false, message: result.error || 'خطا در ارسال کد.' };
+      }
+    } else {
+       const errorText = await response.text();
+       console.error('MeliPayamak API Error:', errorText);
+       return { success: false, message: `سرور پیامک با خطا مواجه شد: ${response.status}` };
+    }
+  } catch (error) {
+    console.error('Error sending OTP:', error);
+    return { success: false, message: 'یک خطای شبکه رخ داد. لطفا دوباره تلاش کنید.' };
+  }
+}

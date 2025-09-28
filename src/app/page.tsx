@@ -11,6 +11,7 @@ import { LoaderWithSlogan } from '@/components/ui/loader-with-slogan';
 import { cn } from '@/lib/utils';
 import { slogans } from '@/lib/slogans';
 import { AnimatedTruckLoader } from '@/components/ui/animated-truck-loader';
+import { sendOtp } from './actions';
 
 
 export default function Home() {
@@ -85,26 +86,36 @@ function HomePageContent() {
 
   const handlePhoneSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
+    if (!phone || phone.length < 11) {
+        toast({ title: 'شماره موبایل نامعتبر است', variant: 'destructive'});
+        return;
+    }
+
     setIsSubmitting(true);
     toast({ title: 'در حال ارسال کد تایید...' });
 
-    // --- SIMULATION ---
-    setTimeout(() => {
-        setIsSubmitting(false);
+    const result = await sendOtp(phone);
+    
+    setIsSubmitting(false);
+
+    if (result.success) {
         setStep(2);
-        toast({ title: 'کد تایید ارسال شد (شبیه‌سازی)', description: `هر کد ۶ رقمی را وارد کنید.` });
-    }, 1000);
+        toast({ title: 'کد تایید ارسال شد', description: `کد ارسال شده به شماره ${phone} را وارد کنید.` });
+    } else {
+        toast({ title: 'خطا در ارسال کد', description: result.message, variant: 'destructive'});
+    }
   };
   
   const handleOtpSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (isSubmitting || otp.length < 6) return;
+    if (isSubmitting || otp.length < 4) return; // Assuming OTP is not always 6 digits
     setIsSubmitting(true);
     toast({ title: 'در حال تایید کد...' });
     
-    // --- SIMULATION ---
+    // --- SIMULATION of OTP verification ---
+    // In a real app, you would have another server action to verify the OTP.
+    // For now, we'll just simulate a successful verification.
     setTimeout(() => {
-        // Accept any 6-digit code for the simulation
         setIsSubmitting(false);
         setStep(3); // Move to role selection
         toast({ title: 'ورود موفقیت‌آمیز بود', description: 'لطفا نقش خود را انتخاب کنید.' });
@@ -173,7 +184,7 @@ function HomePageContent() {
                   </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {step === 1 && 'با شماره موبایل خود وارد شوید.'}
-                    {step === 2 && `کد ۶ رقمی به شماره ${phone} ارسال شد.`}
+                    {step === 2 && `کد تایید به شماره ${phone} ارسال شد.`}
                     {step === 3 && 'برای ورود به پنل کاربری نقش خود را مشخص کنید.'}
                   </p>
                 </div>
@@ -217,7 +228,7 @@ function HomePageContent() {
                             />
                           ))}
                         </div>
-                        <Button type="submit" className="w-full h-12 text-lg" disabled={isSubmitting || otp.length < 6}>
+                        <Button type="submit" className="w-full h-12 text-lg" disabled={isSubmitting || otp.length < 4}>
                            {isSubmitting ? 'در حال تایید...' : 'تایید و ادامه'}
                            <ChevronRight className="mr-2"/>
                         </Button>
