@@ -5,14 +5,25 @@ import { Truck } from 'lucide-react';
 
 export function AnimatedTruckLoader() {
   return (
-    <div className="relative flex items-center justify-center w-40 h-40">
-      {/* Pulsing background circles */}
-      <div className="absolute w-full h-full rounded-full bg-primary/20 animate-ping opacity-75"></div>
-      <div className="absolute w-3/4 h-3/4 rounded-full bg-primary/20 animate-ping [animation-delay:0.5s]"></div>
-
-      {/* Main icon container */}
-      <div className="relative flex items-center justify-center w-24 h-24 bg-background rounded-full shadow-lg">
-        <Truck className="w-12 h-12 text-primary animate-pulse" />
+    <div className="relative w-full h-40 overflow-hidden">
+      {/* Truck */}
+      <div className="absolute bottom-10 left-0 animate-move-truck" style={{ animationDuration: '10s', animationIterationCount: 'infinite', animationTimingFunction: 'linear' }}>
+        <Truck className="w-24 h-24 text-foreground -scale-x-100" />
+      </div>
+      
+      {/* Road */}
+      <div className="absolute bottom-0 left-0 w-full h-12 bg-foreground/80" />
+      
+      {/* Road lines */}
+      <div className="absolute bottom-6 left-0 w-[200%] h-2 overflow-hidden">
+        <div className="w-full h-full animate-move-lines" style={{ animationDuration: '2s', animationIterationCount: 'infinite', animationTimingFunction: 'linear' }}>
+           <div 
+             className="w-full h-full"
+             style={{
+                background: 'repeating-linear-gradient(90deg, transparent, transparent 100px, white 100px, white 200px)'
+             }}
+           />
+        </div>
       </div>
     </div>
   );

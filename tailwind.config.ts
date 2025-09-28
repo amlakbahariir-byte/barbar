@@ -88,10 +88,20 @@ export default {
             height: '0',
           },
         },
+        'move-truck': {
+          '0%': { transform: 'translateX(110vw)' },
+          '100%': { transform: 'translateX(-20vw)' },
+        },
+        'move-lines': {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-200px)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'move-truck': 'move-truck 10s linear infinite',
+        'move-lines': 'move-lines 2s linear infinite',
       },
     },
   },

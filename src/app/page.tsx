@@ -31,7 +31,7 @@ export default function Home() {
   }
 
   return (
-      <main className="h-screen w-full flex flex-col items-center justify-center bg-background overflow-hidden relative p-4">
+      <main className="h-screen w-full flex flex-col items-center justify-between bg-background overflow-hidden relative p-4">
           <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
              <div 
                 className="absolute -top-1/4 -left-1/4 w-[150%] h-[150%] bg-primary/20 rounded-full"
@@ -45,7 +45,6 @@ export default function Home() {
                 className="absolute top-0 left-0 w-full h-full bg-primary"
                 style={{
                     clipPath: 'polygon(0% 0%, 100% 0%, 100% 40%, 0% 70%)',
-                    transform: 'rotate(10deg) scale(1.5)',
                 }}
             />
           </div>
@@ -169,7 +168,6 @@ function HomePageContent() {
         
         <div className="text-center text-primary-foreground animate-in fade-in-0 slide-in-from-top-10 duration-700">
            <div className="flex flex-col items-center justify-center">
-                <AnimatedTruckLoader />
                 <h1 className="text-5xl font-headline tracking-tight text-foreground -mt-4">
                     باربر ایرانی
                 </h1>
@@ -185,8 +183,12 @@ function HomePageContent() {
               </div>
             </div>
         </div>
+
+        <div className="absolute bottom-0 left-0 w-full z-0">
+             <AnimatedTruckLoader />
+        </div>
         
-        <div className={cn("transition-opacity duration-500 mb-8", isSubmitting && "opacity-50 pointer-events-none")}>
+        <div className={cn("transition-opacity duration-500 mb-8 z-10", isSubmitting && "opacity-50 pointer-events-none")}>
             <div className="bg-card p-6 rounded-3xl shadow-2xl space-y-6 animate-in fade-in-0 slide-in-from-bottom-10 duration-700">
                 <div className='text-center'>
                   <h2 className="text-2xl font-bold tracking-tight text-foreground">
@@ -196,7 +198,7 @@ function HomePageContent() {
                   </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {step === 1 && 'با شماره موبایل خود وارد شوید.'}
-                    {step === 2 && `کد تایید به شماره ${phone} ارسال شد.`}
+                    {step === 2 && `کد ارسال شده به شماره ${phone} را وارد کنید.`}
                     {step === 3 && 'برای ورود به پنل کاربری نقش خود را مشخص کنید.'}
                   </p>
                 </div>

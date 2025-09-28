@@ -114,6 +114,14 @@ body {
        background-color: hsl(var(--secondary));
     }
   }
+   @keyframes move-truck {
+      0% { transform: translateX(110vw); }
+      100% { transform: translateX(-20vw); }
+    }
+    @keyframes move-lines {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-200px); }
+    }
 }
 
     
