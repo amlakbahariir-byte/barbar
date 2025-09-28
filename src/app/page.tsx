@@ -11,7 +11,7 @@ import { LoaderWithSlogan } from '@/components/ui/loader-with-slogan';
 import { cn } from '@/lib/utils';
 import { slogans } from '@/lib/slogans';
 import { AnimatedTruckLoader } from '@/components/ui/animated-truck-loader';
-import { sendOtp, sendTestSms } from './actions';
+import { sendOtp } from './actions';
 
 
 export default function Home() {
@@ -105,18 +105,6 @@ function HomePageContent() {
     }
   };
 
-  const handleTestSms = async () => {
-    setIsSubmitting(true);
-    toast({ title: 'در حال ارسال پیامک آزمایشی...' });
-    const result = await sendTestSms();
-    setIsSubmitting(false);
-    toast({
-        title: result.success ? 'نتیجه ارسال پیامک آزمایشی' : 'خطا در ارسال پیامک آزمایشی',
-        description: result.message,
-        variant: result.success ? 'default' : 'destructive'
-    });
-  }
-  
   const handleOtpSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (isSubmitting || otp.length < 4) return; // Assuming OTP is not always 6 digits
@@ -224,10 +212,6 @@ function HomePageContent() {
                           {isSubmitting ? 'در حال ارسال...' : 'ارسال کد'}
                           <LogIn className="mr-2"/>
                         </Button>
-                         <Button type="button" variant="outline" className="w-full h-10" onClick={handleTestSms} disabled={isSubmitting}>
-                            تست ارسال پیامک
-                          <MessageCircle className="mr-2"/>
-                        </Button>
                     </div>
                   </form>
                 )}
@@ -290,4 +274,5 @@ function HomePageContent() {
       </div>
   );
 }
+
 
