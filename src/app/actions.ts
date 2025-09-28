@@ -38,13 +38,15 @@ export async function getAddressFromCoordinates(lat: number, lng: number): Promi
     
     if (data && data.address) {
       const { road, suburb, city, state, town, village } = data.address;
-      const addressParts = [road, suburb, city || town || village, state].filter(Boolean);
+      // Build the address with available parts, prioritizing more specific details.
+      const addressParts = [road, suburb, city, town, village, state].filter(Boolean);
       
       if (addressParts.length > 0) {
         return addressParts.join(', ');
       }
     }
     
+    // Fallback to display_name if no detailed address parts are found
     if (data && data.display_name) {
       return data.display_name.split(',').slice(0, 3).join(',');
     }
@@ -120,13 +122,22 @@ export async function sendTestSms(): Promise<{ success: boolean; message: string
       body: JSON.stringify({ from, to, text }),
     });
 
-    const responseBody = await response.json();
-    console.log('MeliPayamak Simple SMS API Response:', responseBody);
+    const responseBodyText = await response.text();
+    console.log('MeliPayamak Simple SMS API Response Text:', responseBodyText);
     
-    if (response.ok && responseBody.recId) {
-      return { success: true, message: `پیامک آزمایشی با موفقیت ارسال شد. شناسه: ${responseBody.recId}` };
+    if (response.ok) {
+        try {
+            const responseBody = JSON.parse(responseBodyText);
+            if(responseBody.recId) {
+                return { success: true, message: `پیامک آزمایشی با موفقیت ارسال شد. شناسه: ${responseBody.recId}` };
+            } else {
+                return { success: false, message: responseBody.status || 'ارسال موفق بود اما شناسه دریافت نشد.' };
+            }
+        } catch(e) {
+            return { success: false, message: `پاسخ دریافتی از سرور معتبر نبود: ${responseBodyText}` };
+        }
     } else {
-      return { success: false, message: responseBody.status || 'ارسال پیامک آزمایشی ناموفق بود.' };
+       return { success: false, message: `ارسال پیامک آزمایشی ناموفق بود: ${responseBodyText}` };
     }
   } catch (error) {
     console.error('Error sending test SMS:', error);
