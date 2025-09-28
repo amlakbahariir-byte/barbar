@@ -35,7 +35,7 @@ export async function getAddressFromCoordinates(lat: number, lng: number): Promi
       return "خطا در ارتباط با سرویس نقشه";
     }
     const data = await response.json();
-
+    
     if (data && data.address) {
       const { road, suburb, city, state, town, village } = data.address;
       const addressParts = [road, suburb, city || town || village, state].filter(Boolean);
@@ -59,6 +59,7 @@ export async function getAddressFromCoordinates(lat: number, lng: number): Promi
 
 export async function sendOtp(phone: string): Promise<{ success: boolean; message: string }> {
   try {
+    const fetch = (await import('node-fetch')).default;
     const apiKey = process.env.MELIPAYAMAK_API_KEY;
     if (!apiKey) {
       throw new Error('MeliPayamak API key is not configured.');
@@ -92,7 +93,7 @@ export async function sendOtp(phone: string): Promise<{ success: boolean; messag
   } catch (error) {
     console.error('Error sending OTP:', error);
     if (error instanceof Error) {
-        return { success: false, message: error.message };
+        return { success: false, message: `خطای شبکه: ${error.message}` };
     }
     return { success: false, message: 'یک خطای شبکه رخ داد. لطفا دوباره تلاش کنید.' };
   }
@@ -110,6 +111,7 @@ export async function sendTestSms(): Promise<{ success: boolean; message: string
   }
 
   try {
+    const fetch = (await import('node-fetch')).default;
     const response = await fetch(`https://console.melipayamak.com/api/send/simple/${apiKey}`, {
       method: 'POST',
       headers: {
@@ -129,9 +131,8 @@ export async function sendTestSms(): Promise<{ success: boolean; message: string
   } catch (error) {
     console.error('Error sending test SMS:', error);
      if (error instanceof Error) {
-        return { success: false, message: error.message };
+        return { success: false, message: `خطای شبکه: ${error.message}` };
     }
     return { success: false, message: 'خطای شبکه در ارسال پیامک آزمایشی.' };
   }
 }
-
