@@ -1,3 +1,4 @@
+
 'use server';
 
 import { generateAlertMessage } from '@/ai/flows/generate-alert-message-for-route-deviation';
@@ -48,7 +49,7 @@ export async function getAddressFromCoordinates(lat: number, lng: number): Promi
       return data.display_name.split(',').slice(0, 4).join(',');
     }
 
-    return "آدرس یافت نشد. لطفا کمی جابجا شوید.";
+    return "آدرس یافت نشد.";
     
   } catch (error) {
     console.error('Error fetching address from Nominatim:', error);
@@ -58,6 +59,7 @@ export async function getAddressFromCoordinates(lat: number, lng: number): Promi
 
 export async function sendOtp(phone: string): Promise<{ success: boolean; message: string }> {
   try {
+    console.log(`Sending OTP to ${phone}...`);
     const response = await fetch('https://console.melipayamak.com/api/send/otp/96059e3c6273414c9e6c6985b652d615', {
       method: 'POST',
       headers: {
@@ -68,20 +70,23 @@ export async function sendOtp(phone: string): Promise<{ success: boolean; messag
       }),
     });
 
+    const responseBody = await response.text();
+    console.log('MeliPayamak API Response Status:', response.status);
+    console.log('MeliPayamak API Response Body:', responseBody);
+
     if (response.ok) {
-      const result = await response.json();
-      console.log('MeliPayamak API Response:', result);
-      // Assuming a successful response has a specific structure.
-      // Adjust this based on the actual API response.
-      if (result.success) {
-         return { success: true, message: 'کد تایید با موفقیت ارسال شد.' };
-      } else {
-         return { success: false, message: result.error || 'خطا در ارسال کد.' };
-      }
+      // Assuming any 2xx response is a success for OTP sending request.
+      // The actual delivery status might be available through webhooks or another API.
+      return { success: true, message: 'کد تایید با موفقیت ارسال شد.' };
     } else {
-       const errorText = await response.text();
-       console.error('MeliPayamak API Error:', errorText);
-       return { success: false, message: `سرور پیامک با خطا مواجه شد: ${response.status}` };
+       // Try to parse the error message if the response is JSON
+       try {
+         const errorResult = JSON.parse(responseBody);
+         return { success: false, message: errorResult.message || `خطا: ${response.status}` };
+       } catch (e) {
+         // If response is not JSON, return the raw text
+         return { success: false, message: responseBody || `سرور پیامک با خطا مواجه شد: ${response.status}` };
+       }
     }
   } catch (error) {
     console.error('Error sending OTP:', error);
