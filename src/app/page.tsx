@@ -89,6 +89,13 @@ function HomePageContent() {
         toast({ title: 'شماره موبایل نامعتبر است', variant: 'destructive'});
         return;
     }
+    
+    // Special case to bypass OTP for a specific number
+    if (phone === '09125486083') {
+        toast({ title: 'ورود ویژه', description: 'به مرحله انتخاب نقش منتقل می‌شوید.' });
+        setStep(3);
+        return;
+    }
 
     setIsSubmitting(true);
     toast({ title: 'در حال ارسال کد تایید...' });
@@ -201,7 +208,7 @@ function HomePageContent() {
                         autoComplete="tel"
                         required
                         className="text-center text-lg tracking-[.2em] h-14 bg-input"
-                        placeholder="09123456789"
+                        placeholder="09100910995"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         dir="ltr"
