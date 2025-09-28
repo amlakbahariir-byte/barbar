@@ -2,6 +2,9 @@
 'use server';
 
 import { generateAlertMessage } from '@/ai/flows/generate-alert-message-for-route-deviation';
+import { config } from 'dotenv';
+
+config();
 
 export async function handleDeviationAlert(driverId: string, shipmentId: string) {
   try {
@@ -35,7 +38,6 @@ export async function getAddressFromCoordinates(lat: number, lng: number): Promi
 
     if (data && data.address) {
       const { road, suburb, city, state, town, village } = data.address;
-      // Prioritize more specific parts first
       const addressParts = [road, suburb, city || town || village, state].filter(Boolean);
       
       if (addressParts.length > 0) {
@@ -59,8 +61,13 @@ export async function getAddressFromCoordinates(lat: number, lng: number): Promi
 
 export async function sendOtp(phone: string): Promise<{ success: boolean; message: string }> {
   try {
+    const apiKey = process.env.MELIPAYAMAK_API_KEY;
+    if (!apiKey) {
+      throw new Error('MeliPayamak API key is not configured.');
+    }
+    
     console.log(`Sending OTP to ${phone}...`);
-    const response = await fetch('https://console.melipayamak.com/api/send/otp/96059e3c6273414c9e6c6985b652d615', {
+    const response = await fetch(`https://console.melipayamak.com/api/send/otp/${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -90,6 +97,9 @@ export async function sendOtp(phone: string): Promise<{ success: boolean; messag
     }
   } catch (error) {
     console.error('Error sending OTP:', error);
+    if (error instanceof Error) {
+        return { success: false, message: error.message };
+    }
     return { success: false, message: 'یک خطای شبکه رخ داد. لطفا دوباره تلاش کنید.' };
   }
 }
