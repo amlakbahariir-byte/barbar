@@ -56,7 +56,7 @@ export default function Home() {
 
 function HomePageContent() {
   const [step, setStep] = useState(1); // 1: phone, 2: otp, 3: role
-  const [phone, setPhone] = useState('09100910995');
+  const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
@@ -201,7 +201,7 @@ function HomePageContent() {
                         autoComplete="tel"
                         required
                         className="text-center text-lg tracking-[.2em] h-14 bg-input"
-                        placeholder="09100910995"
+                        placeholder="09123456789"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         dir="ltr"
