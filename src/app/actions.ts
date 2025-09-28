@@ -62,31 +62,24 @@ export async function getAddressFromCoordinates(lat: number, lng: number): Promi
 export async function sendOtp(phone: string): Promise<{ success: boolean; message: string }> {
   config();
   const apiKey = process.env.MELIPAYAMAK_API_KEY;
-  const from = process.env.MELIPAYAMAK_SENDER_NUMBER;
 
-  if (!apiKey || !from) {
-    const errorMessage = 'پیکربندی سرویس پیامک کامل نیست. کلید API یا شماره فرستنده وجود ندارد.';
+  if (!apiKey) {
+    const errorMessage = 'پیکربندی سرویس پیامک کامل نیست. کلید API وجود ندارد.';
     console.error(errorMessage);
     return { success: false, message: errorMessage };
   }
-
-  // Generate a 6-digit OTP
-  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-  const text = `کد تایید شما: ${otpCode}`;
   
-  console.log(`Sending OTP to ${phone} from ${from} with code ${otpCode}`);
+  console.log(`Sending OTP to ${phone} via send/otp API`);
 
   try {
     const fetch = (await import('node-fetch')).default;
-    const response = await fetch(`https://console.melipayamak.com/api/send/simple/${apiKey}`, {
+    const response = await fetch(`https://console.melipayamak.com/api/send/otp/${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from,
         to: phone,
-        text,
       }),
     });
 
@@ -97,19 +90,27 @@ export async function sendOtp(phone: string): Promise<{ success: boolean; messag
     if (response.ok) {
        try {
         const responseBody = JSON.parse(responseBodyText);
-        // Assuming if recId exists, it's a success
-        if (responseBody.recId) {
-            // In a real app, you would now save the otpCode to DB/Redis with an expiry
-            console.log(`OTP for ${phone} is ${otpCode}. recId: ${responseBody.recId}`);
+        // The OTP endpoint returns a `code` field which we should store and verify later.
+        // It also might return a `status` field on error.
+        if (responseBody.code) {
+            console.log(`OTP for ${phone} is ${responseBody.code}. Store this for verification.`);
             return { success: true, message: 'کد تایید با موفقیت ارسال شد.' };
         } else {
-             return { success: false, message: responseBody.status || 'ارسال موفق بود اما شناسه دریافت نشد.' };
+             // If there's no 'code', there's likely an error status message.
+             const errorMessage = responseBody.status || 'ارسال موفق بود اما کد دریافت نشد.';
+             return { success: false, message: errorMessage };
         }
        } catch (e) {
           return { success: false, message: `پاسخ دریافتی از سرور پیامک معتبر نبود: ${responseBodyText}` };
        }
     } else {
-       return { success: false, message: `ارسال پیامک ناموفق بود: ${responseBodyText}` };
+       // Attempt to parse error from non-2xx response
+       try {
+         const errorBody = JSON.parse(responseBodyText);
+         return { success: false, message: errorBody.status || `ارسال پیامک ناموفق بود: ${responseBodyText}` };
+       } catch (e) {
+         return { success: false, message: `ارسال پیامک ناموفق بود: ${responseBodyText}` };
+       }
     }
   } catch (error) {
     console.error('Error sending OTP via MeliPayamak:', error);

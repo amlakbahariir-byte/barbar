@@ -274,5 +274,3 @@ function HomePageContent() {
       </div>
   );
 }
-
-
