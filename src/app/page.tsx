@@ -6,12 +6,12 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Truck, ChevronRight, User, Building, LogIn } from 'lucide-react';
+import { Truck, ChevronRight, User, Building, LogIn, MessageCircle } from 'lucide-react';
 import { LoaderWithSlogan } from '@/components/ui/loader-with-slogan';
 import { cn } from '@/lib/utils';
 import { slogans } from '@/lib/slogans';
 import { AnimatedTruckLoader } from '@/components/ui/animated-truck-loader';
-import { sendOtp } from './actions';
+import { sendOtp, sendTestSms } from './actions';
 
 
 export default function Home() {
@@ -105,6 +105,18 @@ function HomePageContent() {
         toast({ title: 'خطا در ارسال کد', description: result.message, variant: 'destructive'});
     }
   };
+
+  const handleTestSms = async () => {
+    setIsSubmitting(true);
+    toast({ title: 'در حال ارسال پیامک آزمایشی...' });
+    const result = await sendTestSms();
+    setIsSubmitting(false);
+    toast({
+        title: result.success ? 'نتیجه ارسال پیامک آزمایشی' : 'خطا در ارسال پیامک آزمایشی',
+        description: result.message,
+        variant: result.success ? 'default' : 'destructive'
+    });
+  }
   
   const handleOtpSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -205,10 +217,16 @@ function HomePageContent() {
                         dir="ltr"
                       />
                     </div>
-                    <Button type="submit" className="w-full h-12 text-lg" disabled={isSubmitting}>
-                      {isSubmitting ? 'در حال ارسال...' : 'ارسال کد'}
-                      <LogIn className="mr-2"/>
-                    </Button>
+                    <div className="flex flex-col gap-2">
+                        <Button type="submit" className="w-full h-12 text-lg" disabled={isSubmitting}>
+                          {isSubmitting ? 'در حال ارسال...' : 'ارسال کد'}
+                          <LogIn className="mr-2"/>
+                        </Button>
+                         <Button type="button" variant="outline" className="w-full h-10" onClick={handleTestSms} disabled={isSubmitting}>
+                            تست ارسال پیامک
+                          <MessageCircle className="mr-2"/>
+                        </Button>
+                    </div>
                   </form>
                 )}
 
@@ -270,3 +288,4 @@ function HomePageContent() {
       </div>
   );
 }
+

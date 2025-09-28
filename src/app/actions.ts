@@ -22,7 +22,7 @@ export async function handleDeviationAlert(driverId: string, shipmentId: string)
 }
 
 
-export async function getAddressFromCoordinates(lat: number, lng: number): Promise<string | null> {
+export async function getAddressFromCoordinates(lat: number, lng: number): Promise<string> {
   try {
     const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=fa`, {
         headers: {
@@ -45,10 +45,8 @@ export async function getAddressFromCoordinates(lat: number, lng: number): Promi
       }
     }
     
-    // Fallback to display_name only if detailed parts are not available at all.
     if (data && data.display_name) {
-      // Split and take the most relevant parts of the display name
-      return data.display_name.split(',').slice(0, 4).join(',');
+      return data.display_name.split(',').slice(0, 3).join(',');
     }
 
     return "آدرس یافت نشد.";
@@ -82,16 +80,12 @@ export async function sendOtp(phone: string): Promise<{ success: boolean; messag
     console.log('MeliPayamak API Response Body:', responseBody);
 
     if (response.ok) {
-      // Assuming any 2xx response is a success for OTP sending request.
-      // The actual delivery status might be available through webhooks or another API.
       return { success: true, message: 'کد تایید با موفقیت ارسال شد.' };
     } else {
-       // Try to parse the error message if the response is JSON
        try {
          const errorResult = JSON.parse(responseBody);
          return { success: false, message: errorResult.message || `خطا: ${response.status}` };
        } catch (e) {
-         // If response is not JSON, return the raw text
          return { success: false, message: responseBody || `سرور پیامک با خطا مواجه شد: ${response.status}` };
        }
     }
@@ -103,3 +97,41 @@ export async function sendOtp(phone: string): Promise<{ success: boolean; messag
     return { success: false, message: 'یک خطای شبکه رخ داد. لطفا دوباره تلاش کنید.' };
   }
 }
+
+
+export async function sendTestSms(): Promise<{ success: boolean; message: string }> {
+  const apiKey = process.env.MELIPAYAMAK_API_KEY;
+  const from = process.env.MELIPAYAMAK_SENDER_NUMBER;
+  const to = '09125486083'; // Test number
+  const text = 'پیامک آزمایشی از باربر ایرانی';
+
+  if (!apiKey || !from) {
+    return { success: false, message: 'پیکربندی سرویس پیامک کامل نیست.' };
+  }
+
+  try {
+    const response = await fetch(`https://console.melipayamak.com/api/send/simple/${apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ from, to, text }),
+    });
+
+    const responseBody = await response.json();
+    console.log('MeliPayamak Simple SMS API Response:', responseBody);
+    
+    if (response.ok && responseBody.recId) {
+      return { success: true, message: `پیامک آزمایشی با موفقیت ارسال شد. شناسه: ${responseBody.recId}` };
+    } else {
+      return { success: false, message: responseBody.status || 'ارسال پیامک آزمایشی ناموفق بود.' };
+    }
+  } catch (error) {
+    console.error('Error sending test SMS:', error);
+     if (error instanceof Error) {
+        return { success: false, message: error.message };
+    }
+    return { success: false, message: 'خطای شبکه در ارسال پیامک آزمایشی.' };
+  }
+}
+
