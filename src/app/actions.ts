@@ -35,8 +35,8 @@ export async function getAddressFromCoordinates(lat: number, lng: number): Promi
 
     if (data && data.address) {
       const { road, suburb, city, state, town, village } = data.address;
-      const cityOrTown = city || town || village;
-      const addressParts = [road, suburb, cityOrTown, state].filter(Boolean);
+      // Prioritize more specific parts first
+      const addressParts = [road, suburb, city || town || village, state].filter(Boolean);
       
       if (addressParts.length > 0) {
         return addressParts.join(', ');
