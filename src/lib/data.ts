@@ -1,6 +1,10 @@
 
+'use server';
+
 import shipmentsData from '@/lib/db/shipments.json';
 import transactionsData from '@/lib/db/transactions.json';
+import fs from 'fs/promises';
+import path from 'path';
 
 export type Driver = {
   id: string;
@@ -59,8 +63,8 @@ export const getShipmentById = async (id: string): Promise<Shipment | null> => {
     return Promise.resolve(shipment);
 }
 
-export const addShipment = async (shipment: Omit<Shipment, 'id'>) => {
-    // Simulate network delay and adding to the database
+export const addShipment = async (shipment: Omit<Shipment, 'id'>): Promise<Shipment> => {
+    // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 300));
     
     const newShipment: Shipment = {
@@ -68,11 +72,20 @@ export const addShipment = async (shipment: Omit<Shipment, 'id'>) => {
         id: `shp${Math.floor(Math.random() * 1000) + 1007}`,
     };
     
-    // Note: This only adds to the in-memory array for the current session.
-    // It does not persist to the shipments.json file.
+    // Add to the in-memory array
     localShipments.unshift(newShipment);
     
-    console.log("Shipment added to in-memory store: ", newShipment.id);
+    // Persist to the file
+    try {
+        const filePath = path.join(process.cwd(), 'src', 'lib', 'db', 'shipments.json');
+        const updatedData = JSON.stringify({ shipments: localShipments }, null, 2);
+        await fs.writeFile(filePath, updatedData, 'utf-8');
+        console.log("Shipment added and persisted to shipments.json");
+    } catch (error) {
+        console.error("Failed to write to shipments.json", error);
+        // In a real app, you might want to handle this error, e.g., by rolling back the in-memory change
+    }
+    
     return Promise.resolve(newShipment);
 }
 

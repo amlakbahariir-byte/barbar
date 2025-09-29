@@ -6,6 +6,7 @@ import Script from 'next/script';
 export const metadata: Metadata = {
   title: 'باربر ایرانی',
   description: 'اپلیکیشن حمل و نقل بار در ایران',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
@@ -29,6 +30,13 @@ export default function RootLayout({
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
           crossOrigin=""
         />
+        <meta name="application-name" content="باربر ایرانی" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="باربر ایرانی" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="theme-color" content="#FFFFFF" />
       </head>
       <body className="font-body antialiased overflow-x-hidden">
         {children}

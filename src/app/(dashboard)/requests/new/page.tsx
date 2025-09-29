@@ -72,9 +72,8 @@ export default function NewRequestPage() {
       }).format(date);
   }
 
-  const onSubmit = (values: FormValues) => {
-    const newShipment = {
-        id: `shp${Math.floor(Math.random() * 1000) + 1007}`,
+  const onSubmit = async (values: FormValues) => {
+    const newShipmentData = {
         origin: values.origin,
         destination: values.destination,
         weight: parseInt(values.weight) || 0,
@@ -85,7 +84,7 @@ export default function NewRequestPage() {
         bids: [],
     };
 
-    addShipment(newShipment);
+    await addShipment(newShipmentData);
 
     toast({
       title: 'درخواست شما ثبت شد',
