@@ -126,6 +126,7 @@ export async function getAddressFromCoordinates(lat: number, lng: number): Promi
 }
 
 export async function sendOtp(phone: string): Promise<{ success: boolean; message: string }> {
+  config();
   const username = process.env.MELIPAYAMAK_USERNAME;
   const password = process.env.MELIPAYAMAK_PASSWORD;
   const bodyId = process.env.MELIPAYAMAK_BODY_ID;
@@ -139,20 +140,21 @@ export async function sendOtp(phone: string): Promise<{ success: boolean; messag
   const code = Math.floor(100000 + Math.random() * 900000).toString();
   console.log(`Generated OTP for ${phone} is: ${code}. (For testing purposes)`);
 
+  const params = new URLSearchParams();
+  params.append('username', username);
+  params.append('password', password);
+  params.append('text', code);
+  params.append('to', phone);
+  params.append('bodyId', bodyId);
+
   try {
     const fetch = (await import('node-fetch')).default;
     const response = await fetch('https://api.payamak-panel.com/post/send.asmx/SendByBaseNumber', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: JSON.stringify({
-        username: username,
-        password: password,
-        text: code,
-        to: phone,
-        bodyId: parseInt(bodyId, 10),
-      }),
+      body: params.toString(),
     });
     
     const responseBodyText = await response.text();
@@ -160,20 +162,17 @@ export async function sendOtp(phone: string): Promise<{ success: boolean; messag
     console.log('MeliPayamak API Response Body:', responseBodyText);
 
     if (response.ok) {
-       try {
-        const responseBody = JSON.parse(responseBodyText);
-        // According to the PDF, a successful response has a "Value" field with a positive number (retStr)
-        if (responseBody.Value && responseBody.Value.length > 10) {
-             console.log(`Successfully sent OTP to ${phone}. Response Value: ${responseBody.Value}`);
-             return { success: true, message: 'کد تایید با موفقیت ارسال شد.' };
-        } else {
-             const errorMessage = responseBody.Value || 'ارسال موفق بود اما شناسه معتبر دریافت نشد.';
-             console.error('MeliPayamak Error:', errorMessage);
-             return { success: false, message: `ارسال پیامک ناموفق بود: ${errorMessage}` };
-        }
-       } catch (e) {
-          console.error('Failed to parse MeliPayamak JSON response:', e);
-          return { success: false, message: `پاسخ دریافتی از سرور پیامک معتبر نبود: ${responseBodyText}` };
+       // The response is XML, so we check for the success indicator within the XML string.
+       // A successful response contains a <long> tag with the message ID.
+       if (responseBodyText.includes('<long>') && !responseBodyText.includes('</long>0</long>')) {
+           console.log(`Successfully initiated OTP send to ${phone}.`);
+           return { success: true, message: 'کد تایید با موفقیت ارسال شد.' };
+       } else {
+           // Extract error message if available
+           const errorMatch = responseBodyText.match(/<string[^>]*>([^<]+)<\/string>/);
+           const errorMessage = errorMatch ? errorMatch[1] : 'یک خطای ناشناخته رخ داد.';
+           console.error('MeliPayamak Error:', errorMessage);
+           return { success: false, message: `ارسال پیامک ناموفق بود: ${errorMessage}` };
        }
     } else {
        return { success: false, message: `ارسال پیامک ناموفق بود: ${responseBodyText}` };
