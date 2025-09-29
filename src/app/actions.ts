@@ -162,8 +162,8 @@ export async function sendOtp(phone: string): Promise<{ success: boolean; messag
     console.log('MeliPayamak API Response Body:', responseBodyText);
 
     if (response.ok) {
-       // The response is XML, so we check for the success indicator within the XML string.
-       // A successful response contains a <long> tag with the message ID.
+       // The response is XML. A successful response contains a <long> tag with a message ID > 0.
+       // A failed response might contain <long>0</long> or a <string> error.
        if (responseBodyText.includes('<long>') && !responseBodyText.includes('</long>0</long>')) {
            console.log(`Successfully initiated OTP send to ${phone}.`);
            return { success: true, message: 'کد تایید با موفقیت ارسال شد.' };
