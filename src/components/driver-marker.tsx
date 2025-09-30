@@ -1,5 +1,5 @@
 
-import { Motorcycle, Truck, Car, Move } from 'lucide-react';
+import { Truck, Car, Move } from 'lucide-react';
 import ReactDOMServer from 'react-dom/server';
 
 interface DriverMarkerProps {
@@ -7,10 +7,19 @@ interface DriverMarkerProps {
   avatar: string;
 }
 
+const MotorcycleIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M5 17a2 2 0 1 0-4 0 2 2 0 0 0 4 0Zm12 0a2 2 0 1 0-4 0 2 2 0 0 0 4 0Z"/>
+        <path d="M12 17h-5l-3-6 2-4h3l3 6h3V6h2v3h1"/>
+        <path d="m14 6-2-4"/>
+    </svg>
+);
+
+
 const vehicleIconMap = {
   'کامیون': Truck,
   'وانت': Car,
-  'موتور': Motorcycle,
+  'موتور': MotorcycleIcon,
   'سواری': Car,
 };
 
@@ -71,7 +80,7 @@ export const DriverMarker = ({ vehicleType, avatar }: DriverMarkerProps): string
         justifyContent: 'center',
         border: '2px solid white',
       }}>
-        <Icon color="white" size={18} strokeWidth={2.5}/>
+        <Icon />
       </div>
     </div>
   );
