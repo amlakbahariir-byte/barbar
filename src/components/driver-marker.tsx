@@ -1,5 +1,5 @@
 
-import { Moped, Truck, Car, Move } from 'lucide-react';
+import { Motorcycle, Truck, Car, Move } from 'lucide-react';
 import ReactDOMServer from 'react-dom/server';
 
 interface DriverMarkerProps {
@@ -10,7 +10,7 @@ interface DriverMarkerProps {
 const vehicleIconMap = {
   'کامیون': Truck,
   'وانت': Car,
-  'موتور': Moped,
+  'موتور': Motorcycle,
   'سواری': Car,
 };
 
