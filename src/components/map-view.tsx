@@ -187,7 +187,8 @@ export function MapView({ onConfirm, isShipperView = false }: { onConfirm?: () =
       // Initial address fetch
       updateAddress();
 
-    } catch (error)      console.error('Error initializing Leaflet map:', error);
+    } catch (error) {
+      console.error('Error initializing Leaflet map:', error);
       toast({
         variant: 'destructive',
         title: 'خطا در بارگذاری نقشه',
@@ -347,4 +348,3 @@ export function MapView({ onConfirm, isShipperView = false }: { onConfirm?: () =
     </Card>
   );
 }
-
