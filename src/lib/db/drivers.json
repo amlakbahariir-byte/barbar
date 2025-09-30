@@ -1,0 +1,59 @@
+
+{
+  "drivers": [
+    {
+      "id": "d1",
+      "name": "رضا احمدی",
+      "avatar": "https://i.pravatar.cc/150?u=d1",
+      "vehicleType": "کامیون",
+      "vehicleModel": "ولوو FH",
+      "rating": 4.8,
+      "location": [35.7219, 51.3340]
+    },
+    {
+      "id": "d2",
+      "name": "مریم حسینی",
+      "avatar": "https://i.pravatar.cc/150?u=d2",
+      "vehicleType": "وانت",
+      "vehicleModel": "نیسان آبی",
+      "rating": 4.9,
+      "location": [35.7009, 51.4241]
+    },
+    {
+      "id": "d3",
+      "name": "علی کریمی",
+      "avatar": "https://i.pravatar.cc/150?u=d3",
+      "vehicleType": "موتور",
+      "vehicleModel": "باجاج پالس",
+      "rating": 4.7,
+      "location": [35.6980, 51.3880]
+    },
+    {
+      "id": "d4",
+      "name": "سارا محمدی",
+      "avatar": "https://i.pravatar.cc/150?u=d4",
+      "vehicleType": "وانت",
+      "vehicleModel": "پراید وانت",
+      "rating": 5.0,
+      "location": [35.7580, 51.4180]
+    },
+    {
+      "id": "d5",
+      "name": "جواد رضایی",
+      "avatar": "https://i.pravatar.cc/150?u=d5",
+      "vehicleType": "کامیون",
+      "vehicleModel": "بنز تک",
+      "rating": 4.6,
+      "location": [35.6811, 51.4645]
+    },
+    {
+      "id": "d6",
+      "name": "فاطمه نوری",
+      "avatar": "https://i.pravatar.cc/150?u=d6",
+      "vehicleType": "سواری",
+      "vehicleModel": "سمند",
+      "rating": 4.9,
+      "location": [35.7310, 51.4005]
+    }
+  ]
+}

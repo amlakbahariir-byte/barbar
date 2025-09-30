@@ -13,13 +13,13 @@
         "bids": [
           {
             "id": "bid1",
-            "driver": { "id": "d1", "name": "رضا احمدی", "avatar": "https://i.pravatar.cc/150?u=d1", "vehicle": "کامیون تک", "rating": 4.8 },
+            "driver": { "id": "d1", "name": "رضا احمدی", "avatar": "https://i.pravatar.cc/150?u=d1", "vehicleType": "کامیون", "vehicleModel": "ولوو FH", "rating": 4.8, "location": [35.7219, 51.3340] },
             "amount": 2500000,
             "timestamp": "2024-07-28T10:00:00Z"
           },
           {
             "id": "bid2",
-            "driver": { "id": "d3", "name": "علی کریمی", "avatar": "https://i.pravatar.cc/150?u=d3", "vehicle": "تریلی", "rating": 4.7 },
+            "driver": { "id": "d3", "name": "علی کریمی", "avatar": "https://i.pravatar.cc/150?u=d3", "vehicleType": "موتور", "vehicleModel": "باجاج پالس", "rating": 4.7, "location": [35.6980, 51.3880] },
             "amount": 2350000,
             "timestamp": "2024-07-28T10:15:00Z"
           }
@@ -45,7 +45,7 @@
         "date": "۱۴۰۳/۰۵/۱۴ - ۱۴:۰۰",
         "description": "",
         "status": "in_transit",
-        "acceptedDriver": { "id": "d4", "name": "سارا محمدی", "avatar": "https://i.pravatar.cc/150?u=d4", "vehicle": "خاور", "rating": 5.0 }
+        "acceptedDriver": { "id": "d4", "name": "سارا محمدی", "avatar": "https://i.pravatar.cc/150?u=d4", "vehicleType": "وانت", "vehicleModel": "پراید وانت", "rating": 5.0, "location": [35.7580, 51.4180] }
       },
       {
         "id": "shp1004",
@@ -55,7 +55,8 @@
         "cargoType": "قطعات صنعتی",
         "date": "۱۴۰۳/۰۵/۱۲ - ۱۸:۰۰",
         "description": "بسته‌ها کوچک اما سنگین هستند.",
-        "status": "delivered"
+        "status": "delivered",
+        "acceptedDriver": { "id": "d5", "name": "جواد رضایی", "avatar": "https://i.pravatar.cc/150?u=d5", "vehicleType": "کامیون", "vehicleModel": "بنز تک", "rating": 4.6, "location": [35.6811, 51.4645] }
       },
       {
         "id": "shp1005",
@@ -77,7 +78,7 @@
         "date": "۱۴۰۳/۰۵/۱۸ - ۱۲:۰۰",
         "description": "احتیاط در حمل.",
         "status": "accepted",
-        "acceptedDriver": { "id": "d2", "name": "مریم حسینی", "avatar": "https://i.pravatar.cc/150?u=d2", "vehicle": "وانت نیسان", "rating": 4.9 }
+        "acceptedDriver": { "id": "d2", "name": "مریم حسینی", "avatar": "https://i.pravatar.cc/150?u=d2", "vehicleType": "وانت", "vehicleModel": "نیسان آبی", "rating": 4.9, "location": [35.7009, 51.4241] }
       }
     ]
 }

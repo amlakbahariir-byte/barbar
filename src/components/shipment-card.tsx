@@ -26,7 +26,7 @@ export function ShipmentCard({ shipment, role, navigate }: { shipment: Shipment;
 
   return (
     <Card 
-        className="group flex flex-col h-full overflow-hidden transition-all duration-300 ease-in-out hover:border-primary/50 hover:shadow-lg"
+        className="group flex flex-col h-full overflow-hidden transition-all duration-300 ease-in-out hover:border-primary/50 hover:shadow-lg cursor-pointer"
         onClick={() => navigate(`/dashboard/requests/${shipment.id}`)}
     >
         <CardHeader className="pb-3">

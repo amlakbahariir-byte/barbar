@@ -5,10 +5,15 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { MapPin, Search, LocateFixed } from 'lucide-react';
+import { MapPin, Search, LocateFixed, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { getAddressFromCoordinates } from '@/app/actions';
 import { Skeleton } from './ui/skeleton';
+import { Driver } from '@/lib/data';
+import { nearbyDrivers } from '@/lib/db/drivers';
+import Image from 'next/image';
+import { DriverMarker } from './driver-marker';
+import { useRouter } from 'next/navigation';
 
 // Declare Leaflet types for TypeScript
 declare const L: any;
@@ -61,8 +66,31 @@ const cityCoordinates: { [key: string]: [number, number] } = {
   'یاسوج': [30.6690, 51.5861],
 };
 
+const DriverInfoCard = ({ driver, onClear }: { driver: Driver | null, onClear: () => void }) => {
+    const router = useRouter();
 
-export function MapView({ onConfirm }: { onConfirm?: () => void }) {
+    if (!driver) return null;
+
+    return (
+        <Card className="shadow-lg animate-in fade-in-0 slide-in-from-bottom-10 duration-500">
+            <CardContent className="p-3 flex items-center gap-4">
+                <Image src={driver.avatar} alt={driver.name} width={64} height={64} className="rounded-xl border-2" />
+                <div className="flex-1">
+                    <h3 className="font-bold text-lg">{driver.name}</h3>
+                    <p className="text-sm text-muted-foreground">{driver.vehicleType}</p>
+                     <p className="text-xs text-muted-foreground">★ {driver.rating.toLocaleString('fa-IR')}</p>
+                </div>
+                <div className="flex flex-col gap-2">
+                    <Button onClick={() => router.push(`/dashboard/profile`)}>مشاهده پروفایل</Button>
+                    <Button variant="ghost" size="sm" onClick={onClear}>بستن</Button>
+                </div>
+            </CardContent>
+        </Card>
+    );
+};
+
+
+export function MapView({ onConfirm, isShipperView = false }: { onConfirm?: () => void, isShipperView?: boolean }) {
   const { toast } = useToast();
   const mapRef = useRef<HTMLDivElement>(null);
   const leafletMapRef = useRef<any>(null);
@@ -70,10 +98,11 @@ export function MapView({ onConfirm }: { onConfirm?: () => void }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentAddress, setCurrentAddress] = useState<string | null>('در حال دریافت آدرس...');
   const [isGeocoding, setIsGeocoding] = useState(true);
+  const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
 
   
   const updateAddress = useCallback(async () => {
-    if (!leafletMapRef.current) return;
+    if (!leafletMapRef.current || isShipperView) return;
     
     setIsGeocoding(true);
     const center = leafletMapRef.current.getCenter();
@@ -92,7 +121,7 @@ export function MapView({ onConfirm }: { onConfirm?: () => void }) {
     } finally {
         setIsGeocoding(false);
     }
-  }, []);
+  }, [isShipperView]);
 
 
   useEffect(() => {
@@ -113,37 +142,52 @@ export function MapView({ onConfirm }: { onConfirm?: () => void }) {
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(map);
+
+      if(isShipperView) {
+        // Add driver markers for shipper view
+        nearbyDrivers.forEach(driver => {
+            const driverIcon = L.divIcon({
+                className: 'custom-driver-marker',
+                html: DriverMarker({ vehicleType: driver.vehicleType, avatar: driver.avatar }),
+                iconSize: [60, 75],
+                iconAnchor: [30, 75],
+            });
+            const driverMarker = L.marker(driver.location, { icon: driverIcon }).addTo(map);
+            driverMarker.on('click', () => {
+                setSelectedDriver(driver);
+            });
+        });
+
+      } else {
+        // Add a draggable marker for driver view
+        const marker = L.marker(map.getCenter(), {
+            draggable: true,
+            icon: L.divIcon({
+                className: 'custom-marker',
+                html: `<div class="relative flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--primary))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin drop-shadow-lg"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                    </div>`,
+                iconSize: [48, 48],
+                iconAnchor: [24, 48]
+            })
+        }).addTo(map);
+
+        markerRef.current = marker;
+
+        map.on('move', function() {
+            marker.setLatLng(map.getCenter());
+        });
+        
+        const debouncedUpdateAddress = debounce(updateAddress, 500);
+        map.on('movestart', () => setIsGeocoding(true));
+        map.on('moveend', debouncedUpdateAddress);
+      }
       
-      // Add a draggable marker
-      const marker = L.marker(map.getCenter(), {
-        draggable: true,
-        icon: L.divIcon({
-            className: 'custom-marker',
-            html: `<div class="relative flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--primary))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin drop-shadow-lg"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                   </div>`,
-            iconSize: [48, 48],
-            iconAnchor: [24, 48]
-        })
-      }).addTo(map);
-
-      markerRef.current = marker;
-
-      // Update marker on map move
-      map.on('move', function() {
-        marker.setLatLng(map.getCenter());
-      });
-      
-      const debouncedUpdateAddress = debounce(updateAddress, 500);
-
-      map.on('movestart', () => setIsGeocoding(true));
-      map.on('moveend', debouncedUpdateAddress);
       
       // Initial address fetch
       updateAddress();
 
-    } catch (error) {
-      console.error('Error initializing Leaflet map:', error);
+    } catch (error)      console.error('Error initializing Leaflet map:', error);
       toast({
         variant: 'destructive',
         title: 'خطا در بارگذاری نقشه',
@@ -159,7 +203,7 @@ export function MapView({ onConfirm }: { onConfirm?: () => void }) {
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toast]);
+  }, [toast, isShipperView]);
 
   const handleConfirmLocation = async () => {
     if (leafletMapRef.current && currentAddress && !isGeocoding) {
@@ -211,7 +255,7 @@ export function MapView({ onConfirm }: { onConfirm?: () => void }) {
         (position) => {
           const { latitude, longitude } = position.coords;
           if (leafletMapRef.current) {
-            leafletMapRef.current.setView([latitude, longitude], 15);
+            leafletMapRef.current.flyTo([latitude, longitude], 15);
           }
           toast({
             title: 'موقعیت شما پیدا شد',
@@ -234,6 +278,22 @@ export function MapView({ onConfirm }: { onConfirm?: () => void }) {
       });
     }
   };
+
+  if (isShipperView) {
+    return (
+        <div className="relative w-full h-full">
+            <div ref={mapRef} className="w-full h-full bg-muted z-0" />
+            <div className="absolute bottom-4 left-4 z-[1000]">
+                <Button isIconOnly variant="flat" className="rounded-full h-14 w-14 shadow-lg bg-background/80 backdrop-blur-sm" onClick={handleFindMyLocation}>
+                    <LocateFixed className="h-6 w-6 text-foreground" />
+                </Button>
+            </div>
+             <div className="absolute bottom-4 right-4 left-4 z-[1000]">
+                 <DriverInfoCard driver={selectedDriver} onClear={() => setSelectedDriver(null)} />
+            </div>
+        </div>
+    )
+  }
 
   return (
     <Card className="overflow-hidden">
@@ -288,6 +348,3 @@ export function MapView({ onConfirm }: { onConfirm?: () => void }) {
   );
 }
 
-    
-
-    

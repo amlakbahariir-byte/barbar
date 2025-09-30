@@ -3,6 +3,7 @@
 
 import shipmentsData from '@/lib/db/shipments.json';
 import transactionsData from '@/lib/db/transactions.json';
+import driversData from '@/lib/db/drivers.json';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -10,8 +11,10 @@ export type Driver = {
   id: string;
   name: string;
   avatar: string;
-  vehicle: string;
+  vehicleType: 'کامیون' | 'وانت' | 'موتور' | 'سواری';
+  vehicleModel: string;
   rating: number;
+  location: [number, number];
 };
 
 export type Bid = {
@@ -47,6 +50,7 @@ export type Transaction = {
 // In-memory representation of the database for simulation purposes.
 let localShipments: Shipment[] = shipmentsData.shipments as Shipment[];
 const localTransactions: Transaction[] = transactionsData.transactions as Transaction[];
+const localDrivers: Driver[] = driversData.drivers as Driver[];
 
 
 export const getTransactions = async (): Promise<Transaction[]> => {
@@ -54,6 +58,11 @@ export const getTransactions = async (): Promise<Transaction[]> => {
     await new Promise(resolve => setTimeout(resolve, 300));
     return Promise.resolve(localTransactions);
 };
+
+export const getDrivers = async (): Promise<Driver[]> => {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return Promise.resolve(localDrivers);
+}
 
 
 export const getShipmentById = async (id: string): Promise<Shipment | null> => {
