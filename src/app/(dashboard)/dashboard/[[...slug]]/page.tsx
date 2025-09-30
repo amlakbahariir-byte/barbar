@@ -18,8 +18,20 @@ import { MapView } from '@/components/map-view';
 import { Separator } from '@/components/ui/separator';
 import { slogans } from '@/lib/slogans';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ShipmentTracking } from '@/components/shipment-tracking';
+import { LoaderWithSlogan } from '@/components/ui/loader-with-slogan';
 
-function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
+function ShipperDashboard({ shipments, isLoading }: { shipments: Shipment[], isLoading: boolean }) {
+
+  const activeShipment = shipments.find(s => s.status === 'in_transit' || s.status === 'accepted');
+
+  if (isLoading) {
+    return <LoaderWithSlogan />;
+  }
+
+  if (activeShipment) {
+    return <ShipmentTracking shipment={activeShipment} />;
+  }
 
   return (
     <div className="relative h-[calc(100vh-2rem)] md:h-[calc(100vh-3rem)] -m-4 md:-m-6">
@@ -29,7 +41,7 @@ function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
                 size="icon"
                 variant="secondary"
                 className="rounded-full h-14 w-14 shadow-lg border-2"
-                onClick={() => navigate('/dashboard/profile')}
+                onClick={() => router.push('/dashboard/profile')}
             >
                 <User className="h-7 w-7" />
                 <span className="sr-only">پروفایل</span>
@@ -39,7 +51,7 @@ function ShipperDashboard({ navigate }: { navigate: (path: string) => void }) {
              <Button
                 size="lg"
                 className="rounded-full h-16 shadow-lg border-2 animate-in fade-in zoom-in-95 duration-500"
-                onClick={() => navigate('/dashboard/requests/new')}
+                onClick={() => router.push('/dashboard/requests/new')}
             >
                 <PackagePlus className="ml-2 h-6 w-6" />
                 <span className="text-lg">درخواست جدید</span>
@@ -223,7 +235,7 @@ const PageRenderer = ({ slug, role, navigate }: { slug: string[], role: 'shipper
 
   // Fallback to the main dashboard content
   if (role === 'shipper') {
-    return <ShipperDashboard navigate={navigate} />;
+    return <ShipperDashboard shipments={shipments} isLoading={isLoading} />;
   }
   return <DriverDashboard navigate={navigate} shipments={shipments} isLoading={isLoading} />;
 };
