@@ -285,7 +285,7 @@ export function MapView({ onConfirm, isShipperView = false }: { onConfirm?: () =
         <div className="relative w-full h-full">
             <div ref={mapRef} className="w-full h-full bg-muted z-0" />
             <div className="absolute bottom-4 left-4 z-[1000]">
-                <Button isIconOnly variant="flat" className="rounded-full h-14 w-14 shadow-lg bg-background/80 backdrop-blur-sm" onClick={handleFindMyLocation}>
+                <Button size="icon" variant="secondary" className="rounded-full h-14 w-14 shadow-lg bg-background/80 backdrop-blur-sm border-2" onClick={handleFindMyLocation}>
                     <LocateFixed className="h-6 w-6 text-foreground" />
                 </Button>
             </div>
